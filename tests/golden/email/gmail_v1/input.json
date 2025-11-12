@@ -1,0 +1,28 @@
+{
+  "id": "18c4e2f3b8a1d9e0",
+  "threadId": "18c4e2f3b8a1d9e0",
+  "internalDate": "1699891200000",
+  "payload": {
+    "headers": [
+      {
+        "name": "From",
+        "value": "alice@example.com"
+      },
+      {
+        "name": "To",
+        "value": "bob@example.com,charlie@example.com"
+      },
+      {
+        "name": "Cc",
+        "value": "david@example.com"
+      },
+      {
+        "name": "Subject",
+        "value": "Meeting tomorrow at 2pm"
+      }
+    ],
+    "body": {
+      "data": "SGVsbG8gdGVhbSwgbGV0J3MgbWVldCB0b21vcnJvdyBhdCAycG0gdG8gZGlzY3VzcyB0aGUgcHJvamVjdCByb2FkbWFwLg=="
+    }
+  }
+}

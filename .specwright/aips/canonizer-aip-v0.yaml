@@ -1,0 +1,394 @@
+aip_id: AIP-2025-11-09-001
+context:
+  background: '**The Problem:**
+
+    Multi-source JSON data ingestion is a mess. Everyone writes custom transforms from Gmail→Canonical,
+    Outlook→Canonical, etc. Schema registries (Iglu, Apicurio) validate shape but don''t manage semantic
+    transforms. dbt does SQL transforms but not JSON→JSON. Airbyte ingests but doesn''t harmonize.
+
+
+    **The Gap:**
+
+    There''s no open standard for versioned, schema-aware JSON transforms. No registry. No community sharing.
+    No LLM-assisted scaffolding.
+
+
+    **What Exists:**
+
+    - ✅ Airbyte/Meltano (ingestion)
+
+    - ✅ Iglu/Apicurio (schema registry with SchemaVer)
+
+    - ✅ JSONata (transform DSL - portable, language-agnostic)
+
+    - ✅ jsonschema-diff, jsonpatch (schema/data diffing and patching)
+
+    - ❌ **Transform Registry** (versioned .jsonata files with minimal .meta.yaml sidecars)
+
+    - ❌ **Validation Runtime** (validate → transform → validate → receipt)
+
+    - ❌ **Mechanical Transform Evolution** (diff/patch before LLM)
+
+    - ❌ **LLM Scaffolding** (generate transforms when diff/patch insufficient)
+
+
+    **Why Now:**
+
+    Building LifeOS personal data platform. Need to normalize Gmail, Outlook, Exchange, QuickBooks, Sheets,
+    Forms, Calendar, Dataverse into canonical events. Writing each transform manually is inefficient.
+    Diff and patch engines exist, and LLMs can generate 80% of transforms automatically. However, these
+    pipelines change, and shapes and transforms both benefit from tracking and versioning.
+
+
+    **Airbyte Integration:**
+
+    Airbyte runs via Cloud Run + Scheduler. Canonizer watches `gs://raw/...` (GCS notifications) or Pub/Sub
+    and writes canonical events to `gs://canonical/...` + receipts to BigQuery. This grounds the pipeline
+    in GCP primitives.'
+  constraints:
+  - '"Leverage existing tools (Airbyte for ingestion, Iglu-style schemas in Git, Node JSONata runtime)"'
+  - '"No custom connectors (use Airbyte''s)"'
+  - '"Assume raw zone written from Airbyte outputs (GCS or Pub/Sub notifications)"'
+  - '"Keep runtime lightweight (Python orchestration + Node JSONata subprocess)"'
+  - '"Transforms as .jsonata files (portable, ASCII filenames only: [a-z0-9_]+)"'
+  - '"Minimal metadata sidecars (.meta.yaml for registry only, relative paths)"'
+  - '"Diff/patch before LLM (deterministic > probabilistic; covers adds/renames only)"'
+  - '"Node JSONata runtime (official, correct; Python as optional fast path via config)"'
+  - '"LLM scaffolding is model-agnostic (authoring aid, not runtime)"'
+  - '"Focus on JSON→JSON only (no SQL, no warehouse modeling)"'
+  - '"No PII in logs/receipts (redaction policy enforced)"'
+meta:
+  created_at: '2025-11-10T19:14:40.963376+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - Transform metadata sidecar format (.meta.yaml) defined and validated with Pydantic
+  - Raw .jsonata files as transform source of truth (portable, diffable)
+  - 'Runtime engine (Node JSONata runtime via subprocess) executes: validate input → JSONata transform
+    → validate output → emit receipt'
+  - Receipt schema defined (JSON Schema for audit trail validation)
+  - 'CLI: transform/validate/diff/patch/scaffold implemented; diff/patch covers additive changes + simple
+    renames'
+  - LLM scaffolding as tier-2 (when diff/patch insufficient)
+  - '2 complete examples: Gmail→Canonical and Exchange→Canonical with sample data'
+  - Redaction policy for PII in logs/receipts enforced
+  - CI green (lint + unit)
+  - 70% test coverage achieved (pytest --cov)
+  - All ruff checks pass
+  - mypy type checking passes
+  - Integration tests pass (end-to-end transform pipeline)
+  - Golden tests pass (snapshot testing for example transforms)
+  - README.md updated with quick start guide
+  - TRANSFORM_META_SPEC.md documents the .meta.yaml sidecar format
+  - GETTING_STARTED.md provides tutorial
+  - ARCHITECTURE.md explains design decisions (why .jsonata files, Node runtime, diff-first)
+  - Examples directory has working end-to-end demos
+  - Transform SemVer policy documented (PATCH/MINOR/MAJOR semantics)
+  - CHANGELOG.md for v0.1.0
+  - Decision log created (why JSONata, why Iglu, why LLM)
+  - Package installable via `uv pip install -e .`
+  - CLI entrypoint `can` works after install
+  goal: Build JSON canonicalization backbone and versioned transform registry
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-2025-11-09-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Transform Files & Metadata
+  gate_ref: 'G0: Plan Approval'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Architecture Review:
+      - Transform metadata model is complete (id, version, schemas, checksum, redact_fields)
+      - File format (.jsonata + .meta.yaml sidecars) is well-defined
+      - Iglu SchemaVer format validation is implemented
+      - Checksum verification prevents tampering
+      - Directory structure supports discoverability
+      Compliance:
+      - Redact_fields supports PII/PHI protection requirements
+      - Audit trail requirements addressed (checksums, metadata)
+      - No sensitive data in test fixtures
+      Risk Assessment:
+      - PII redaction policy integrated into metadata model
+      - Checksum verification mitigates transform tampering risk
+      - Minimal metadata approach reduces lock-in
+      - Portable .jsonata files enable cross-platform usage
+  kind: code
+  outputs:
+  - artifacts/plan/transform-files-and-metadata.md
+  - canonizer/registry/transform_meta.py
+  - canonizer/registry/loader.py
+  - tests/unit/test_transform_meta.py
+  - tests/unit/test_loader.py
+  role: coding_agent
+  step_id: step-001
+- description: Runtime Engine
+  gate_ref: 'G1: Code Readiness'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Code Quality:
+      - Node JSONata runtime integration working via subprocess
+      - Python fallback implemented (optional fast-path)
+      - PII redaction enforced in receipts and logs
+      - Checksum verification before execution
+      - Error handling is comprehensive
+      Security & Compliance:
+      - No PII in logs or receipts (redaction working)
+      - Checksum verification prevents tampering
+      - Receipt schema includes audit fields
+      - Input/output validation prevents injection
+      Testing:
+      - Unit tests for runtime engine pass
+      - Integration tests cover full pipeline
+      - Receipt generation validated
+      - Redaction policy tested with PII data
+  kind: code
+  outputs:
+  - artifacts/code/runtime-implementation.md
+  - canonizer/core/runtime.py
+  - canonizer/core/jsonata_exec.py
+  - canonizer/core/validator.py
+  - canonizer/core/receipt.py
+  - canonizer/core/redactor.py
+  - tests/unit/test_runtime.py
+  - tests/unit/test_redactor.py
+  - tests/integration/test_end_to_end.py
+  role: coding_agent
+  step_id: step-002
+- description: CLI - Transform & Validate
+  gate_ref: 'G1: Code Readiness'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Code Quality:
+      - Typer CLI framework properly configured
+      - Rich formatting implemented for output
+      - JSON output mode working
+      - Error messages are user-friendly
+      Documentation:
+      - Command help text is clear
+      - Examples are provided
+      - CLI options are well-documented
+      Testing:
+      - CLI integration tests pass
+      - Transform command works end-to-end
+      - Validate command works with JSON schemas
+      - Exit codes are correct for errors
+  kind: code
+  outputs:
+  - artifacts/code/cli-implementation.md
+  - canonizer/cli/main.py
+  - canonizer/cli/cmds/transform.py
+  - canonizer/cli/cmds/validate.py
+  - tests/integration/test_cli.py
+  role: coding_agent
+  step_id: step-003
+- description: Schema Diff & Patch (Tier-1 Evolution)
+  gate_ref: 'G1: Code Readiness'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Code Quality:
+      - 'Schema differ correctly classifies: add/rename/remove/type-change'
+      - Patcher handles add and rename cases only
+      - Fallback to manual/LLM for complex cases
+      - SemVer version bumps are correct (MINOR for adds)
+      Design Decisions:
+      - Limited scope (add/rename only) is clearly documented
+      - Rationale for diff-first approach is captured
+      - Integration with LLM scaffolding is clear
+      Testing:
+      - Unit tests cover diff classification logic
+      - Patch application tested for add/rename cases
+      - Fallback cases properly identified
+      - Edge cases handled (nested fields, arrays)
+  kind: code
+  outputs:
+  - artifacts/code/diff-patch-implementation.md
+  - canonizer/core/differ.py
+  - canonizer/core/patcher.py
+  - canonizer/cli/cmds/diff.py
+  - canonizer/cli/cmds/patch.py
+  - tests/unit/test_differ.py
+  - tests/unit/test_patcher.py
+  role: coding_agent
+  step_id: step-004
+- description: LLM Scaffolding (Tier-2 Evolution)
+  gate_ref: 'G1: Code Readiness'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Code Quality:
+      - Anthropic API integration working
+      - Prompt template is clear and effective
+      - Interactive mode for ambiguity resolution implemented
+      - Generated .jsonata and .meta.yaml are valid
+      Security & Compliance:
+      - API key handling is secure (env vars only)
+      - LLM is authoring aid only (not in runtime pipeline)
+      - Generated transforms are validated before use
+      - No PII sent to LLM API in prompts
+      Testing:
+      - Unit tests cover scaffolder logic
+      - Mock LLM responses for testing
+      - Generated outputs are validated
+      - Interactive mode tested
+  kind: code
+  outputs:
+  - artifacts/code/scaffolder-implementation.md
+  - canonizer/core/scaffolder.py
+  - canonizer/cli/cmds/scaffold.py
+  - tests/unit/test_scaffolder.py
+  - artifacts/code/semver-and-normalize.md
+  - canonizer/core/normalize.py
+  - canonizer/core/jsonata_helpers.js
+  - docs/TRANSFORM_SEMVER.md
+  - tests/unit/test_normalize.py
+  role: coding_agent
+  step_id: step-005
+- description: Examples & Documentation
+  gate_ref: 'G2: Pre-Release'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Documentation Quality:
+      - README is clear and complete
+      - Quick start guide works end-to-end
+      - ARCHITECTURE.md explains design decisions
+      - TRANSFORM_META_SPEC.md documents sidecar format
+      - GETTING_STARTED.md is beginner-friendly
+      Examples:
+      - Gmail transform example works end-to-end
+      - Exchange transform example works end-to-end
+      - Golden test fixtures are realistic
+      - Schemas are valid JSON Schema
+      - No PII in example data
+      Integration Testing:
+      - Examples run successfully via CLI
+      - Validation passes for all examples
+      - Receipts are generated correctly
+  kind: code
+  outputs:
+  - artifacts/docs/examples-and-documentation.md
+  - schemas/com.google/gmail_email/jsonschema/1-0-0.json
+  - schemas/org.microsoft/exchange_email/jsonschema/1-0-0.json
+  - schemas/org.canonical/email/jsonschema/1-0-0.json
+  - transforms/email/gmail_v1_to_canonical_v1.jsonata
+  - transforms/email/gmail_v1_to_canonical_v1.meta.yaml
+  - transforms/email/exchange_v1_to_canonical_v1.jsonata
+  - transforms/email/exchange_v1_to_canonical_v1.meta.yaml
+  - tests/golden/email/gmail_v1/input.json
+  - tests/golden/email/gmail_v1/output.json
+  - tests/golden/email/exchange_v1/input.json
+  - tests/golden/email/exchange_v1/output.json
+  - docs/TRANSFORM_META_SPEC.md
+  - docs/GETTING_STARTED.md
+  - docs/ARCHITECTURE.md
+  role: coding_agent
+  step_id: step-006
+- description: Testing & Polish
+  gate_ref: 'G2: Pre-Release'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Integration Testing:
+      - End-to-end pipeline tested
+      - Error handling verified
+      - Performance SLO met (< 100ms for 128KB payload)
+      - Receipt generation validated
+      Quality Metrics:
+      - All ruff checks pass
+      - All mypy type checks pass
+      - No high-severity security issues
+      - Golden tests pass for all examples
+      Test Coverage:
+      - Overall coverage ≥ 70%
+      - Core modules (runtime, registry) ≥ 80%
+      - CLI modules ≥ 60%
+      - No critical paths untested
+  kind: code
+  outputs:
+  - artifacts/test/coverage-report.md
+  role: coding_agent
+  step_id: step-007
+- description: Governance & Release
+  gate_ref: 'G4: Post-Implementation'
+  gate_review:
+    approval_metadata:
+      date: ''
+      rationale: ''
+      reviewer: ''
+    checklist:
+      Compliance & Governance:
+      - Decision log is complete and accurate
+      - All design decisions are documented with rationale
+      - Risks identified and mitigations documented
+      - Compliance requirements addressed (PII, audit trails)
+      Documentation:
+      - All required docs are complete
+      - Decision log explains key choices
+      - Rollback procedures documented (if applicable)
+      - Known limitations documented
+      Final Validation:
+      - All gates from previous steps approved
+      - No blocking issues remain
+      - Team is aligned on release
+      - Post-release monitoring plan exists
+      Release Readiness:
+      - CHANGELOG.md complete for v0.1.0
+      - All acceptance criteria met
+      - Package is installable via uv
+      - CLI entrypoint works after install
+      - README has clear installation instructions
+  kind: code
+  outputs:
+  - artifacts/governance/decision-log.md
+  - CHANGELOG.md
+  role: coding_agent
+  step_id: step-008
+repo:
+  default_branch: main
+  url: https://github.com/ben_machina/canonizer
+  working_branch: feat/aip-2025-11-09-001
+tier: B
+title: 'Canonizer: JSON Canonicalization & Transform Registry'
+version: '0.1'
+

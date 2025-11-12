@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Simple Input Schema",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "required": ["message"]
+}

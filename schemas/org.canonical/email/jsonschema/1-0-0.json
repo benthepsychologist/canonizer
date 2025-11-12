@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Email",
+  "description": "Normalized email message schema",
+  "type": "object",
+  "required": ["message_id", "subject", "from", "received_at"],
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "Unique message identifier"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line"
+    },
+    "from": {
+      "type": "string",
+      "description": "Sender email address"
+    },
+    "to": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Recipient email addresses"
+    },
+    "cc": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "CC email addresses"
+    },
+    "bcc": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "BCC email addresses"
+    },
+    "received_at": {
+      "type": "integer",
+      "description": "Message received timestamp (milliseconds since epoch)"
+    },
+    "body_preview": {
+      "type": "string",
+      "description": "Preview/snippet of message body"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "Conversation thread identifier"
+    }
+  }
+}
+

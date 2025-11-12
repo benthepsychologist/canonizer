@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Simple Output Schema",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string"
+    },
+    "number": {
+      "type": "integer"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["text"]
+}

@@ -1,0 +1,10 @@
+{
+  "message_id": id,
+  "subject": payload.headers[name="Subject"].value,
+  "from": payload.headers[name="From"].value,
+  "to": $split(payload.headers[name="To"].value, ","),
+  "cc": $split(payload.headers[name="Cc"].value, ","),
+  "received_at": $number(internalDate),
+  "body_preview": $substring(payload.body.data, 0, 200),
+  "thread_id": threadId
+}

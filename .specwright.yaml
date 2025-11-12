@@ -1,0 +1,12 @@
+version: '0.1'
+paths:
+  specs: .specwright/specs
+  aips: .specwright/aips
+repo:
+  default_branch: main
+user:
+  default_owner: null
+  default_tier: null
+current:
+  spec: .specwright/specs/canonizer-aip-v0.md
+  aip: /home/user/canonizer/.specwright/aips/canonizer-aip-v0.yaml

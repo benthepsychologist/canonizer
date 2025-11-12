@@ -1,0 +1,15 @@
+{
+  "message_id": "18c4e2f3b8a1d9e0",
+  "subject": "Meeting tomorrow at 2pm",
+  "from": "alice@example.com",
+  "to": [
+    "bob@example.com",
+    "charlie@example.com"
+  ],
+  "cc": [
+    "david@example.com"
+  ],
+  "received_at": 1699891200000,
+  "body_preview": "SGVsbG8gdGVhbSwgbGV0J3MgbWVldCB0b21vcnJvdyBhdCAycG0gdG8gZGlzY3VzcyB0aGUgcHJvamVjdCByb2FkbWFwLg==",
+  "thread_id": "18c4e2f3b8a1d9e0"
+}

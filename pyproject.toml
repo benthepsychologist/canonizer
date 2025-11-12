@@ -1,0 +1,81 @@
+[project]
+name = "canonizer"
+version = "0.1.0"
+description = "Pure JSON transformation tool. No ingestion. No storage. Just transforms."
+authors = [{name = "Ben Machina", email = "ben@therapyai.com"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["json", "transform", "jsonata", "schema-registry", "iglu", "semver", "snowplow"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "pydantic>=2.5.0",
+    "typer>=0.9.0",
+    "rich>=13.7.0",
+    "jsonschema>=4.20.0",
+    "pyyaml>=6.0.1",
+    "jsonata-python>=0.6.0",
+    "jsonpatch>=1.33",
+    "jsondiff>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.8.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.5.0",
+]
+
+# LLM scaffolding (deferred to v0.2)
+llm = [
+    "anthropic>=0.18.0",
+]
+
+[project.scripts]
+can = "canonizer.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/ben_machina/canonizer"
+Documentation = "https://github.com/ben_machina/canonizer#readme"
+Repository = "https://github.com/ben_machina/canonizer"
+Issues = "https://github.com/ben_machina/canonizer/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["canonizer"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=canonizer --cov-report=term-missing"

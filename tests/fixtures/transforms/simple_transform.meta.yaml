@@ -1,0 +1,13 @@
+id: simple_transform
+version: 1.0.0
+engine: jsonata
+runtime: python
+from_schema: iglu:com.example/simple/jsonschema/1-0-0
+to_schema: iglu:org.canonical/simple/jsonschema/1-0-0
+spec_path: simple_transform.jsonata
+tests: []
+checksum: sha256:277294df245f6e8263a31763187f6974b6f238f7930ac26545026a06bbab3470
+status: stable
+author: test@example.com
+created: "2025-11-10T00:00:00Z"
+redact_fields: []
