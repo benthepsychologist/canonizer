@@ -244,7 +244,6 @@ checksum: sha256:abc123...  # checksum of .jsonata file
 status: stable
 author: ben@therapyai.com
 created: 2025-11-09T00:00:00Z
-redact_fields: [payload.body, payload.attachments]  # PII redaction for logs/receipts
 ```
 
 **Commands:**
@@ -273,7 +272,7 @@ Before proceeding to G0 gate review, verify:
 #### Gate Review Checklist
 
 ##### Architecture Review
-- [x] Transform metadata model is complete (id, version, schemas, checksum, redact_fields)
+- [x] Transform metadata model is complete (id, version, schemas, checksum)
 - [x] File format (.jsonata + .meta.yaml sidecars) is well-defined
 - [x] Iglu SchemaVer format validation is implemented
 - [x] Checksum verification prevents tampering
@@ -312,9 +311,7 @@ Before proceeding to G0 gate review, verify:
 - Create `canonizer/core/runtime.py` with TransformRuntime class
 - Load .meta.yaml + corresponding .jsonata file
 - Execute JSONata via Node subprocess (primary) or Python (fast path, config toggle)
-- Implement: load_transform(), validate_input(), execute_transform(), validate_output(), emit_receipt()
-- Define Receipt JSON Schema (from_schema_uri, to_schema_uri, transform_id, transform_version, engine, input_sha256, output_sha256, executed_at, status)
-- Add receipt generation with PII redaction (respect redact_fields in .meta.yaml)
+- Implement: load_transform(), validate_input(), execute_transform(), validate_output()
 - Verify checksum of .jsonata file matches .meta.yaml
 - Error handling with structured errors
 

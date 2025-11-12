@@ -10,4 +10,3 @@ checksum: sha256:277294df245f6e8263a31763187f6974b6f238f7930ac26545026a06bbab347
 status: stable
 author: test@example.com
 created: "2025-11-10T00:00:00Z"
-redact_fields: []

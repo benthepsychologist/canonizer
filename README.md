@@ -2,7 +2,7 @@
 
 **Pure JSON transformation tool. No ingestion. No storage. Just transforms.**
 
-The tool that should have come in the box. Transform JSON from source shapes (Gmail, Exchange, QuickBooks) to canonical schemas with versioning, validation, and receipts.
+The tool that should have come in the box. Transform JSON from source shapes (Gmail, Exchange, QuickBooks) to canonical schemas with versioning and validation.
 
 Your orchestrator (Snowplow, Airflow, Dagster) calls Canonizer. Canonizer doesn't call anything.
 
@@ -117,7 +117,6 @@ can transform list --dir transforms/
 - Input/output schema URIs
 - Checksum verification
 - Test fixtures (golden files)
-- PII redaction policy
 
 ### Runtime Flow
 
@@ -127,7 +126,7 @@ can transform list --dir transforms/
 3. Validate input against from_schema
 4. Execute JSONata transform
 5. Validate output against to_schema
-6. Emit receipt (audit trail)
+6. Return transformed JSON
 ```
 
 ### Transform Evolution
@@ -266,7 +265,7 @@ mypy canonizer/
 - Storage and persistence
 - Scheduling and retries
 - Monitoring and alerting
-- Audit trails and receipts
+- Audit trails and logging
 - PII handling and redaction
 
 **Canonizer handles:**

@@ -118,7 +118,7 @@ plan:
       reviewer: ''
     checklist:
       Architecture Review:
-      - Transform metadata model is complete (id, version, schemas, checksum, redact_fields)
+      - Transform metadata model is complete (id, version, schemas, checksum)
       - File format (.jsonata + .meta.yaml sidecars) is well-defined
       - Iglu SchemaVer format validation is implemented
       - Checksum verification prevents tampering
