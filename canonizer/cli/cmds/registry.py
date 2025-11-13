@@ -369,6 +369,36 @@ def validate(
         # Validate from registry cache
         can registry validate ~/.cache/canonizer/registry/.../1.0.0/
     """
-    console_err.print("[yellow]Note:[/yellow] validate command not yet implemented")
-    console_err.print("[dim]This will run the same validation checks as the CI pipeline[/dim]")
-    raise typer.Exit(code=1)
+    from canonizer.registry.validator import TransformValidator
+
+    try:
+        if not path.exists():
+            console_err.print(f"[red]Error:[/red] Directory not found: {path}")
+            raise typer.Exit(code=1)
+
+        if not path.is_dir():
+            console_err.print(f"[red]Error:[/red] Path is not a directory: {path}")
+            raise typer.Exit(code=1)
+
+        console.print(f"[cyan]Validating transform:[/cyan] {path}")
+        console.print()
+
+        validator = TransformValidator(path)
+        success = validator.validate()
+
+        # Display report
+        console.print(validator.get_report())
+
+        if success:
+            console.print("\n[green]✓[/green] Transform is valid and ready for contribution", style="bold green")
+            raise typer.Exit(code=0)
+        else:
+            console_err.print("\n[red]✗[/red] Validation failed", style="bold red")
+            console_err.print("[dim]Fix the errors above and try again[/dim]")
+            raise typer.Exit(code=1)
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        console_err.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(code=1)
