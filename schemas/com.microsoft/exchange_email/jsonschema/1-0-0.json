@@ -1,0 +1,289 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Microsoft Graph API Message Resource",
+  "description": "Microsoft Graph v1.0 message resource. See: https://learn.microsoft.com/en-us/graph/api/resources/message",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the message (read-only)"
+    },
+    "changeKey": {
+      "type": "string",
+      "description": "The version of the message"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The categories associated with the message"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the message was created"
+    },
+    "lastModifiedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the message was last changed"
+    },
+    "receivedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the message was received"
+    },
+    "sentDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the message was sent"
+    },
+    "hasAttachments": {
+      "type": "boolean",
+      "description": "Indicates whether the message has attachments"
+    },
+    "internetMessageId": {
+      "type": "string",
+      "description": "The message ID in the format specified by RFC2822"
+    },
+    "subject": {
+      "type": "string",
+      "description": "The subject of the message"
+    },
+    "body": {
+      "$ref": "#/definitions/ItemBody",
+      "description": "The body of the message"
+    },
+    "bodyPreview": {
+      "type": "string",
+      "description": "The first 255 characters of the message body in text format"
+    },
+    "uniqueBody": {
+      "$ref": "#/definitions/ItemBody",
+      "description": "The part of the body of the message that is unique to the current message"
+    },
+    "importance": {
+      "type": "string",
+      "enum": ["low", "normal", "high"],
+      "description": "The importance of the message"
+    },
+    "parentFolderId": {
+      "type": "string",
+      "description": "The unique identifier for the message's parent mailFolder"
+    },
+    "conversationId": {
+      "type": "string",
+      "description": "The ID of the conversation the email belongs to"
+    },
+    "conversationIndex": {
+      "type": "string",
+      "description": "Indicates the position of the message within the conversation (base64 encoded)"
+    },
+    "isDeliveryReceiptRequested": {
+      "type": "boolean",
+      "description": "Indicates whether a delivery receipt is requested for the message"
+    },
+    "isReadReceiptRequested": {
+      "type": "boolean",
+      "description": "Indicates whether a read receipt is requested for the message"
+    },
+    "isRead": {
+      "type": "boolean",
+      "description": "Indicates whether the message has been read"
+    },
+    "isDraft": {
+      "type": "boolean",
+      "description": "Indicates whether the message is a draft"
+    },
+    "webLink": {
+      "type": "string",
+      "format": "uri",
+      "description": "The URL to open the message in Outlook on the web"
+    },
+    "inferenceClassification": {
+      "type": "string",
+      "enum": ["focused", "other"],
+      "description": "The classification of the message for the user (Focused Inbox)"
+    },
+    "from": {
+      "$ref": "#/definitions/Recipient",
+      "description": "The mailbox owner and sender of the message"
+    },
+    "sender": {
+      "$ref": "#/definitions/Recipient",
+      "description": "The account that is actually used to generate the message"
+    },
+    "toRecipients": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Recipient"
+      },
+      "description": "The To: recipients for the message"
+    },
+    "ccRecipients": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Recipient"
+      },
+      "description": "The Cc: recipients for the message"
+    },
+    "bccRecipients": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Recipient"
+      },
+      "description": "The Bcc: recipients for the message"
+    },
+    "replyTo": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Recipient"
+      },
+      "description": "The email addresses to use when replying"
+    },
+    "flag": {
+      "$ref": "#/definitions/FollowupFlag",
+      "description": "The flag value that indicates the status, start date, due date, or completion date for the message"
+    },
+    "internetMessageHeaders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/InternetMessageHeader"
+      },
+      "description": "A collection of message headers defined by RFC5322"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Attachment"
+      },
+      "description": "The fileAttachment and itemAttachment attachments for the message"
+    }
+  },
+  "definitions": {
+    "ItemBody": {
+      "type": "object",
+      "description": "Represents properties of the body of an item, such as a message or event",
+      "properties": {
+        "contentType": {
+          "type": "string",
+          "enum": ["text", "html"],
+          "description": "The type of the content"
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the item"
+        }
+      }
+    },
+    "Recipient": {
+      "type": "object",
+      "description": "Represents information about a user in the sending or receiving end of an event, message or group post",
+      "properties": {
+        "emailAddress": {
+          "$ref": "#/definitions/EmailAddress",
+          "description": "The recipient's email address"
+        }
+      }
+    },
+    "EmailAddress": {
+      "type": "object",
+      "description": "The name and email address of a contact or message recipient",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The display name of the person or entity"
+        },
+        "address": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address of the person or entity"
+        }
+      }
+    },
+    "InternetMessageHeader": {
+      "type": "object",
+      "description": "A key-value pair that represents an internet message header",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Represents the key in a key-value pair"
+        },
+        "value": {
+          "type": "string",
+          "description": "The value in a key-value pair"
+        }
+      }
+    },
+    "FollowupFlag": {
+      "type": "object",
+      "description": "Allows setting a flag for the user to follow up on an item later",
+      "properties": {
+        "flagStatus": {
+          "type": "string",
+          "enum": ["notFlagged", "complete", "flagged"],
+          "description": "The status for follow-up for an item"
+        },
+        "startDateTime": {
+          "$ref": "#/definitions/DateTimeTimeZone",
+          "description": "The date and time that the follow-up is to begin"
+        },
+        "dueDateTime": {
+          "$ref": "#/definitions/DateTimeTimeZone",
+          "description": "The date and time that the follow-up is to be finished"
+        },
+        "completedDateTime": {
+          "$ref": "#/definitions/DateTimeTimeZone",
+          "description": "The date and time that the follow-up was finished"
+        }
+      }
+    },
+    "DateTimeTimeZone": {
+      "type": "object",
+      "description": "Describes the date, time, and time zone of a point in time",
+      "properties": {
+        "dateTime": {
+          "type": "string",
+          "description": "A single point of time in a combined date and time representation (ISO 8601)"
+        },
+        "timeZone": {
+          "type": "string",
+          "description": "Represents a time zone (e.g., Pacific Standard Time)"
+        }
+      }
+    },
+    "Attachment": {
+      "type": "object",
+      "description": "An attachment to a message or event",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The attachment ID"
+        },
+        "contentType": {
+          "type": "string",
+          "description": "The MIME type"
+        },
+        "name": {
+          "type": "string",
+          "description": "The attachment's file name"
+        },
+        "size": {
+          "type": "integer",
+          "description": "The length of the attachment in bytes"
+        },
+        "isInline": {
+          "type": "boolean",
+          "description": "Set to true if this is an inline attachment"
+        },
+        "lastModifiedDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time when the attachment was last modified"
+        }
+      }
+    }
+  }
+}

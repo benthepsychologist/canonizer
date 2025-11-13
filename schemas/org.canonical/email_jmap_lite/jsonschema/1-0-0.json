@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JMAP Email (Lite) - Simplified Canonical Format",
+  "description": "Simplified JMAP Email format for 80% of use cases. Based on RFC 8621 but with inline body content instead of complex MIME structure. Use for: application display, most email clients. Includes text/HTML bodies inline, attachments metadata, core headers, threading. Storage: ~10-50KB per email. Trade-off: Simpler structure but bodies are inline (not referenced).",
+  "type": "object",
+  "required": ["id", "threadId", "receivedAt"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique message identifier",
+      "examples": ["18c5f2e8a9b4d7f3"]
+    },
+    "blobId": {
+      "type": "string",
+      "description": "Raw RFC5322 message octets identifier (for fetching original if needed)",
+      "examples": ["blob-18c5f2e8a9b4d7f3"]
+    },
+    "threadId": {
+      "type": "string",
+      "description": "Conversation/thread identifier",
+      "examples": ["18c5f2e8a9b4d7f3"]
+    },
+    "messageId": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "Message-ID header value(s) for threading",
+      "examples": [["<CABcD1E2FgH3@mail.company.com>"]]
+    },
+    "inReplyTo": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "In-Reply-To header value(s)",
+      "examples": [["<CAAbC9D8@mail.example.com>"]]
+    },
+    "references": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "References header value(s) - message ID chain",
+      "examples": [["<msg1@example.com>", "<msg2@example.com>"]]
+    },
+    "from": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Message sender(s)",
+      "examples": [[{"name": "Sarah Smith", "email": "sarah.smith@company.com"}]]
+    },
+    "to": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Primary recipients"
+    },
+    "cc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Carbon copy recipients"
+    },
+    "bcc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Blind carbon copy recipients (rarely available)"
+    },
+    "replyTo": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Reply-To addresses"
+    },
+    "subject": {
+      "type": ["string", "null"],
+      "description": "Email subject",
+      "examples": ["Follow-up: Q4 Report Request"]
+    },
+    "sentAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When sender sent the message (ISO 8601)",
+      "examples": ["2023-11-09T20:00:00Z"]
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When message arrived at mail store (ISO 8601)",
+      "examples": ["2023-11-09T20:00:15Z"]
+    },
+    "size": {
+      "type": "integer",
+      "description": "Size of raw message in bytes",
+      "examples": [4521]
+    },
+    "preview": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Plaintext preview/snippet (max 256 chars)",
+      "examples": ["Hi John, Just wanted to follow up..."]
+    },
+    "body": {
+      "$ref": "#/definitions/messageBody",
+      "description": "Message body content (text and/or HTML inline)"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/attachment"},
+      "description": "File attachments metadata"
+    },
+    "hasAttachment": {
+      "type": "boolean",
+      "description": "Indicates if message has attachments",
+      "examples": [true]
+    },
+    "keywords": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "description": "IMAP keywords/flags. Standard: $seen, $flagged, $answered, $draft",
+      "examples": [{"$seen": true, "$flagged": false}]
+    },
+    "labels": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Labels/folders (INBOX, SENT, custom labels)",
+      "examples": [["INBOX", "IMPORTANT", "Work"]]
+    },
+    "importance": {
+      "type": "string",
+      "enum": ["low", "normal", "high"],
+      "description": "Message importance/priority",
+      "examples": ["normal"]
+    }
+  },
+  "definitions": {
+    "emailAddress": {
+      "type": "object",
+      "description": "Email address with optional display name",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "Display name",
+          "examples": ["John Doe"]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address",
+          "examples": ["john@example.com"]
+        }
+      },
+      "required": ["email"]
+    },
+    "messageBody": {
+      "type": "object",
+      "description": "Message body content - simplified inline format",
+      "properties": {
+        "text": {
+          "type": ["string", "null"],
+          "description": "Plain text body content",
+          "examples": ["Hi John,\\n\\nJust wanted to follow up on our meeting yesterday.\\n\\nThanks,\\nSarah"]
+        },
+        "html": {
+          "type": ["string", "null"],
+          "description": "HTML body content",
+          "examples": ["<div>Hi John,<br><br>Just wanted to follow up...</div>"]
+        }
+      }
+    },
+    "attachment": {
+      "type": "object",
+      "description": "File attachment metadata",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Attachment filename",
+          "examples": ["report.pdf", "image.jpg"]
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "MIME type",
+          "examples": ["application/pdf", "image/jpeg"]
+        },
+        "size": {
+          "type": "integer",
+          "description": "File size in bytes",
+          "examples": [102400]
+        },
+        "blobId": {
+          "type": "string",
+          "description": "Identifier for fetching attachment content",
+          "examples": ["blob-attachment-18c5f2e8-1"]
+        },
+        "cid": {
+          "type": ["string", "null"],
+          "description": "Content-ID for inline attachments (referenced in HTML)",
+          "examples": ["<image1@mail.company.com>"]
+        },
+        "isInline": {
+          "type": "boolean",
+          "description": "True if inline attachment (embedded in HTML)",
+          "examples": [false]
+        }
+      },
+      "required": ["filename", "mimeType", "size"]
+    }
+  }
+}

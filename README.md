@@ -11,7 +11,7 @@ The tool that should have come in the box. Transform JSON from source shapes (Gm
 
 Your orchestrator (Snowplow, Airflow, Dagster) calls Canonizer. Canonizer doesn't call anything.
 
-📖 **[Changelog](CHANGELOG.md)** | 🔧 **[Registry Guide](docs/REGISTRY.md)** | 📦 **[Registry](https://github.com/benthepsychologist/canonizer-registry)**
+📖 **[Changelog](CHANGELOG.md)** | 🔧 **[Registry Guide](docs/REGISTRY.md)** | 📧 **[Email Canonicalization](docs/EMAIL_CANONICALIZATION.md)** | 📦 **[Registry](https://github.com/benthepsychologist/canonizer-registry)**
 
 ## What is Canonizer?
 
@@ -150,6 +150,72 @@ print(transform.jsonata)  # JSONata source code
 # Fetch a schema
 schema = client.fetch_schema("iglu:org.canonical/email/jsonschema/1-0-0")
 ```
+
+## Email Canonicalization (JMAP-based)
+
+Canonizer provides **production-ready email transformation** based on RFC 8621 JMAP standard.
+
+### Why Email Canonicalization?
+
+Different email providers use different JSON structures. Canonizer standardizes them:
+
+- **Gmail API** → JMAP canonical format
+- **Microsoft Graph/Exchange** → JMAP canonical format
+- **Future providers** → Same JMAP canonical format
+
+**Result:** One data model, regardless of source.
+
+### Three Canonical Formats
+
+Choose based on your use case:
+
+| Format | Storage | Use Case |
+|--------|---------|----------|
+| **JMAP Full** | ~50-200KB | Full archival, compliance, forensics |
+| **JMAP Lite** | ~10-50KB | App display, most email clients |
+| **JMAP Minimal** | ~1-5KB | Search indexes, analytics (bodies in S3) |
+
+### Complete Transform Matrix
+
+| Source → Target | JMAP Full | JMAP Lite | JMAP Minimal |
+|----------------|-----------|-----------|--------------|
+| **Gmail API** | ✓ | ✓ | ✓ |
+| **Exchange/Graph** | ✓ | ✓ | ✓ |
+
+**6 transforms available** in the registry.
+
+### Quick Example
+
+```bash
+# Search for email transforms
+can registry search --id email/
+
+# Pull Gmail → JMAP Lite transform
+can registry pull email/gmail_to_jmap_lite@1.0.0
+
+# Transform Gmail message
+can transform run \
+  --meta ~/.cache/canonizer/registry/.../spec.meta.yaml \
+  --input gmail_message.json \
+  --output canonical_email.json
+
+# Result: RFC 8621 JMAP-compliant JSON
+cat canonical_email.json
+{
+  "id": "18c5f2e8a9b4d7f3",
+  "from": [{"name": "Sarah Smith", "email": "sarah@company.com"}],
+  "subject": "Q4 Report",
+  "body": {
+    "text": "Hi John...",
+    "html": "<div>Hi John...</div>"
+  },
+  ...
+}
+```
+
+**📧 See the complete guide:** [Email Canonicalization Documentation](docs/EMAIL_CANONICALIZATION.md)
+
+---
 
 ## Transform Registry
 

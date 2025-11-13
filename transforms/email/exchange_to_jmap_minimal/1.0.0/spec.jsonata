@@ -1,0 +1,52 @@
+(
+  /* Helper function to convert Exchange Recipient to JMAP EmailAddress */
+  $convertRecipient := function($recipient) {
+    $recipient ? {
+      "name": $recipient.emailAddress.name,
+      "email": $recipient.emailAddress.address
+    } : null
+  };
+
+  /* Helper function to convert recipient array */
+  $convertRecipients := function($recipients) {
+    $recipients ? [$map($recipients, $convertRecipient)] : null
+  };
+
+  /* Helper function to get header value by name */
+  $getHeader := function($headers, $name) {
+    $lookup($headers[name=$name], "value")
+  };
+
+  /* Helper function to parse importance */
+  $parseImportance := function($imp) {
+    $imp = "high" ? "high" : $imp = "low" ? "low" : "normal"
+  };
+
+  {
+    "id": id,
+    "blobId": "blob-" & id,
+    "threadId": conversationId,
+    "messageId": internetMessageId ? [internetMessageId] : null,
+    "inReplyTo": $getHeader(internetMessageHeaders, "In-Reply-To") ? [$getHeader(internetMessageHeaders, "In-Reply-To")] : null,
+    "references": $getHeader(internetMessageHeaders, "References") ? $split($getHeader(internetMessageHeaders, "References"), " ") : null,
+    "from": from ? [$convertRecipient(from)] : null,
+    "to": $convertRecipients(toRecipients),
+    "cc": $convertRecipients(ccRecipients),
+    "bcc": $convertRecipients(bccRecipients),
+    "replyTo": $convertRecipients(replyTo),
+    "subject": subject,
+    "sentAt": sentDateTime,
+    "receivedAt": receivedDateTime,
+    "size": $length($string(body.content)),
+    "preview": $substring(bodyPreview, 0, 256),
+    "hasAttachment": hasAttachments,
+    "attachmentCount": hasAttachments ? $count(attachments) : 0,
+    "keywords": {
+      "$seen": isRead,
+      "$flagged": flag.flagStatus = "flagged",
+      "$draft": isDraft
+    },
+    "labels": categories ? categories : [],
+    "importance": $parseImportance(importance)
+  }
+)

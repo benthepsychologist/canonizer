@@ -1,0 +1,56 @@
+{
+  "id": "18c5f2e8a9b4d7f3",
+  "blobId": "blob-18c5f2e8a9b4d7f3",
+  "threadId": "18c5f2e8a9b4d7f3",
+  "messageId": [
+    "<CABcD1E2FgH3IjK4LmN5OpQ6RsT7UvW8XyZ9@mail.company.com>"
+  ],
+  "inReplyTo": [
+    "<CAAbC9D8EfG7HiJ6KlM4NnO3PpQ2RrS1TuV0WxY8@mail.example.com>"
+  ],
+  "references": [
+    "<CAAbC9D8EfG7HiJ6KlM4NnO3PpQ2RrS1TuV0WxY8@mail.example.com>",
+    "<CABcD1E2FgH3IjK4LmN5OpQ6RsT7UvW8XyZ9@mail.company.com>"
+  ],
+  "from": [
+    {
+      "name": "Sarah Smith",
+      "email": "sarah.smith@company.com"
+    }
+  ],
+  "to": [
+    {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    }
+  ],
+  "cc": [
+    {
+      "name": "Jane Admin",
+      "email": "jane.admin@example.com"
+    }
+  ],
+  "bcc": null,
+  "replyTo": null,
+  "subject": "Follow-up: Q4 Report Request",
+  "sentAt": "2023-11-09T16:00:00.000Z",
+  "receivedAt": "2023-11-09T16:00:00.000Z",
+  "size": 4521,
+  "preview": "Hi John, Just wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance? Thanks, Sarah",
+  "body": {
+    "text": "Hi John,\n\nJust wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance?\n\nThanks,\nSarah",
+    "html": "<div dir=\"ltr\">Hi John,\\x3cbr\\x3e\\x3cbr\\x3eJust wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance?\\x3cbr\\x3e\\x3cbr\\x3eThanks,\\x3cbr\\x3eSanah\\x3c/div\\x3e"
+  },
+  "hasAttachment": false,
+  "keywords": {
+    "$seen": true,
+    "$flagged": false,
+    "$draft": false
+  },
+  "labels": [
+    "INBOX",
+    "IMPORTANT",
+    "CATEGORY_PERSONAL"
+  ],
+  "importance": "high"
+}

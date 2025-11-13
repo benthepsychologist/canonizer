@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Email v1",
+  "description": "Universal email message schema based on RFC 8621 JMAP standard, optimized for transformation",
+  "type": "object",
+  "required": ["id", "threadId", "receivedAt"],
+
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique message identifier (provider's internal ID, not Message-ID header)"
+    },
+    "blobId": {
+      "type": "string",
+      "description": "Raw RFC5322 message octets identifier (for fetching original)"
+    },
+    "threadId": {
+      "type": "string",
+      "description": "Conversation/thread identifier"
+    },
+    "messageId": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "Message-ID header field value(s)"
+    },
+    "inReplyTo": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "In-Reply-To header field value(s)"
+    },
+    "references": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "References header field value(s) - full message ID chain"
+    },
+    "sender": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Sender header (RFC5322 actual sender on behalf of From)"
+    },
+    "from": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed From header (message author/originator)"
+    },
+    "to": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed To header (primary recipients)"
+    },
+    "cc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Cc header (carbon copy recipients)"
+    },
+    "bcc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Bcc header (blind carbon copy - usually not available post-delivery)"
+    },
+    "replyTo": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Reply-To header (where replies should go)"
+    },
+    "subject": {
+      "type": ["string", "null"],
+      "description": "Subject header field value"
+    },
+    "sentAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Parsed Date header (ISO 8601 format) - when sender sent message"
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When message arrived at recipient's mail store (ISO 8601 format)"
+    },
+    "size": {
+      "type": "integer",
+      "description": "Size of raw message in octets (bytes)"
+    },
+    "preview": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Plaintext preview/snippet of message body (max 256 chars)"
+    },
+    "bodyStructure": {
+      "$ref": "#/definitions/emailBodyPart",
+      "description": "MIME structure of message body"
+    },
+    "bodyValues": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/emailBodyValue"},
+      "description": "Map of partId to decoded text content for text/* parts"
+    },
+    "textBody": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of text/plain parts in display order"
+    },
+    "htmlBody": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of text/html parts in display order"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of attachment parts (non-inline files)"
+    },
+    "hasAttachment": {
+      "type": "boolean",
+      "description": "Server-set flag indicating message has downloadable attachments"
+    },
+    "headers": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailHeader"},
+      "description": "All header fields in original order (for advanced use cases)"
+    },
+    "keywords": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "description": "IMAP keywords/flags (e.g., $seen, $flagged, $draft, custom labels)"
+    },
+    "mailboxIds": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "description": "Set of mailbox/folder IDs this message belongs to"
+    }
+  },
+
+  "definitions": {
+    "emailAddress": {
+      "type": "object",
+      "description": "RFC 5322 email address with optional display name",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "Display name (e.g., 'John Doe')"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address (e.g., 'john@example.com')"
+        }
+      },
+      "required": ["email"]
+    },
+
+    "emailHeader": {
+      "type": "object",
+      "description": "Raw email header field",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Header field name (case-insensitive per RFC 5322)"
+        },
+        "value": {
+          "type": "string",
+          "description": "Raw header field value (unparsed)"
+        }
+      },
+      "required": ["name", "value"]
+    },
+
+    "emailBodyPart": {
+      "type": "object",
+      "description": "MIME body part (RFC 2045)",
+      "properties": {
+        "partId": {
+          "type": ["string", "null"],
+          "description": "Identifier for this part (null for multipart/* container types)"
+        },
+        "blobId": {
+          "type": ["string", "null"],
+          "description": "Identifier for fetching raw content octets"
+        },
+        "size": {
+          "type": "integer",
+          "description": "Size of decoded content in octets"
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Decoded filename from Content-Type or Content-Disposition"
+        },
+        "type": {
+          "type": "string",
+          "description": "Content-Type value (e.g., 'text/plain', 'image/jpeg')"
+        },
+        "charset": {
+          "type": ["string", "null"],
+          "description": "Charset parameter from Content-Type"
+        },
+        "disposition": {
+          "type": ["string", "null"],
+          "description": "Content-Disposition value ('inline', 'attachment', or null)"
+        },
+        "cid": {
+          "type": ["string", "null"],
+          "description": "Content-Id header value (for inline images)"
+        },
+        "language": {
+          "type": ["array", "null"],
+          "items": {"type": "string"},
+          "description": "Content-Language values"
+        },
+        "location": {
+          "type": ["string", "null"],
+          "description": "Content-Location URI"
+        },
+        "subParts": {
+          "type": ["array", "null"],
+          "items": {"$ref": "#/definitions/emailBodyPart"},
+          "description": "Child parts for multipart/* types"
+        },
+        "headers": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/emailHeader"},
+          "description": "Header fields for this MIME part"
+        }
+      },
+      "required": ["type"]
+    },
+
+    "emailBodyValue": {
+      "type": "object",
+      "description": "Decoded text content for a body part",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Decoded and charset-converted text content"
+        },
+        "isEncodingProblem": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if malformed encoding or unknown charset encountered"
+        },
+        "isTruncated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if content was truncated"
+        }
+      },
+      "required": ["value"]
+    }
+  }
+}

@@ -1,0 +1,120 @@
+(
+  /* Helper function to parse email address from "Name <email@example.com>" format */
+  $parseEmail := function($str) {
+    $str ? (
+      $match := $match($str, /^(?:(.*?)\s*<([^>]+)>|([^\s<>]+))$/);
+      $match ? {
+        "name": $match.groups[0] ? $trim($match.groups[0]) : null,
+        "email": $match.groups[1] ? $match.groups[1] : $match.groups[2]
+      } : null
+    ) : null
+  };
+
+  /* Helper function to parse email list (comma-separated) */
+  $parseEmailList := function($str) {
+    $str ? [$map($split($str, ","), function($v) { $parseEmail($trim($v)) })] : null
+  };
+
+  /* Helper function to get header value by name */
+  $getHeader := function($headers, $name) {
+    $lookup($headers[name=$name], "value")
+  };
+
+  /* Helper function to convert epoch ms to ISO 8601 */
+  $toISO := function($epochMs) {
+    $epochMs ? $fromMillis($number($epochMs)) : null
+  };
+
+  /* Helper function to decode base64url */
+  $decodeBase64url := function($str) {
+    $str ? $base64decode($replace($replace($str, /-/, "+"), /_/, "/")) : null
+  };
+
+  /* Convert Gmail MessagePart to JMAP EmailBodyPart */
+  $convertBodyPart := function($part) {
+    {
+      "partId": $part.partId,
+      "blobId": $part.body.attachmentId ? "blob-att-" & $part.body.attachmentId : $part.partId ? "blob-" & id & "-" & $part.partId : null,
+      "size": $part.body.size,
+      "name": $part.filename ? $part.filename : null,
+      "type": $part.mimeType,
+      "charset": $getHeader($part.headers, "Content-Type") ? $match($getHeader($part.headers, "Content-Type"), /charset=["']?([^"';]+)/i).groups[0] : null,
+      "disposition": $getHeader($part.headers, "Content-Disposition") ? $match($getHeader($part.headers, "Content-Disposition"), /^(\w+)/i).groups[0] : null,
+      "cid": $getHeader($part.headers, "Content-Id"),
+      "language": $getHeader($part.headers, "Content-Language") ? $split($getHeader($part.headers, "Content-Language"), ",") : null,
+      "location": $getHeader($part.headers, "Content-Location"),
+      "subParts": $part.parts ? $map($part.parts, $convertBodyPart) : null,
+      "headers": $part.headers ? [$map($part.headers, function($h) {
+        {"name": $h.name, "value": $h.value}
+      })] : []
+    }
+  };
+
+  /* Build bodyValues map for text/* parts */
+  $buildBodyValues := function($part, $values) {
+    $part.mimeType in ["text/plain", "text/html"] and $part.body.data ?
+      $merge([$values, {$part.partId: {"value": $decodeBase64url($part.body.data), "isEncodingProblem": false, "isTruncated": false}}])
+    : $part.parts ?
+      $reduce($part.parts, function($acc, $p) { $buildBodyValues($p, $acc) }, $values)
+    : $values
+  };
+
+  /* Get text/plain parts for textBody */
+  $getTextParts := function($part) {
+    $part.mimeType = "text/plain" ? [$convertBodyPart($part)]
+    : $part.parts ? $reduce($part.parts, function($acc, $p) { $append($acc, $getTextParts($p)) }, [])
+    : []
+  };
+
+  /* Get text/html parts for htmlBody */
+  $getHtmlParts := function($part) {
+    $part.mimeType = "text/html" ? [$convertBodyPart($part)]
+    : $part.parts ? $reduce($part.parts, function($acc, $p) { $append($acc, $getHtmlParts($p)) }, [])
+    : []
+  };
+
+  /* Get attachment parts */
+  $getAttachments := function($part) {
+    $part.filename ? [$convertBodyPart($part)]
+    : $part.parts ? $reduce($part.parts, function($acc, $p) { $append($acc, $getAttachments($p)) }, [])
+    : []
+  };
+
+  {
+    "id": id,
+    "blobId": "blob-" & id,
+    "threadId": threadId,
+    "messageId": $getHeader(payload.headers, "Message-ID") ? [$getHeader(payload.headers, "Message-ID")] : null,
+    "inReplyTo": $getHeader(payload.headers, "In-Reply-To") ? [$getHeader(payload.headers, "In-Reply-To")] : null,
+    "references": $getHeader(payload.headers, "References") ? $split($getHeader(payload.headers, "References"), " ") : null,
+    "sender": $parseEmailList($getHeader(payload.headers, "Sender")),
+    "from": $parseEmailList($getHeader(payload.headers, "From")),
+    "to": $parseEmailList($getHeader(payload.headers, "To")),
+    "cc": $parseEmailList($getHeader(payload.headers, "Cc")),
+    "bcc": $parseEmailList($getHeader(payload.headers, "Bcc")),
+    "replyTo": $parseEmailList($getHeader(payload.headers, "Reply-To")),
+    "subject": $getHeader(payload.headers, "Subject"),
+    "sentAt": $toISO(internalDate),
+    "receivedAt": $toISO(internalDate),
+    "size": sizeEstimate,
+    "preview": $substring(snippet, 0, 256),
+    "bodyStructure": $convertBodyPart(payload),
+    "bodyValues": $buildBodyValues(payload, {}),
+    "textBody": $getTextParts(payload),
+    "htmlBody": $getHtmlParts(payload),
+    "attachments": $getAttachments(payload),
+    "hasAttachment": $count($getAttachments(payload)) > 0,
+    "headers": [$map(payload.headers, function($h) {
+      {"name": $h.name, "value": $h.value}
+    })],
+    "keywords": {
+      "$seen": "UNREAD" in labelIds ? false : true,
+      "$flagged": "STARRED" in labelIds,
+      "$answered": "SENT" in labelIds,
+      "$draft": "DRAFT" in labelIds
+    },
+    "mailboxIds": $reduce(labelIds, function($acc, $label) {
+      $merge([$acc, {$label: true}])
+    }, {})
+  }
+)

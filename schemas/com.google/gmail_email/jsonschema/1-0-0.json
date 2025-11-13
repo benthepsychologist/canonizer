@@ -1,48 +1,117 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Gmail Email",
-  "description": "Gmail API message resource",
+  "title": "Gmail API v1 Message Resource",
+  "description": "Gmail API users.messages resource format. See: https://developers.google.com/gmail/api/reference/rest/v1/users.messages",
   "type": "object",
-  "required": ["id", "threadId", "internalDate"],
+  "required": ["id", "threadId"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Immutable Gmail message ID"
+      "description": "Immutable message identifier"
     },
     "threadId": {
       "type": "string",
-      "description": "Thread ID that the message belongs to"
+      "description": "The ID of the thread the message belongs to"
+    },
+    "labelIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of IDs of labels applied to this message (INBOX, SENT, DRAFT, etc.)"
+    },
+    "snippet": {
+      "type": "string",
+      "description": "A short part of the message text"
+    },
+    "historyId": {
+      "type": "string",
+      "description": "The ID of the last history record that modified this message"
     },
     "internalDate": {
       "type": "string",
-      "description": "Internal message creation timestamp (milliseconds since epoch)"
+      "description": "The internal message creation timestamp in epoch milliseconds, determines ordering in inbox"
     },
     "payload": {
+      "$ref": "#/definitions/MessagePart",
+      "description": "The parsed email structure of the message body"
+    },
+    "sizeEstimate": {
+      "type": "integer",
+      "description": "Estimated size in bytes of the message"
+    },
+    "raw": {
+      "type": "string",
+      "description": "The entire email message in RFC 2822 formatted and base64url encoded string (only with format=RAW)"
+    }
+  },
+  "definitions": {
+    "MessagePart": {
       "type": "object",
+      "description": "A single MIME message part, which can contain a body and child parts (for multipart messages)",
       "properties": {
+        "partId": {
+          "type": "string",
+          "description": "The immutable identifier of the message part"
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "The MIME type of the message part (e.g., text/plain, text/html, multipart/alternative)"
+        },
+        "filename": {
+          "type": "string",
+          "description": "The filename of the attachment"
+        },
         "headers": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": ["name", "value"],
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "value": {
-                "type": "string"
-              }
-            }
-          }
+            "$ref": "#/definitions/Header"
+          },
+          "description": "List of headers on this message part"
         },
         "body": {
-          "type": "object",
-          "properties": {
-            "data": {
-              "type": "string",
-              "description": "Base64url encoded message body"
-            }
-          }
+          "$ref": "#/definitions/MessagePartBody",
+          "description": "The body of the message part"
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MessagePart"
+          },
+          "description": "Child MIME message parts (for multipart/* MIME types)"
+        }
+      }
+    },
+    "Header": {
+      "type": "object",
+      "required": ["name", "value"],
+      "description": "Email header field",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Header field name (e.g., From, To, Subject, Date)"
+        },
+        "value": {
+          "type": "string",
+          "description": "Header field value"
+        }
+      }
+    },
+    "MessagePartBody": {
+      "type": "object",
+      "description": "The body of a MIME message part",
+      "properties": {
+        "attachmentId": {
+          "type": "string",
+          "description": "Attachment ID when the body data resides in a separate attachment"
+        },
+        "size": {
+          "type": "integer",
+          "description": "Number of bytes of body data"
+        },
+        "data": {
+          "type": "string",
+          "description": "The body data in base64url format (if not too large or not an attachment)"
         }
       }
     }

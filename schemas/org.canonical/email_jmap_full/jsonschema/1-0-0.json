@@ -1,0 +1,274 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JMAP Email (Full) - RFC 8621 Canonical Format",
+  "description": "Complete JMAP Email object based on RFC 8621 (The JSON Meta Application Protocol for Mail). Use for: full archival, compliance, forensics. Includes complete MIME structure, all headers, and full body content. Storage: ~50-200KB per email. Reference: https://datatracker.ietf.org/doc/html/rfc8621",
+  "type": "object",
+  "required": ["id", "threadId", "receivedAt"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique message identifier (provider's internal ID, not Message-ID header)",
+      "examples": ["18c5f2e8a9b4d7f3", "AAMkAGI2THVSAAA="]
+    },
+    "blobId": {
+      "type": "string",
+      "description": "Raw RFC5322 message octets identifier (for fetching original message)",
+      "examples": ["blob-18c5f2e8a9b4d7f3"]
+    },
+    "threadId": {
+      "type": "string",
+      "description": "Conversation/thread identifier (RFC 8621 Email.threadId)",
+      "examples": ["18c5f2e8a9b4d7f3"]
+    },
+    "messageId": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "Message-ID header field value(s) (RFC 5322)",
+      "examples": [["<CABcD1E2FgH3IjK4LmN5OpQ6RsT7UvW8XyZ9@mail.company.com>"]]
+    },
+    "inReplyTo": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "In-Reply-To header field value(s) for threading",
+      "examples": [["<CAAbC9D8EfG7HiJ6KlM4NnO3PpQ2RrS1TuV0WxY8@mail.example.com>"]]
+    },
+    "references": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "References header field value(s) - full message ID chain for threading",
+      "examples": [["<msg1@example.com>", "<msg2@example.com>"]]
+    },
+    "sender": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Sender header (RFC 5322 actual sender, used when sending on behalf of someone)"
+    },
+    "from": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed From header (RFC 5322 message author/originator)",
+      "examples": [[{"name": "Sarah Smith", "email": "sarah.smith@company.com"}]]
+    },
+    "to": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed To header (primary recipients)"
+    },
+    "cc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Cc header (carbon copy recipients)"
+    },
+    "bcc": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Bcc header (blind carbon copy - usually not available post-delivery)"
+    },
+    "replyTo": {
+      "type": ["array", "null"],
+      "items": {"$ref": "#/definitions/emailAddress"},
+      "description": "Parsed Reply-To header (where replies should be directed)"
+    },
+    "subject": {
+      "type": ["string", "null"],
+      "description": "Subject header field value",
+      "examples": ["Follow-up: Q4 Report Request"]
+    },
+    "sentAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Parsed Date header in ISO 8601 format - when sender sent the message",
+      "examples": ["2023-11-09T20:00:00Z"]
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When message arrived at recipient's mail store in ISO 8601 format (RFC 8621 Email.receivedAt)",
+      "examples": ["2023-11-09T20:00:15Z"]
+    },
+    "size": {
+      "type": "integer",
+      "description": "Size of raw message in octets/bytes (RFC 8621 Email.size)",
+      "examples": [4521]
+    },
+    "preview": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Plaintext preview/snippet of message body, max 256 characters (RFC 8621 Email.preview)",
+      "examples": ["Hi John, Just wanted to follow up on our meeting yesterday..."]
+    },
+    "bodyStructure": {
+      "$ref": "#/definitions/emailBodyPart",
+      "description": "Full MIME structure of message body (RFC 8621 Email.bodyStructure)"
+    },
+    "bodyValues": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/emailBodyValue"},
+      "description": "Map of partId to decoded text content for text/* parts (RFC 8621 Email.bodyValues)"
+    },
+    "textBody": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of text/plain parts in display order (RFC 8621 Email.textBody)"
+    },
+    "htmlBody": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of text/html parts in display order (RFC 8621 Email.htmlBody)"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailBodyPart"},
+      "description": "List of attachment parts - non-inline files (RFC 8621 Email.attachments)"
+    },
+    "hasAttachment": {
+      "type": "boolean",
+      "description": "Server-set flag indicating message has downloadable attachments (RFC 8621 Email.hasAttachment)",
+      "examples": [true]
+    },
+    "headers": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/emailHeader"},
+      "description": "All header fields in original order for advanced use cases (RFC 8621 Email.headers)"
+    },
+    "keywords": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "description": "IMAP keywords/flags as object (RFC 8621 Email.keywords). Standard flags: $seen, $flagged, $answered, $draft. Custom labels also supported.",
+      "examples": [{"$seen": true, "$flagged": false, "work": true}]
+    },
+    "mailboxIds": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "description": "Set of mailbox/folder IDs this message belongs to (RFC 8621 Email.mailboxIds)",
+      "examples": [{"inbox": true, "archive": false}]
+    }
+  },
+  "definitions": {
+    "emailAddress": {
+      "type": "object",
+      "description": "RFC 5322 email address with optional display name (RFC 8621 EmailAddress type)",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "Display name",
+          "examples": ["John Doe"]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address",
+          "examples": ["john@example.com"]
+        }
+      },
+      "required": ["email"]
+    },
+    "emailHeader": {
+      "type": "object",
+      "description": "Raw email header field (RFC 8621 EmailHeader type)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Header field name (case-insensitive per RFC 5322)",
+          "examples": ["From", "Subject", "X-Custom-Header"]
+        },
+        "value": {
+          "type": "string",
+          "description": "Raw header field value (unparsed)",
+          "examples": ["Sarah Smith <sarah.smith@company.com>"]
+        }
+      },
+      "required": ["name", "value"]
+    },
+    "emailBodyPart": {
+      "type": "object",
+      "description": "MIME body part structure (RFC 8621 EmailBodyPart type)",
+      "properties": {
+        "partId": {
+          "type": ["string", "null"],
+          "description": "Identifier for this part (null for multipart/* container types)",
+          "examples": ["1", "2.1"]
+        },
+        "blobId": {
+          "type": ["string", "null"],
+          "description": "Identifier for fetching raw content octets",
+          "examples": ["blob-part-18c5f2e8a9b4d7f3-1"]
+        },
+        "size": {
+          "type": "integer",
+          "description": "Size of decoded content in octets",
+          "examples": [1024]
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Decoded filename from Content-Type or Content-Disposition",
+          "examples": ["report.pdf", "image.jpg"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Content-Type value",
+          "examples": ["text/plain", "text/html", "image/jpeg", "application/pdf"]
+        },
+        "charset": {
+          "type": ["string", "null"],
+          "description": "Charset parameter from Content-Type",
+          "examples": ["UTF-8", "iso-8859-1"]
+        },
+        "disposition": {
+          "type": ["string", "null"],
+          "description": "Content-Disposition value",
+          "examples": ["inline", "attachment"]
+        },
+        "cid": {
+          "type": ["string", "null"],
+          "description": "Content-Id header value (for inline images referenced in HTML)",
+          "examples": ["<image1@mail.company.com>"]
+        },
+        "language": {
+          "type": ["array", "null"],
+          "items": {"type": "string"},
+          "description": "Content-Language values",
+          "examples": [["en", "en-US"]]
+        },
+        "location": {
+          "type": ["string", "null"],
+          "description": "Content-Location URI",
+          "examples": ["https://example.com/image.jpg"]
+        },
+        "subParts": {
+          "type": ["array", "null"],
+          "items": {"$ref": "#/definitions/emailBodyPart"},
+          "description": "Child parts for multipart/* types (recursive structure)"
+        },
+        "headers": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/emailHeader"},
+          "description": "Header fields for this MIME part"
+        }
+      },
+      "required": ["type"]
+    },
+    "emailBodyValue": {
+      "type": "object",
+      "description": "Decoded text content for a body part (RFC 8621 EmailBodyValue type)",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Decoded and charset-converted text content",
+          "examples": ["Hi John,\n\nJust wanted to follow up..."]
+        },
+        "isEncodingProblem": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if malformed encoding or unknown charset encountered"
+        },
+        "isTruncated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if content was truncated"
+        }
+      },
+      "required": ["value"]
+    }
+  }
+}

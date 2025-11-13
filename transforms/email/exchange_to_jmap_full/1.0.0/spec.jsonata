@@ -1,0 +1,123 @@
+(
+  /* Helper function to convert Exchange Recipient to JMAP EmailAddress */
+  $convertRecipient := function($recipient) {
+    $recipient ? {
+      "name": $recipient.emailAddress.name,
+      "email": $recipient.emailAddress.address
+    } : null
+  };
+
+  /* Helper function to convert recipient array */
+  $convertRecipients := function($recipients) {
+    $recipients ? [$map($recipients, $convertRecipient)] : null
+  };
+
+  /* Helper function to get header value by name */
+  $getHeader := function($headers, $name) {
+    $lookup($headers[name=$name], "value")
+  };
+
+  /* Helper function to parse importance */
+  $parseImportance := function($imp) {
+    $imp = "high" ? "high" : $imp = "low" ? "low" : "normal"
+  };
+
+  /* Build bodyStructure from Exchange body */
+  $bodyStructure := {
+    "partId": "0",
+    "blobId": "blob-" & id & "-body",
+    "size": $length($string(body.content)),
+    "name": null,
+    "type": body.contentType = "html" ? "text/html" : "text/plain",
+    "charset": "UTF-8",
+    "disposition": null,
+    "cid": null,
+    "language": null,
+    "location": null,
+    "subParts": null,
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": body.contentType = "html" ? "text/html; charset=UTF-8" : "text/plain; charset=UTF-8"
+      }
+    ]
+  };
+
+  /* Build bodyValues map */
+  $bodyValues := {
+    "0": {
+      "value": body.content,
+      "isEncodingProblem": false,
+      "isTruncated": false
+    }
+  };
+
+  /* textBody or htmlBody based on contentType */
+  $textBody := body.contentType = "text" ? [$bodyStructure] : [];
+  $htmlBody := body.contentType = "html" ? [$bodyStructure] : [];
+
+  /* Build attachments array with full structure */
+  $attachmentParts := attachments ? $map(attachments, function($att, $idx) {
+    {
+      "partId": $string($idx + 1),
+      "blobId": "blob-att-" & $att.id,
+      "size": $att.size,
+      "name": $att.name,
+      "type": $att.contentType,
+      "charset": null,
+      "disposition": $att.isInline ? "inline" : "attachment",
+      "cid": null,
+      "language": null,
+      "location": null,
+      "subParts": null,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": $att.contentType
+        },
+        {
+          "name": "Content-Disposition",
+          "value": $att.isInline ? "inline" : "attachment; filename=\"" & $att.name & "\""
+        }
+      ]
+    }
+  }) : [];
+
+  {
+    "id": id,
+    "blobId": "blob-" & id,
+    "threadId": conversationId,
+    "messageId": internetMessageId ? [internetMessageId] : null,
+    "inReplyTo": $getHeader(internetMessageHeaders, "In-Reply-To") ? [$getHeader(internetMessageHeaders, "In-Reply-To")] : null,
+    "references": $getHeader(internetMessageHeaders, "References") ? $split($getHeader(internetMessageHeaders, "References"), " ") : null,
+    "sender": sender ? [$convertRecipient(sender)] : null,
+    "from": from ? [$convertRecipient(from)] : null,
+    "to": $convertRecipients(toRecipients),
+    "cc": $convertRecipients(ccRecipients),
+    "bcc": $convertRecipients(bccRecipients),
+    "replyTo": $convertRecipients(replyTo),
+    "subject": subject,
+    "sentAt": sentDateTime,
+    "receivedAt": receivedDateTime,
+    "size": $length($string(body.content)),
+    "preview": $substring(bodyPreview, 0, 256),
+    "bodyStructure": $bodyStructure,
+    "bodyValues": $bodyValues,
+    "textBody": $textBody,
+    "htmlBody": $htmlBody,
+    "attachments": $attachmentParts,
+    "hasAttachment": hasAttachments,
+    "headers": internetMessageHeaders ? $map(internetMessageHeaders, function($h) {
+      {"name": $h.name, "value": $h.value}
+    }) : [],
+    "keywords": {
+      "$seen": isRead,
+      "$flagged": flag.flagStatus = "flagged",
+      "$answered": isReadReceiptRequested,
+      "$draft": isDraft
+    },
+    "mailboxIds": $reduce(categories, function($acc, $cat) {
+      $merge([$acc, {$cat: true}])
+    }, {"inbox": true})
+  }
+)

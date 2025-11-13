@@ -1,0 +1,29 @@
+id: email/exchange_to_jmap_full
+version: 1.0.0
+engine: jsonata
+runtime: node
+
+from_schema: iglu:com.microsoft/exchange_email/jsonschema/1-0-0
+to_schema: iglu:org.canonical/email_jmap_full/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "91377e10411fb05cbf0dd5258431d39823cf6e85f440fd1c0de0a4a3fe96ecde"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-11-13T12:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Microsoft Graph/Exchange message to JMAP Full canonical format (RFC 8621).
+  Complete message structure with bodyStructure and bodyValues.
+  Includes all headers, full threading, keywords, mailboxIds.
+  Use for: full archival, compliance, forensics.
+  Storage: ~50-200KB per email.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

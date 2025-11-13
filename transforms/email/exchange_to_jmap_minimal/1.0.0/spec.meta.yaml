@@ -1,0 +1,28 @@
+id: email/exchange_to_jmap_minimal
+version: 1.0.0
+engine: jsonata
+runtime: node
+
+from_schema: iglu:com.microsoft/exchange_email/jsonschema/1-0-0
+to_schema: iglu:org.canonical/email_jmap_minimal/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "15a9b9c1d02a51ea039e92b9b5a91a4e1548439709c4593b593aadb0d24b730f"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-11-13T12:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Microsoft Graph/Exchange message to JMAP Minimal canonical format.
+  Extracts metadata only (no body content inline). Body referenced by blobId.
+  Use for: search indexes, analytics, high-volume processing.
+  Storage: ~1-5KB per email.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

@@ -1,0 +1,29 @@
+id: email/gmail_to_jmap_full
+version: 1.0.0
+engine: jsonata
+runtime: node
+
+from_schema: iglu:com.google/gmail_email/jsonschema/1-0-0
+to_schema: iglu:org.canonical/email_jmap_full/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "61d687078e051907895849f8d8a91ba82b40fe632097fa863bfaf059d88193ad"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-11-13T12:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Gmail API v1 message to JMAP Full canonical format (RFC 8621).
+  Complete MIME structure preservation with bodyStructure and bodyValues.
+  Includes all headers, full threading, keywords, mailboxIds.
+  Use for: full archival, compliance, forensics.
+  Storage: ~50-200KB per email.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

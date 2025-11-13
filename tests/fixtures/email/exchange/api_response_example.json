@@ -1,0 +1,117 @@
+{
+  "id": "AAMkAGI2THVSAAA=",
+  "changeKey": "CQAAABYAAAAiIsqMbYjsT5e-T7KzowPTAABj5P2Q",
+  "categories": [
+    "Work",
+    "Important"
+  ],
+  "createdDateTime": "2023-11-09T20:00:00Z",
+  "lastModifiedDateTime": "2023-11-09T20:05:30Z",
+  "receivedDateTime": "2023-11-09T20:00:15Z",
+  "sentDateTime": "2023-11-09T20:00:00Z",
+  "hasAttachments": false,
+  "internetMessageId": "<CABcD1E2FgH3IjK4LmN5OpQ6RsT7UvW8XyZ9@mail.company.com>",
+  "subject": "Follow-up: Q4 Report Request",
+  "bodyPreview": "Hi John, Just wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance? Thanks, Sarah",
+  "importance": "normal",
+  "parentFolderId": "AAMkAGI2THVSAAA=",
+  "conversationId": "AAQkAGI2TAABj5P2QAAA=",
+  "conversationIndex": "AQHaABCDEFGHIJKLMNOPQRSTUVWXYZ=",
+  "isDeliveryReceiptRequested": false,
+  "isReadReceiptRequested": false,
+  "isRead": true,
+  "isDraft": false,
+  "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2THVSAAA%3D",
+  "inferenceClassification": "focused",
+  "body": {
+    "contentType": "html",
+    "content": "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">Hi John,<br><br>Just wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance?<br><br>Thanks,<br>Sarah</div></body></html>"
+  },
+  "uniqueBody": {
+    "contentType": "html",
+    "content": "<div dir=\"ltr\">Hi John,<br><br>Just wanted to follow up on our meeting yesterday. Can you send over the Q4 report when you get a chance?<br><br>Thanks,<br>Sarah</div>"
+  },
+  "from": {
+    "emailAddress": {
+      "name": "Sarah Smith",
+      "address": "sarah.smith@company.com"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "name": "Sarah Smith",
+      "address": "sarah.smith@company.com"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "name": "John Doe",
+        "address": "john.doe@example.com"
+      }
+    }
+  ],
+  "ccRecipients": [
+    {
+      "emailAddress": {
+        "name": "Jane Admin",
+        "address": "jane.admin@example.com"
+      }
+    }
+  ],
+  "bccRecipients": [],
+  "replyTo": [],
+  "flag": {
+    "flagStatus": "notFlagged"
+  },
+  "internetMessageHeaders": [
+    {
+      "name": "Received",
+      "value": "from mail.company.com by outlook.office365.com"
+    },
+    {
+      "name": "Return-Path",
+      "value": "sarah.smith@company.com"
+    },
+    {
+      "name": "From",
+      "value": "Sarah Smith <sarah.smith@company.com>"
+    },
+    {
+      "name": "To",
+      "value": "John Doe <john.doe@example.com>"
+    },
+    {
+      "name": "Cc",
+      "value": "Jane Admin <jane.admin@example.com>"
+    },
+    {
+      "name": "Subject",
+      "value": "Follow-up: Q4 Report Request"
+    },
+    {
+      "name": "Date",
+      "value": "Thu, 9 Nov 2023 12:00:00 -0800"
+    },
+    {
+      "name": "Message-ID",
+      "value": "<CABcD1E2FgH3IjK4LmN5OpQ6RsT7UvW8XyZ9@mail.company.com>"
+    },
+    {
+      "name": "In-Reply-To",
+      "value": "<CAAbC9D8EfG7HiJ6KlM4NnO3PpQ2RrS1TuV0WxY8@mail.example.com>"
+    },
+    {
+      "name": "References",
+      "value": "<CAAbC9D8EfG7HiJ6KlM4NnO3PpQ2RrS1TuV0WxY8@mail.example.com>"
+    },
+    {
+      "name": "Content-Type",
+      "value": "text/html; charset=utf-8"
+    },
+    {
+      "name": "MIME-Version",
+      "value": "1.0"
+    }
+  ]
+}
