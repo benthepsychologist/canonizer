@@ -66,7 +66,7 @@ class RegistryClient:
         >>> client.clear_cache()
     """
 
-    DEFAULT_REGISTRY_URL = "https://raw.githubusercontent.com/therapyai/canonizer-registry/main/"
+    DEFAULT_REGISTRY_URL = "https://raw.githubusercontent.com/benthepsychologist/canonizer-registry/main/"
 
     def __init__(
         self,

@@ -21,12 +21,13 @@ def version():
 
 
 # Import commands
-from canonizer.cli.cmds import diff, patch, transform, validate  # noqa: E402
+from canonizer.cli.cmds import diff, patch, registry, transform, validate  # noqa: E402
 
 app.add_typer(transform.app, name="transform")
 app.add_typer(validate.app, name="validate")
 app.add_typer(diff.app, name="diff")
 app.add_typer(patch.app, name="patch")
+app.add_typer(registry.app, name="registry")
 
 
 if __name__ == "__main__":

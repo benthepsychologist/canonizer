@@ -7,11 +7,13 @@ from_schema: iglu:com.google/gmail_email/jsonschema/1-0-0
 to_schema: iglu:org.canonical/email/jsonschema/1-0-0
 
 spec_path: gmail_to_canonical_v1.jsonata
-checksum: sha256:29284602595b686788105d02187d37138a10dd012d8e2b70afdf0a5e67f80a21
+checksum:
+  jsonata_sha256: "29284602595b686788105d02187d37138a10dd012d8e2b70afdf0a5e67f80a21"
 
+provenance:
+  author: "Ben <ben@example.com>"
+  created_utc: "2025-11-09T00:00:00+00:00"
 status: stable
-author: ben@example.com
-created: 2025-11-09T00:00:00Z
 
 tests:
   - input: ../../tests/golden/email/gmail_v1/input.json
