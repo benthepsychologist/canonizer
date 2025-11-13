@@ -133,15 +133,62 @@ This is the initial release. No migration required.
 
 ---
 
+## [0.2.0] - 2025-11-13
+
+### Added
+
+#### Email Canonicalization (AIP-canonizer-2025-11-13-001)
+- **6 production email transforms:**
+  - `email/gmail_to_jmap_full@1.0.0` - Gmail → JMAP Full (RFC 8621 complete)
+  - `email/gmail_to_jmap_lite@1.0.0` - Gmail → JMAP Lite (simplified inline body)
+  - `email/gmail_to_jmap_minimal@1.0.0` - Gmail → JMAP Minimal (metadata only)
+  - `email/exchange_to_jmap_full@1.0.0` - Exchange → JMAP Full
+  - `email/exchange_to_jmap_lite@1.0.0` - Exchange → JMAP Lite
+  - `email/exchange_to_jmap_minimal@1.0.0` - Exchange → JMAP Minimal
+
+- **4 new canonical schemas:**
+  - `com.microsoft/exchange_email@1-0-0` - Microsoft Graph API Message Resource
+  - `org.canonical/email_jmap_full@1-0-0` - RFC 8621 complete (~50-200KB per email)
+  - `org.canonical/email_jmap_lite@1-0-0` - Simplified inline body (~10-50KB per email)
+  - `org.canonical/email_jmap_minimal@1-0-0` - Metadata only (~1-5KB per email)
+
+- **Comprehensive documentation:**
+  - `docs/EMAIL_CANONICALIZATION.md` - Architecture and design decisions
+  - Three-tier canonical format strategy (Full/Lite/Minimal)
+  - Storage vs. functionality trade-off analysis
+  - Use case mapping for each canonical format
+
+- **19 integration tests** covering:
+  - Golden test validation for all 6 transforms
+  - Invalid input handling
+  - Null value handling
+  - Schema validation (input and output)
+  - Runtime assertions (Node.js JSONata)
+
+### Technical Details
+- All transforms use Python jsonata runtime (no Node.js dependency for validation)
+- All transforms published to canonizer-registry with CI passing
+- Array constructor pattern for JSONata `$map()` single-item compatibility
+- Comprehensive email header mapping (from, to, cc, bcc, replyTo, sender)
+- Thread tracking support (messageId, inReplyTo, references)
+- Attachment handling across all format levels
+
+### Quality Metrics
+- 94 total tests passing (up from 68)
+- 44% overall code coverage (up from 43%)
+- 100% test pass rate for email transforms
+- Registry CI validation passing with Python jsonata
+
 ## [Unreleased]
 
-### Planned for v0.2
+### Planned for v0.3
 - `can registry publish` - Open PR via GitHub API
 - Auto-bump version based on diff/patch
 - Compatibility matrix validation
 - LLM-assisted transform scaffolding
 - Increased CLI test coverage (target: 70%+)
-- Node.js JSONata runtime auto-installation
+- Calendar event canonicalization
+- Contacts/people canonicalization
 
 ---
 
