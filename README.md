@@ -49,12 +49,13 @@ It fills the gap between **schema registries** (Iglu) and **data pipelines** (Ai
 ### Key Features
 
 - **Transform registry**: Versioned `.jsonata` files with minimal `.meta.yaml` sidecars
+- **Remote registry client**: Fetch transforms from Git-based registries with caching
 - **Schema validation**: Iglu SchemaVer format (MODEL-REVISION-ADDITION)
 - **Runtime engine**: Validate → Transform → Validate
 - **Mechanical evolution**: Diff/patch for additive changes + renames
 - **Portable**: Raw `.jsonata` files work in any JSONata runtime
-- **CLI-first**: `can transform`, `can validate`, `can diff`, `can patch`
-- **Integrity**: Checksum verification prevents tampering
+- **CLI-first**: `can transform`, `can validate`, `can diff`, `can patch`, `can registry`
+- **Integrity**: SHA256 checksum verification prevents tampering
 
 ## Installation
 
@@ -101,6 +102,28 @@ can validate run \
 
 ```bash
 can transform list --dir transforms/
+```
+
+### 4. Use the registry client
+
+```python
+from canonizer.registry import RegistryClient
+
+# Initialize client (uses official registry by default)
+client = RegistryClient()
+
+# List available transforms
+transforms = client.list_transforms()
+for t in transforms:
+    print(f"{t['id']}: {t['versions'][0]['version']}")
+
+# Fetch a transform
+transform = client.fetch_transform("email/gmail_to_canonical")
+print(transform.meta.version)  # "1.0.0"
+print(transform.jsonata)  # JSONata source code
+
+# Fetch a schema
+schema = client.fetch_schema("iglu:org.canonical/email/jsonschema/1-0-0")
 ```
 
 ## Architecture
@@ -151,6 +174,11 @@ can transform list --dir transforms/
 # Validate
 can validate run --schema <schema.json> --data <json>
 
+# Registry (fetch transforms from remote registry)
+can registry list                        # List available transforms
+can registry pull <transform-id>         # Download transform to local cache
+can registry info <transform-id>         # Show transform metadata
+
 # Diff (schema evolution)
 can diff run --from <v1.json> --to <v2.json> --output <patch.json>
 
@@ -185,26 +213,28 @@ tests/golden/email/
 `.meta.yaml` sidecars are minimal and portable:
 
 ```yaml
-id: gmail_to_canonical_email
-version: 1-0-0  # Iglu SchemaVer (MODEL-REVISION-ADDITION)
+id: email/gmail_to_canonical
+version: 1.0.0  # SemVer (MAJOR.MINOR.PATCH)
 engine: jsonata
-runtime: node  # or 'python' for fast path
+runtime: python  # or 'node' for official JSONata
 
-from: iglu:com.google/gmail_email/jsonschema/1-0-0
-to: iglu:org.canonical/email/jsonschema/1-0-0
+from_schema: iglu:com.google/gmail_email/jsonschema/1-0-0
+to_schema: iglu:org.canonical/email/jsonschema/1-0-0
 
-spec_path: gmail_to_canonical_v1.jsonata  # relative path
-checksum: sha256:abc123...  # verify .jsonata file integrity
+spec_path: spec.jsonata  # relative path to transform
 
-status: stable
-author: ben@example.com
-created: 2025-11-09T00:00:00Z
+checksum:
+  jsonata_sha256: abc123...  # SHA256 hex digest for integrity
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-11-09T00:00:00Z"
+
+status: stable  # draft, stable, or deprecated
 
 tests:
   - input: ../../tests/golden/email/gmail_v1/input.json
     expect: ../../tests/golden/email/gmail_v1/output.json
-
-redact_fields: [payload.body, payload.attachments]  # PII redaction
 ```
 
 ## Example JSONata Transform
@@ -240,8 +270,8 @@ mypy canonizer/
 
 ## Roadmap
 
-- **v0.1** (Current): Core runtime, diff/patch, LLM scaffolding
-- **v0.2**: Remote transform registry (GitHub-based)
+- **v0.1** (Current): Core runtime, diff/patch, remote registry client
+- **v0.2**: LLM scaffolding for complex transforms
 - **v0.3**: Schema compatibility checks and migration tools
 - **v0.4**: Multi-engine support (jq, Python transforms)
 - **v0.5**: Performance optimization (batch transforms)

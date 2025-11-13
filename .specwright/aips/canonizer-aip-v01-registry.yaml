@@ -1,0 +1,216 @@
+aip_id: AIP-canonizer-2025-11-12-001
+context:
+  background: ''
+  constraints: []
+created: '2025-11-12T20:14:06.580798+00:00'
+meta:
+  created_at: '2025-11-12T20:14:06.580798+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - ✅ `canonizer-registry` repo public and accessible
+  - ✅ CI validates PRs (structure, metadata, golden tests)
+  - ✅ CI generates `REGISTRY_INDEX.json` on merge to main
+  - ✅ At least 1 transform example (gmail_to_canonical/1.0.0)
+  - ✅ LICENSE (Apache-2.0), CODEOWNERS, PR template in place
+  - ✅ `can registry list` - Shows all transforms from index
+  - ✅ `can registry search` - Filters by schema URIs
+  - ✅ `can registry pull <id>@<version>` - Downloads to cache
+  - ✅ `can registry validate <path>` - Runs CI checks locally
+  - ✅ Local cache at `~/.canonizer/registry/` with TTL
+  - ✅ Checksum verification on pull
+  - ✅ Updated `TransformMeta` with `compat` and `provenance`
+  - ✅ Pydantic validation passes
+  - ✅ Tests updated and passing
+  - ✅ `docs/REGISTRY.md` - Contribution guide
+  - ✅ `README.md` updated with registry workflow
+  - ✅ `canonizer-registry/README.md` - Usage guide
+  - ✅ All tests passing (pytest)
+  - ✅ Coverage ≥70% overall
+  - ✅ Integration tests for pull → validate → use workflow
+  - ✅ Ruff checks pass
+  - ✅ Mypy type checks pass
+  - ⏸️ `can registry publish` (opens PR via GitHub API)
+  - ⏸️ Auto-bump version based on diff/patch
+  - ⏸️ Compatibility matrix validation
+  goal: Build Git-based transform registry with PR workflow, CI validation, and HTTP-based discovery
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-11-12-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Registry Repository Setup
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - canonizer-registry
+  - .github/workflows/validate.yml
+  - .github/PULL_REQUEST_TEMPLATE.md
+  - .github/CODEOWNERS
+  - tools/validate.py
+  - tools/generate_index.py
+  - LICENSE
+  prompt: 'Create the `canonizer-registry` GitHub repository with complete CI infrastructure:
+
+    1. Initialize public GitHub repo `canonizer-registry`
+
+    2. Add LICENSE (Apache-2.0), README.md, CONTRIBUTING.md
+
+    3. Create directory structure: `schemas/`, `transforms/`, `tools/`, `.github/workflows/`
+
+    4. Implement `.github/workflows/validate.yml` for CI validation
+
+    5. Add `.github/PULL_REQUEST_TEMPLATE.md` and `.github/CODEOWNERS`
+
+    6. Implement `tools/validate.py` (Python validation script)
+
+    7. Implement `tools/generate_index.py` (builds REGISTRY_INDEX.json)'
+  role: coding_agent
+  step_id: step-001
+- description: Migrate Existing Schemas & Transforms
+  kind: code
+  outputs:
+  - schemas/org.canonical/email/jsonschema/1-0-0.json
+  - schemas/com.google/gmail_email/jsonschema/1-0-0.json
+  - transforms/email/gmail_to_canonical/1.0.0/*
+  - REGISTRY_INDEX.json
+  prompt: "Populate the registry with initial content:\n1. Migrate schemas to registry format:\n   - `schemas/org.canonical/email/jsonschema/1-0-0.json`\n\
+    \   - `schemas/com.google/gmail_email/jsonschema/1-0-0.json`\n2. Migrate transform with proper structure:\n\
+    \   - `transforms/email/gmail_to_canonical/1.0.0/spec.jsonata`\n   - `transforms/email/gmail_to_canonical/1.0.0/spec.meta.yaml`\n\
+    \   - `transforms/email/gmail_to_canonical/1.0.0/tests/input.json`\n   - `transforms/email/gmail_to_canonical/1.0.0/tests/expected.json`\n\
+    3. Generate initial `REGISTRY_INDEX.json` via CI\n4. Verify CI validates successfully"
+  role: coding_agent
+  step_id: step-002
+- description: Update TransformMeta Model
+  gate_ref: 'G1: Design Review'
+  kind: code
+  outputs:
+  - canonizer/registry/transform_meta.py
+  - tests/unit/test_transform_meta.py
+  prompt: 'Extend the `TransformMeta` Pydantic model in the canonizer CLI to support new registry fields:
+
+    1. Add `Compat` model with `from_schema_range` field (optional)
+
+    2. Add `Provenance` model with `author` and `created_utc` fields (required)
+
+    3. Update `TransformMeta` to include these new fields
+
+    4. Add validators for new fields (schema range validation, UTC timestamp)
+
+    5. Update all related tests'
+  role: coding_agent
+  step_id: step-003
+- description: Registry Client Core
+  kind: code
+  outputs:
+  - canonizer/registry/index.py
+  - canonizer/registry/remote.py
+  - canonizer/registry/cache.py
+  - canonizer/registry/github.py
+  prompt: "Implement the core registry client library for discovering and fetching transforms:\n1. **index.py**:\
+    \ Fetch and cache REGISTRY_INDEX.json\n   - Fetch from GitHub raw URL\n   - Local cache at `~/.canonizer/registry/index.json`\
+    \ with 1-hour TTL\n   - Parse into Pydantic models\n2. **remote.py**: HTTPS file fetching\n   - Fetch\
+    \ transform files (spec.jsonata, spec.meta.yaml, tests/)\n   - Verify checksums after download\n \
+    \  - Handle HTTP errors gracefully\n3. **cache.py**: Local cache management\n   - Store at `~/.canonizer/registry/transforms/<id>/<version>/`\n\
+    \   - TTL management and refresh logic\n   - Cache invalidation\n4. **github.py**: GitHub API client\
+    \ (for publish command)\n   - Fork repository\n   - Create branch, commit files, push\n   - Open PR\
+    \ via GitHub API"
+  role: coding_agent
+  step_id: step-004
+- description: CLI Commands
+  gate_ref: 'G2: Code Review'
+  kind: code
+  outputs:
+  - canonizer/cli/cmds/registry.py
+  - tests/integration/test_registry_cli.py
+  prompt: "Implement `can registry` CLI commands:\n1. `can registry list [--status] [--refresh]`\n   -\
+    \ Read cached index, display all transforms\n   - Support status filtering (stable/draft/deprecated)\n\
+    \   - Force refresh option\n2. `can registry search [--from] [--to] [--id] [--status]`\n   - Filter\
+    \ index by schema URIs, ID, or status\n   - Support multiple filters (AND logic)\n3. `can registry\
+    \ pull <id>@<version>`\n   - Download transform to local cache\n   - Support `@latest` for latest\
+    \ stable version\n   - Verify checksums\n4. `can registry validate <path>`\n   - Run CI validation\
+    \ checks locally\n   - Reuse `tools/validate.py` from registry repo\n5. `can registry publish <path>`\
+    \ (optional for v0.1)\n   - Validate locally first\n   - Open PR to contribute transform"
+  role: coding_agent
+  step_id: step-005
+- description: Validation Script (Shared with CI)
+  kind: code
+  outputs:
+  - tools/validate.py
+  - canonizer/registry/validator.py
+  prompt: "Create shared validation logic used by both CLI and CI:\n1. Implement `tools/validate.py` in\
+    \ canonizer-registry repo with checks:\n   - Directory structure matches spec\n   - `spec.meta.yaml`\
+    \ parses and validates (Pydantic)\n   - `spec.jsonata` exists and checksum matches metadata\n   -\
+    \ Golden tests exist and pass (execute JSONata)\n   - Referenced schemas exist in registry\n   - Unique\
+    \ (id, version) tuples across registry\n2. Copy or reference validation logic in canonizer CLI\n \
+    \  - `canonizer/registry/validator.py`\n   - Ensure CLI `can registry validate` uses same logic"
+  role: coding_agent
+  step_id: step-006
+- description: Documentation
+  kind: code
+  outputs:
+  - canonizer/README.md
+  - docs/REGISTRY.md
+  - canonizer-registry/README.md
+  - canonizer-registry/CONTRIBUTING.md
+  prompt: 'Document the registry workflow and contribution process:
+
+    1. Update `canonizer/README.md` with registry section
+
+    2. Create `docs/REGISTRY.md` with detailed contribution guide
+
+    3. Create `canonizer-registry/README.md` with usage guide
+
+    4. Create `canonizer-registry/CONTRIBUTING.md` with PR workflow
+
+    Content to include:
+
+    - How to search/pull/use transforms
+
+    - How to contribute new transforms (PR workflow)
+
+    - Versioning policy and compatibility rules
+
+    - Security and governance model
+
+    - Example workflows (find transform, contribute transform, update transform)'
+  role: coding_agent
+  step_id: step-007
+- description: Comprehensive Testing & Pre-Release Validation
+  gate_ref: 'G3: Pre-Release'
+  kind: code
+  prompt: "Implement comprehensive test coverage for registry features:\n1. **Unit Tests** (≥80% coverage\
+    \ for registry modules):\n   - `tests/unit/test_index.py` - Index parsing and caching\n   - `tests/unit/test_cache.py`\
+    \ - Cache management and TTL\n   - `tests/unit/test_remote.py` - Remote fetching and checksums\n \
+    \  - `tests/unit/test_transform_meta.py` - Metadata validation\n2. **Integration Tests**:\n   - End-to-end:\
+    \ search → pull → validate → use transform\n   - CI validation script on sample transforms\n   - Index\
+    \ generation from sample registry\n3. **CLI Tests**:\n   - Test each `can registry` command\n   -\
+    \ Mock HTTP responses for index/files\n   - Error handling and edge cases"
+  role: coding_agent
+  step_id: step-008
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/canonizer-aip-v01-registry
+spec_version: 1.0.0
+tier: B
+title: 'Canonizer Registry: Transform & Schema Registry with CI-Driven Validation'
+updated: '2025-11-12T20:30:00+00:00'
+version: '0.1'
+

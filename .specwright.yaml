@@ -5,8 +5,8 @@ paths:
 repo:
   default_branch: main
 user:
-  default_owner: null
-  default_tier: null
+  default_owner: benthepsychologist
+  default_tier: C
 current:
-  spec: .specwright/specs/canonizer-aip-v0.md
-  aip: /home/user/canonizer/.specwright/aips/canonizer-aip-v0.yaml
+  spec: .specwright/specs/canonizer-aip-v01-registry.md
+  aip: /home/user/canonizer/.specwright/aips/canonizer-aip-v01-registry.yaml
