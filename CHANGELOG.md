@@ -1,0 +1,148 @@
+# Changelog
+
+All notable changes to Canonizer will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2025-11-13
+
+### Added
+
+#### Core Features
+- Initial release of Canonizer - Pure JSON transformation tool
+- JSONata-based transformation engine with dual runtime support (Node.js + Python)
+- Schema validation with Iglu SchemaVer format support
+- Transform metadata model with Pydantic validation
+- Checksum verification for transform integrity
+
+#### Transform Registry (AIP-canonizer-2025-11-12-001)
+- **Git-based transform registry** with HTTP discovery
+- **Registry CLI commands:**
+  - `can registry list` - List all available transforms
+  - `can registry search` - Search by schema URIs, ID, or status
+  - `can registry pull` - Download transforms to local cache
+  - `can registry info` - Display transform metadata
+  - `can registry validate` - Validate transform directories locally
+- **Registry client (`RegistryClient`):**
+  - Fetch transforms and schemas from GitHub-based registry
+  - Local caching at `~/.cache/canonizer/registry/`
+  - Automatic checksum verification
+  - Index-based efficient discovery
+- **Transform validation module:**
+  - Directory structure validation
+  - Metadata validation with Pydantic
+  - Checksum integrity verification
+  - Golden test execution
+  - Detailed error reporting
+- **Official registry** at https://github.com/benthepsychologist/canonizer-registry
+  - CI-driven validation on PRs
+  - Automatic index generation on merge
+  - Initial transform: `email/gmail_to_canonical@1.0.0`
+
+#### CLI Commands
+- `can transform run` - Execute JSON transformations
+- `can transform list` - List local transforms
+- `can validate run` - Validate JSON against schemas
+- `can diff run` - Compare schemas and detect changes
+- `can patch run` - Apply mechanical updates to transforms
+
+#### Schema Evolution
+- Schema differ with change classification (ADD, RENAME, REMOVE, TYPE_CHANGE, COMPLEX)
+- Transform patcher for mechanical updates
+- Levenshtein distance-based rename detection
+- Conservative patching approach (fails safe for complex changes)
+
+#### Documentation
+- Comprehensive README with Quick Start guide
+- Registry contribution guide (`docs/REGISTRY.md`)
+  - Usage instructions for all CLI commands
+  - Contribution workflow with examples
+  - Versioning policy (SemVer + Iglu SchemaVer)
+  - Security and governance model
+  - Example workflows
+- API documentation with docstrings
+- AIP execution summary with full audit trail
+
+### Technical Details
+
+#### Models
+- `TransformMeta` - Transform metadata with Pydantic validation
+  - `Checksum` model with SHA256 integrity
+  - `Provenance` model for authorship tracking
+  - `Compat` model for schema version ranges
+  - `TestFixture` model for golden tests
+- `Transform` - Complete transform with metadata and JSONata source
+
+#### Architecture
+- Pure function design (no side effects)
+- Portable `.jsonata` files (language-agnostic)
+- Minimal `.meta.yaml` sidecars
+- Local-first with optional registry
+- CLI-first design for composability
+
+### Quality Metrics
+- 68 unit and integration tests passing
+- 43% overall code coverage (96-100% on registry core modules)
+- Ruff linting checks passing
+- Type hints with mypy support
+- Comprehensive error handling
+
+### Repository Structure
+```
+canonizer/
+├── canonizer/           # Main package
+│   ├── cli/            # Typer-based CLI
+│   ├── core/           # Transform runtime and evolution
+│   └── registry/       # Registry client and validation
+├── docs/               # Documentation
+├── tests/              # Unit and integration tests
+└── transforms/         # Local transform examples
+```
+
+### Known Limitations
+- CLI commands have 0% test coverage (only manually tested)
+- Node.js JSONata runtime requires `npm install jsonata` separately
+- Coverage goal of 70% not met (43% overall, but core modules are 96-100%)
+- `can registry publish` command not implemented (deferred to v0.2)
+
+### Dependencies
+- Python 3.11+
+- jsonata-python 0.6+ (Python runtime)
+- pydantic 2.5+
+- jsonschema 4.20+
+- typer 0.9+
+- rich 13.7+
+- httpx 0.27+
+- PyYAML 6.0+
+
+### Migration Notes
+This is the initial release. No migration required.
+
+### Credits
+- Developed by Ben Machina
+- Built with Claude Code (Anthropic Sonnet 4.5)
+- Follows AIP (Agentic Implementation Plan) methodology
+- Inspired by Snowplow's Iglu schema registry
+
+### Links
+- **Main Repository:** https://github.com/benthepsychologist/canonizer
+- **Registry Repository:** https://github.com/benthepsychologist/canonizer-registry
+- **Documentation:** [docs/REGISTRY.md](docs/REGISTRY.md)
+- **AIP:** AIP-canonizer-2025-11-12-001
+
+---
+
+## [Unreleased]
+
+### Planned for v0.2
+- `can registry publish` - Open PR via GitHub API
+- Auto-bump version based on diff/patch
+- Compatibility matrix validation
+- LLM-assisted transform scaffolding
+- Increased CLI test coverage (target: 70%+)
+- Node.js JSONata runtime auto-installation
+
+---
+
+*This changelog follows the [Keep a Changelog](https://keepachangelog.com/) format.*

@@ -47,10 +47,11 @@ llm = [
 can = "canonizer.cli.main:app"
 
 [project.urls]
-Homepage = "https://github.com/ben_machina/canonizer"
-Documentation = "https://github.com/ben_machina/canonizer#readme"
-Repository = "https://github.com/ben_machina/canonizer"
-Issues = "https://github.com/ben_machina/canonizer/issues"
+Homepage = "https://github.com/benthepsychologist/canonizer"
+Documentation = "https://github.com/benthepsychologist/canonizer#readme"
+Repository = "https://github.com/benthepsychologist/canonizer"
+Issues = "https://github.com/benthepsychologist/canonizer/issues"
+Registry = "https://github.com/benthepsychologist/canonizer-registry"
 
 [build-system]
 requires = ["hatchling"]

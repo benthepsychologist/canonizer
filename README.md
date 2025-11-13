@@ -1,10 +1,17 @@
 # Canonizer
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/benthepsychologist/canonizer/releases)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+[![Registry](https://img.shields.io/badge/registry-official-green.svg)](https://github.com/benthepsychologist/canonizer-registry)
+
 **Pure JSON transformation tool. No ingestion. No storage. Just transforms.**
 
 The tool that should have come in the box. Transform JSON from source shapes (Gmail, Exchange, QuickBooks) to canonical schemas with versioning and validation.
 
 Your orchestrator (Snowplow, Airflow, Dagster) calls Canonizer. Canonizer doesn't call anything.
+
+📖 **[Changelog](CHANGELOG.md)** | 🔧 **[Registry Guide](docs/REGISTRY.md)** | 📦 **[Registry](https://github.com/benthepsychologist/canonizer-registry)**
 
 ## What is Canonizer?
 
@@ -61,7 +68,7 @@ It fills the gap between **schema registries** (Iglu) and **data pipelines** (Ai
 
 ```bash
 # Clone the repo
-git clone https://github.com/ben_machina/canonizer.git
+git clone https://github.com/benthepsychologist/canonizer.git
 cd canonizer
 
 # Install with uv (recommended)
@@ -77,10 +84,34 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### 1. Transform JSON data
+### 1. Use transforms from the registry
+
+The easiest way to get started is using the official registry:
 
 ```bash
-# Execute a transform
+# List available transforms
+can registry list
+
+# Search for transforms by schema
+can registry search --from iglu:com.google/gmail_email/jsonschema/1-0-0
+
+# Get details about a transform
+can registry info email/gmail_to_canonical@latest
+
+# Pull a transform to local cache
+can registry pull email/gmail_to_canonical@1.0.0
+
+# Use the pulled transform
+can transform run \
+  --meta ~/.cache/canonizer/registry/.../email/gmail_to_canonical/1.0.0/spec.meta.yaml \
+  --input sample_gmail.json \
+  --output canonical_email.json
+```
+
+### 2. Transform JSON data locally
+
+```bash
+# Execute a local transform
 can transform run \
   --meta transforms/email/gmail_to_canonical.meta.yaml \
   --input sample_gmail.json \
@@ -90,7 +121,7 @@ can transform run \
 cat sample_gmail.json | can transform run --meta transforms/email/gmail_to_canonical.meta.yaml
 ```
 
-### 2. Validate against schema
+### 3. Validate against schema
 
 ```bash
 can validate run \
@@ -98,13 +129,7 @@ can validate run \
   --data canonical_email.json
 ```
 
-### 3. List available transforms
-
-```bash
-can transform list --dir transforms/
-```
-
-### 4. Use the registry client
+### 4. Use the Python API
 
 ```python
 from canonizer.registry import RegistryClient
@@ -125,6 +150,46 @@ print(transform.jsonata)  # JSONata source code
 # Fetch a schema
 schema = client.fetch_schema("iglu:org.canonical/email/jsonschema/1-0-0")
 ```
+
+## Transform Registry
+
+Canonizer includes a **Git-based transform registry** for discovering and sharing transforms.
+
+### Official Registry
+
+**Repository:** https://github.com/benthepsychologist/canonizer-registry
+
+The official registry provides:
+- Versioned transforms with checksums
+- CI-driven validation
+- Community contributions via PR
+- HTTP-based discovery
+
+### Using the Registry
+
+```bash
+# Discover transforms
+can registry list
+can registry search --to iglu:org.canonical/email/jsonschema/1-0-0
+
+# Pull and use a transform
+can registry pull email/gmail_to_canonical@1.0.0
+can transform run --meta ~/.cache/canonizer/registry/.../spec.meta.yaml --input in.json
+
+# Validate before contributing
+can registry validate my_transform/1.0.0/
+```
+
+### Contributing Transforms
+
+See [`docs/REGISTRY.md`](docs/REGISTRY.md) for the complete contribution guide.
+
+**Quick steps:**
+1. Create transform directory: `transforms/<domain>/<id>/<version>/`
+2. Add `spec.jsonata` and `spec.meta.yaml`
+3. Add golden tests in `tests/`
+4. Validate locally: `can registry validate <path>`
+5. Open PR to [canonizer-registry](https://github.com/benthepsychologist/canonizer-registry)
 
 ## Architecture
 
@@ -166,28 +231,55 @@ schema = client.fetch_schema("iglu:org.canonical/email/jsonschema/1-0-0")
 
 ## CLI Commands (`can`)
 
+### Transform Commands
 ```bash
-# Transform
+# Execute a transform
 can transform run --meta <meta.yaml> --input <json> --output <json>
+
+# List local transforms
 can transform list --dir transforms/
+```
 
-# Validate
+### Validation Commands
+```bash
+# Validate JSON against schema
 can validate run --schema <schema.json> --data <json>
+```
 
-# Registry (fetch transforms from remote registry)
-can registry list                        # List available transforms
-can registry pull <transform-id>         # Download transform to local cache
-can registry info <transform-id>         # Show transform metadata
+### Registry Commands
+```bash
+# List all available transforms
+can registry list [--status stable] [--refresh]
 
-# Diff (schema evolution)
+# Search for transforms
+can registry search --from <schema-uri>      # By input schema
+can registry search --to <schema-uri>        # By output schema
+can registry search --id <transform-id>      # By ID
+can registry search --status stable          # By status
+
+# Get transform information
+can registry info <id>@<version>             # Specific version
+can registry info <id>@latest                # Latest version
+
+# Pull transform to local cache
+can registry pull <id>@<version>
+can registry pull email/gmail_to_canonical@1.0.0
+
+# Validate transform directory
+can registry validate <path>
+can registry validate transforms/email/my_transform/1.0.0/
+```
+
+### Schema Evolution Commands
+```bash
+# Compare schemas and detect changes
 can diff run --from <v1.json> --to <v2.json> --output <patch.json>
 
-# Patch (apply mechanical updates)
+# Apply mechanical updates to transforms
 can patch run --transform <file.jsonata> --patch <patch.json> --output <new.jsonata>
-
-# Scaffold (LLM-assisted generation)
-can scaffold --from-schema <json> --to-schema <json> --output-dir transforms/
 ```
+
+See [`docs/REGISTRY.md`](docs/REGISTRY.md) for detailed registry documentation.
 
 ## Transform Structure
 
