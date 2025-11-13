@@ -116,7 +116,7 @@ def test_apply_rename_no_match():
 
 def test_bump_version():
     """Test version bumping (MINOR/REVISION)."""
-    from canonizer.registry.transform_meta import TransformMeta
+    from canonizer.registry.transform_meta import Checksum, Provenance, TransformMeta
     from datetime import datetime, UTC
 
     meta = TransformMeta(
@@ -128,11 +128,12 @@ def test_bump_version():
         to_schema="iglu:com.example/test/jsonschema/1-0-0",
         spec_path="test.jsonata",
         tests=[],
-        checksum="sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        checksum=Checksum(jsonata_sha256="0" * 64),
+        provenance=Provenance(
+            author="Test <test@example.com>",
+            created_utc=datetime.now(UTC),
+        ),
         status="stable",
-        author="test@example.com",
-        created=datetime.now(UTC),
-        redact_fields=[],
     )
 
     updated = TransformPatcher._bump_version(meta)
@@ -142,7 +143,7 @@ def test_bump_version():
 
 def test_bump_version_resets_addition():
     """Test that bumping REVISION resets ADDITION to 0."""
-    from canonizer.registry.transform_meta import TransformMeta
+    from canonizer.registry.transform_meta import Checksum, Provenance, TransformMeta
     from datetime import datetime, UTC
 
     meta = TransformMeta(
@@ -154,11 +155,12 @@ def test_bump_version_resets_addition():
         to_schema="iglu:com.example/test/jsonschema/1-0-0",
         spec_path="test.jsonata",
         tests=[],
-        checksum="sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        checksum=Checksum(jsonata_sha256="0" * 64),
+        provenance=Provenance(
+            author="Test <test@example.com>",
+            created_utc=datetime.now(UTC),
+        ),
         status="stable",
-        author="test@example.com",
-        created=datetime.now(UTC),
-        redact_fields=[],
     )
 
     updated = TransformPatcher._bump_version(meta)
@@ -181,11 +183,12 @@ from_schema: iglu:com.example/test/jsonschema/1-0-0
 to_schema: iglu:com.example/test/jsonschema/1-0-0
 spec_path: test.jsonata
 tests: []
-checksum: sha256:2af4e406be6f667342013c68001bc2d5850e90293acc6f0890b1889a46f8b7d9
+checksum:
+  jsonata_sha256: 2af4e406be6f667342013c68001bc2d5850e90293acc6f0890b1889a46f8b7d9
+provenance:
+  author: "Test <test@example.com>"
+  created_utc: "2025-11-10T00:00:00Z"
 status: stable
-author: test@example.com
-created: "2025-11-10T00:00:00Z"
-redact_fields: []
 """
     meta_path.write_text(meta_content)
 
@@ -231,11 +234,12 @@ from_schema: iglu:com.example/test/jsonschema/1-0-0
 to_schema: iglu:com.example/test/jsonschema/1-0-0
 spec_path: test.jsonata
 tests: []
-checksum: sha256:1d59ad4e640421855dd69fd5f8afee42dd3da09ee01efd02b9b01937bd86599e
+checksum:
+  jsonata_sha256: 1d59ad4e640421855dd69fd5f8afee42dd3da09ee01efd02b9b01937bd86599e
+provenance:
+  author: "Test <test@example.com>"
+  created_utc: "2025-11-10T00:00:00Z"
 status: stable
-author: test@example.com
-created: "2025-11-10T00:00:00Z"
-redact_fields: []
 """
     meta_path.write_text(meta_content)
 
@@ -278,11 +282,12 @@ from_schema: iglu:com.example/test/jsonschema/1-0-0
 to_schema: iglu:com.example/test/jsonschema/1-0-0
 spec_path: test.jsonata
 tests: []
-checksum: sha256:2af4e406be6f667342013c68001bc2d5850e90293acc6f0890b1889a46f8b7d9
+checksum:
+  jsonata_sha256: 2af4e406be6f667342013c68001bc2d5850e90293acc6f0890b1889a46f8b7d9
+provenance:
+  author: "Test <test@example.com>"
+  created_utc: "2025-11-10T00:00:00Z"
 status: stable
-author: test@example.com
-created: "2025-11-10T00:00:00Z"
-redact_fields: []
 """
     meta_path.write_text(meta_content)
 

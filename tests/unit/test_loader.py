@@ -1,7 +1,7 @@
 """Unit tests for TransformLoader."""
 
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -30,9 +30,13 @@ def test_load_transform_success(tmp_path: Path):
         "from_schema": "iglu:com.google/test/jsonschema/1-0-0",
         "to_schema": "iglu:org.canonical/test/jsonschema/1-0-0",
         "spec_path": "test.jsonata",
-        "checksum": f"sha256:{checksum}",
-        "author": "test@example.com",
-        "created": datetime.now().isoformat(),
+        "checksum": {
+            "jsonata_sha256": checksum,
+        },
+        "provenance": {
+            "author": "Test <test@example.com>",
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        },
         "status": "stable",
     }
 
@@ -69,9 +73,13 @@ def test_load_transform_missing_jsonata_file(tmp_path: Path):
         "from_schema": "iglu:com.google/test/jsonschema/1-0-0",
         "to_schema": "iglu:org.canonical/test/jsonschema/1-0-0",
         "spec_path": "missing.jsonata",
-        "checksum": "sha256:" + "a" * 64,
-        "author": "test@example.com",
-        "created": datetime.now().isoformat(),
+        "checksum": {
+            "jsonata_sha256": "a" * 64,
+        },
+        "provenance": {
+            "author": "Test <test@example.com>",
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        },
     }
 
     meta_file = tmp_path / "test.meta.yaml"
@@ -97,9 +105,13 @@ def test_load_transform_checksum_mismatch(tmp_path: Path):
         "from_schema": "iglu:com.google/test/jsonschema/1-0-0",
         "to_schema": "iglu:org.canonical/test/jsonschema/1-0-0",
         "spec_path": "test.jsonata",
-        "checksum": "sha256:" + "a" * 64,  # Wrong checksum
-        "author": "test@example.com",
-        "created": datetime.now().isoformat(),
+        "checksum": {
+            "jsonata_sha256": "a" * 64,  # Wrong checksum
+        },
+        "provenance": {
+            "author": "Test <test@example.com>",
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        },
     }
 
     meta_file = tmp_path / "test.meta.yaml"
@@ -161,9 +173,13 @@ def test_load_transform_with_test_fixtures(tmp_path: Path):
                 "expect": "../../tests/golden/test/output.json",
             }
         ],
-        "checksum": f"sha256:{checksum}",
-        "author": "test@example.com",
-        "created": datetime.now().isoformat(),
+        "checksum": {
+            "jsonata_sha256": checksum,
+        },
+        "provenance": {
+            "author": "Test <test@example.com>",
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        },
     }
 
     meta_file = tmp_path / "test.meta.yaml"

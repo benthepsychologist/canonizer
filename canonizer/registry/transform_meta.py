@@ -15,6 +15,40 @@ class TestFixture(BaseModel):
     expect: str = Field(..., description="Relative path to expected output JSON file")
 
 
+class Compat(BaseModel):
+    """Compatibility information for schema version ranges."""
+
+    from_schema_range: str | None = Field(
+        None,
+        description="Compatible input schema version range (Iglu format, e.g., '1-0-0 .. 1-2-x')",
+    )
+
+
+class Provenance(BaseModel):
+    """Provenance information for transform authorship and creation."""
+
+    author: str = Field(..., description="Author name and email (e.g., 'Name <email@example.com>')")
+    created_utc: datetime = Field(..., description="Creation timestamp (ISO 8601 UTC)")
+
+    @field_validator("created_utc")
+    @classmethod
+    def validate_utc_timestamp(cls, v: datetime) -> datetime:
+        """Ensure timestamp is UTC."""
+        if v.tzinfo is None:
+            raise ValueError("created_utc must include timezone information (UTC)")
+        return v
+
+
+class Checksum(BaseModel):
+    """Checksum information for integrity verification."""
+
+    jsonata_sha256: str = Field(
+        ...,
+        description="SHA256 hex digest of spec.jsonata file",
+        pattern=r"^[a-f0-9]{64}$",
+    )
+
+
 class TransformMeta(BaseModel):
     """
     Transform metadata sidecar (.meta.yaml).
@@ -25,8 +59,8 @@ class TransformMeta(BaseModel):
 
     id: str = Field(
         ...,
-        description="Unique transform identifier (e.g., 'gmail_to_canonical_email')",
-        pattern=r"^[a-z0-9_]+$",
+        description="Unique transform identifier (e.g., 'email/gmail_to_canonical')",
+        pattern=r"^[a-z0-9_]+(/[a-z0-9_]+)?$",
     )
     version: str = Field(
         ...,
@@ -37,7 +71,7 @@ class TransformMeta(BaseModel):
         default="jsonata", description="Transform engine (currently only jsonata)"
     )
     runtime: Literal["node", "python"] = Field(
-        default="node",
+        default="python",
         description="Runtime to use (node=official, python=fast-path fallback)",
     )
     from_schema: str = Field(
@@ -56,16 +90,16 @@ class TransformMeta(BaseModel):
     tests: list[TestFixture] = Field(
         default_factory=list, description="Golden test fixtures"
     )
-    checksum: str = Field(
-        ...,
-        description="SHA256 checksum of .jsonata file (format: sha256:hexdigest)",
-        pattern=r"^sha256:[a-f0-9]{64}$",
-    )
+    checksum: Checksum = Field(..., description="Checksum information for integrity verification")
+    compat: Compat | None = Field(None, description="Compatibility information (optional)")
+    provenance: Provenance = Field(..., description="Provenance information (author, creation date)")
     status: Literal["draft", "stable", "deprecated"] = Field(
         default="draft", description="Transform lifecycle status"
     )
-    author: str = Field(..., description="Author email")
-    created: datetime = Field(..., description="Creation timestamp (ISO 8601)")
+
+    # Legacy fields for backwards compatibility (deprecated)
+    author: str | None = Field(None, description="DEPRECATED: Use provenance.author instead")
+    created: datetime | None = Field(None, description="DEPRECATED: Use provenance.created_utc instead")
 
     @field_validator("spec_path")
     @classmethod
@@ -83,7 +117,7 @@ class TransformMeta(BaseModel):
             meta_yaml_path: Path to the .meta.yaml file
 
         Returns:
-            Checksum in format "sha256:hexdigest"
+            Hex digest string (without prefix)
         """
         jsonata_path = meta_yaml_path.parent / self.spec_path
         if not jsonata_path.exists():
@@ -91,7 +125,7 @@ class TransformMeta(BaseModel):
 
         sha256 = hashlib.sha256()
         sha256.update(jsonata_path.read_bytes())
-        return f"sha256:{sha256.hexdigest()}"
+        return sha256.hexdigest()
 
     def verify_checksum(self, meta_yaml_path: Path) -> bool:
         """
@@ -104,4 +138,4 @@ class TransformMeta(BaseModel):
             True if checksum matches, False otherwise
         """
         computed = self.compute_checksum(meta_yaml_path)
-        return computed == self.checksum
+        return computed == self.checksum.jsonata_sha256
