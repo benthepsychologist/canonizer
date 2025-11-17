@@ -1,0 +1,25 @@
+{
+  "session_id": $string(sessionid ? sessionid : appointmentid),
+  "scheduled_start": scheduledstart,
+  "scheduled_end": scheduledend,
+  "actual_start": actualstart,
+  "actual_end": actualend,
+  "subject": subject,
+  "description": description,
+  "status": $lookup({
+    "1": "scheduled",
+    "2": "completed",
+    "3": "cancelled",
+    "4": "in_progress",
+    "5": "no_show"
+  }, $string(statuscode)),
+  "contact_id": $string(regardingobjectid ? regardingobjectid : _ben_contactid_value),
+  "session_type": _ben_sessiontype_value,
+  "duration_minutes": scheduleddurationminutes,
+  "created_at": createdon,
+  "updated_at": modifiedon,
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v1"
+  }
+}

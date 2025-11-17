@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "iglu:org.canonical/contact/jsonschema/1-0-0",
+  "description": "Canonical schema for contact/person data",
+  "type": "object",
+  "properties": {
+    "contact_id": {
+      "type": "string",
+      "description": "Unique identifier for the contact"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Contact's first name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Contact's last name"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Primary email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Primary phone number"
+    },
+    "mobile": {
+      "type": "string",
+      "description": "Mobile phone number"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth in ISO 8601 format"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "line1": {
+          "type": "string",
+          "description": "Address line 1"
+        },
+        "line2": {
+          "type": "string",
+          "description": "Address line 2"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "state": {
+          "type": "string",
+          "description": "State or province"
+        },
+        "postal_code": {
+          "type": "string",
+          "description": "ZIP or postal code"
+        },
+        "country": {
+          "type": "string",
+          "description": "Country"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when contact was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when contact was last updated"
+    },
+    "source": {
+      "type": "object",
+      "required": ["platform"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Source platform name"
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "Source platform API version"
+        }
+      }
+    }
+  },
+  "required": ["contact_id", "source"]
+}

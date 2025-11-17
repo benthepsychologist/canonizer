@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "iglu:org.canonical/report/jsonschema/1-0-0",
+  "description": "Canonical schema for clinical report/document data",
+  "type": "object",
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "Unique identifier for the report"
+    },
+    "title": {
+      "type": "string",
+      "description": "Report title"
+    },
+    "report_type": {
+      "type": "string",
+      "description": "Type or category of report"
+    },
+    "report_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date the report was created or issued"
+    },
+    "content": {
+      "type": "string",
+      "description": "Report content or body text"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "Related contact/patient identifier"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Related clinical session identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "final", "amended", "archived"],
+      "description": "Current status of the report"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when report record was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when report record was last updated"
+    },
+    "source": {
+      "type": "object",
+      "required": ["platform"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Source platform name"
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "Source platform API version"
+        }
+      }
+    }
+  },
+  "required": ["report_id", "source"]
+}

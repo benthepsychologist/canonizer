@@ -1,0 +1,21 @@
+{
+  "report_id": $string(reportid ? reportid : annotationid),
+  "title": subject ? subject : filename,
+  "report_type": _ben_reporttype_value,
+  "report_date": $string(reportdate ? reportdate : createdon),
+  "content": notetext ? notetext : documentbody,
+  "contact_id": $string(_ben_contactid_value ? _ben_contactid_value : objectid),
+  "session_id": $string(_ben_sessionid_value),
+  "status": $lookup({
+    "1": "draft",
+    "2": "final",
+    "3": "amended",
+    "4": "archived"
+  }, $string(statuscode)),
+  "created_at": createdon,
+  "updated_at": modifiedon,
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v1"
+  }
+}

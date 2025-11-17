@@ -179,16 +179,79 @@ This is the initial release. No migration required.
 - 100% test pass rate for email transforms
 - Registry CI validation passing with Python jsonata
 
+## [0.3.0] - 2025-11-17
+
+### Added
+
+#### Dataverse Canonicalization (AIP-canonizer-2025-11-17-001)
+- **3 canonical JSON schemas:**
+  - `transforms/schemas/canonical/contact_v1-0-0.json` - Contact/person data schema
+  - `transforms/schemas/canonical/clinical_session_v1-0-0.json` - Clinical appointment/session schema
+  - `transforms/schemas/canonical/report_v1-0-0.json` - Clinical report/document schema
+
+- **3 Dataverse transforms:**
+  - `transforms/contact/dataverse_contact_to_canonical_v1.jsonata` - Dataverse Contact → Canonical
+  - `transforms/clinical_session/dataverse_session_to_canonical_v1.jsonata` - Dataverse Session → Canonical
+  - `transforms/report/dataverse_report_to_canonical_v1.jsonata` - Dataverse Report → Canonical
+
+- **Comprehensive governance documentation:**
+  - `artifacts/governance/decision-log.md` - 10 design decisions with rationale
+  - `artifacts/governance/transform-mappings.md` - Complete field mapping reference for all 3 transforms
+  - `artifacts/test/test-pass-confirmation.md` - Test results and validation status
+
+### Technical Details
+- **Contact Transform Features:**
+  - Standard Dataverse field mapping (contactid, firstname, lastname, etc.)
+  - Conditional address object creation (only when data present)
+  - Support for email, phone, mobile fields
+  - Birth date and timestamp handling
+
+- **Clinical Session Transform Features:**
+  - Status code mapping (integer → readable strings: scheduled/completed/cancelled/in_progress/no_show)
+  - Fallback handling for field name variations (sessionid/appointmentid)
+  - Custom field support with `_ben_` prefix assumption
+  - Duration and scheduling metadata
+
+- **Report Transform Features:**
+  - Dual entity type support (custom Report entity or standard Annotation entity)
+  - Fallback chaining for flexible field mapping
+  - Status enumeration (draft/final/amended/archived)
+  - Content handling for text and binary documents
+
+- **Design Patterns:**
+  - ISO 8601 date/datetime formats for portability
+  - GUID string coercion with `$string()` for consistency
+  - Source metadata injection (`platform: "dataverse", platform_version: "v1"`)
+  - Conditional object creation to avoid empty nested objects
+
+### Quality Metrics
+- 94 total tests passing (maintained from v0.2)
+- 44% overall code coverage (maintained)
+- Ruff linting: All checks passed
+- No regressions introduced
+
+### Known Limitations
+- No Dataverse sample data available for validation yet (pending tap-dataverse output)
+- Field names based on standard Dataverse schema (may need adjustment for custom deployments)
+- Test coverage remains at 44% (target: 70%+)
+- `.meta.yaml` metadata files deferred until real data validation
+
+### Next Steps
+- Validate transforms against real Dataverse data when available from tap-dataverse
+- Create `.meta.yaml` metadata files with checksums
+- Add integration tests for new transforms
+- Consider publishing to canonizer-registry
+
 ## [Unreleased]
 
-### Planned for v0.3
+### Planned for v0.4
 - `can registry publish` - Open PR via GitHub API
 - Auto-bump version based on diff/patch
 - Compatibility matrix validation
 - LLM-assisted transform scaffolding
 - Increased CLI test coverage (target: 70%+)
 - Calendar event canonicalization
-- Contacts/people canonicalization
+- Additional healthcare data transforms (HL7, FHIR)
 
 ---
 

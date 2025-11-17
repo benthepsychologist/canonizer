@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "iglu:org.canonical/clinical_session/jsonschema/1-0-0",
+  "description": "Canonical schema for clinical session/appointment data",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier for the clinical session"
+    },
+    "scheduled_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled start time in ISO 8601 format"
+    },
+    "scheduled_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled end time in ISO 8601 format"
+    },
+    "actual_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual start time in ISO 8601 format"
+    },
+    "actual_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual end time in ISO 8601 format"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Session title or subject"
+    },
+    "description": {
+      "type": "string",
+      "description": "Session notes or description"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["scheduled", "in_progress", "completed", "cancelled", "no_show"],
+      "description": "Current status of the session"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "Related contact/patient identifier"
+    },
+    "session_type": {
+      "type": "string",
+      "description": "Type or category of session"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Session duration in minutes"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when session record was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when session record was last updated"
+    },
+    "source": {
+      "type": "object",
+      "required": ["platform"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Source platform name"
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "Source platform API version"
+        }
+      }
+    }
+  },
+  "required": ["session_id", "source"]
+}

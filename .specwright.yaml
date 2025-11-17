@@ -9,4 +9,4 @@ user:
   default_tier: C
 current:
   spec: .specwright/specs/dataverse-contacts-sessions-reports.md
-  aip: /home/user/canonizer/.specwright/aips/register-and-canonize-questionnaires.yaml
+  aip: /home/user/canonizer/.specwright/aips/dataverse-contacts-sessions-reports.yaml

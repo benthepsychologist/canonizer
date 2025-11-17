@@ -1,0 +1,163 @@
+aip_id: AIP-canonizer-2025-11-17-001
+context:
+  background: 'We need to create 3 Dataverse transforms to complete the data pipeline. Gmail and Exchange
+    email transforms already exist, but we need transforms for Dataverse contacts, clinical sessions,
+    and reports extracted from Dynamics 365.
+
+
+    These transforms are needed for the lorchestra pipeline to canonize all extracted Dataverse data from
+    tap-dataverse. Sample input files should be available in `/home/user/phi-data/vault/`.'
+  constraints:
+  - No edits under protected paths (`src/core/**`, `infra/**`)
+created: '2025-11-17T14:58:11.399272+00:00'
+meta:
+  created_at: '2025-11-17T14:58:11.399272+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - CI green (lint + unit)
+  - No protected paths modified
+  - 70% test coverage achieved
+  - All 3 Dataverse transforms created with proper JSONata mappings
+  - All 3 canonical JSON schemas defined
+  - Transforms validated against sample Dataverse data
+  goal: Implement dataverse contacts sessions reports
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-11-17-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Planning & Design
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - artifacts/plan/plan-01.md
+  prompt: 'Review existing email transforms (Gmail/Exchange to canonical) to understand the JSONata transform
+    format and canonical schema structure. Identify the directory structure and naming conventions.
+
+    Examine sample Dataverse data in `/home/user/phi-data/vault/` to understand the input schema for contacts,
+    sessions, and reports.'
+  role: coding_agent
+  step_id: step-001
+- description: Define Canonical Schemas
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - transforms/schemas/canonical/contact_v1-0-0.json
+  - transforms/schemas/canonical/clinical_session_v1-0-0.json
+  - transforms/schemas/canonical/report_v1-0-0.json
+  prompt: 'Create 3 canonical JSON schemas in `transforms/schemas/canonical/`:
+
+    1. `contact_v1-0-0.json` - Based on standard contact fields
+
+    2. `clinical_session_v1-0-0.json` - For clinical appointment/session data
+
+    3. `report_v1-0-0.json` - For clinical reports/documents
+
+    Follow the same structure as `email_v1-0-0.json` if it exists.'
+  role: coding_agent
+  step_id: step-002
+- description: Create Contact Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - transforms/contact/dataverse_contact_to_canonical_v1.jsonata
+  prompt: 'Create Dataverse Contact → Canonical Contact transform.
+
+    **Key field mappings:**
+
+    - contactid → contact_id
+
+    - firstname → first_name
+
+    - lastname → last_name
+
+    - emailaddress1 → email
+
+    - telephone1 → phone
+
+    - address1_* → address {}
+
+    - birthdate → birth_date
+
+    - createdon → created_at
+
+    **File:** `transforms/contact/dataverse_contact_to_canonical_v1.jsonata`'
+  role: coding_agent
+  step_id: step-003
+- description: Create Clinical Session Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - transforms/clinical_session/dataverse_session_to_canonical_v1.jsonata
+  prompt: 'Create Dataverse Session → Canonical Clinical Session transform.
+
+    Map session-specific fields including appointment details, notes, participants, duration, etc. based
+    on the Dynamics 365 custom session entity schema.
+
+    **File:** `transforms/clinical_session/dataverse_session_to_canonical_v1.jsonata`'
+  role: coding_agent
+  step_id: step-004
+- description: Create Report Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - transforms/report/dataverse_report_to_canonical_v1.jsonata
+  prompt: 'Create Dataverse Report → Canonical Report transform.
+
+    Map report/document entity fields including report metadata, content references, and associated entities.
+
+    **File:** `transforms/report/dataverse_report_to_canonical_v1.jsonata`'
+  role: coding_agent
+  step_id: step-005
+- description: Testing & Validation
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - artifacts/test/test-pass-confirmation.md
+  prompt: 'Validate all 3 transforms against sample Dataverse data from `/home/user/phi-data/vault/`.
+
+    Test that the JSONata transforms produce valid output matching the canonical schemas.'
+  role: coding_agent
+  step_id: step-006
+- description: Governance
+  gate_ref: 'G4: Post-Implementation'
+  kind: code
+  outputs:
+  - artifacts/governance/decision-log.md
+  - artifacts/governance/transform-mappings.md
+  prompt: 'Document the transform mappings and schema decisions. Include:
+
+    - Field mapping rationale for each transform
+
+    - Any data transformation decisions (e.g., date formats, null handling)
+
+    - Notes on Dataverse-specific considerations'
+  role: coding_agent
+  step_id: step-007
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/dataverse-contacts-sessions-reports
+spec_version: 1.0.0
+tier: C
+title: dataverse contacts sessions reports
+updated: '2025-11-17T14:58:11.399272+00:00'
+version: '0.1'
+
