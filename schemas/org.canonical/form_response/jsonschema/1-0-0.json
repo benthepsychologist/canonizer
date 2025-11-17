@@ -1,0 +1,201 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Canonical schema for form responses across all platforms (Google Forms, Typeform, Microsoft Forms, etc.). Represents a normalized form submission with questions and answers, independent of the source platform. This is the target for schema transformation - questionnaire extraction and scoring happens downstream as data processing.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "form_response",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "response_id": {
+      "type": "string",
+      "description": "Unique identifier for this form response (may be platform-specific ID)",
+      "examples": ["ACYDBNj_xyz789", "resp_abc123"]
+    },
+    "form_id": {
+      "type": "string",
+      "description": "Identifier of the form that was submitted",
+      "examples": ["1FAIpQLSe_abc123", "form_xyz", "initial-1"]
+    },
+    "form_name": {
+      "type": "string",
+      "description": "Human-readable name of the form",
+      "examples": ["MBC Initial Assessment", "Weekly Check-in", "Intake Questionnaire"]
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the form was first submitted",
+      "examples": ["2024-05-22T15:09:51Z"]
+    },
+    "last_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the form was last updated (for editable forms)"
+    },
+    "source": {
+      "type": "object",
+      "description": "Information about the source platform",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Source platform name",
+          "examples": ["google_forms", "typeform", "microsoft_forms", "qualtrics", "surveymonkey"]
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "API version or platform version",
+          "examples": ["v1", "2024.1"]
+        }
+      },
+      "required": ["platform"],
+      "additionalProperties": true
+    },
+    "respondent": {
+      "type": "object",
+      "description": "Information about the person who submitted the form",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of respondent (if collected)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of respondent (if collected)"
+        },
+        "external_id": {
+          "type": "string",
+          "description": "External identifier (e.g., from CRM, user database)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "answers": {
+      "type": "array",
+      "description": "Array of question-answer pairs in submission order",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "description": "Platform-specific identifier for this question",
+            "examples": ["1a2b3c4d", "q_12345", "field_abc"]
+          },
+          "question_text": {
+            "type": "string",
+            "description": "The question text as shown to the respondent (optional but recommended)"
+          },
+          "answer_value": {
+            "description": "The answer value - type varies by question type",
+            "oneOf": [
+              {"type": "string"},
+              {"type": "number"},
+              {"type": "boolean"},
+              {"type": "array", "items": {"type": "string"}},
+              {"type": "null"}
+            ]
+          },
+          "answer_type": {
+            "type": "string",
+            "description": "Type of answer/question",
+            "enum": ["text", "choice", "multiple_choice", "number", "date", "time", "email", "url", "file", "scale", "grid", "boolean"],
+            "examples": ["choice", "text", "scale"]
+          },
+          "answer_text": {
+            "type": "string",
+            "description": "Human-readable answer text (e.g., 'Several days' instead of numeric code)"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata about this answer",
+            "properties": {
+              "file_ids": {
+                "type": "array",
+                "description": "File IDs for file upload questions",
+                "items": {"type": "string"}
+              },
+              "grade": {
+                "type": "object",
+                "description": "Grading information if form has scoring",
+                "properties": {
+                  "score": {"type": "number"},
+                  "correct": {"type": "boolean"}
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "required": ["question_id", "answer_value"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "status": {
+      "type": "string",
+      "description": "Submission status",
+      "enum": ["submitted", "in_progress", "partial", "edited"],
+      "default": "submitted"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the submission",
+      "properties": {
+        "total_score": {
+          "type": "number",
+          "description": "Total score if form has built-in scoring"
+        },
+        "completion_time_seconds": {
+          "type": "number",
+          "description": "Time taken to complete the form in seconds"
+        },
+        "ip_address": {
+          "type": "string",
+          "description": "IP address of respondent (privacy considerations apply)"
+        },
+        "user_agent": {
+          "type": "string",
+          "description": "Browser user agent string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["response_id", "form_id", "submitted_at", "answers"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "response_id": "ACYDBNj_xyz789",
+      "form_id": "1FAIpQLSe_abc123",
+      "form_name": "MBC Initial Assessment",
+      "submitted_at": "2024-05-22T15:09:51Z",
+      "source": {
+        "platform": "google_forms",
+        "platform_version": "v1"
+      },
+      "respondent": {
+        "email": "client@example.com"
+      },
+      "answers": [
+        {
+          "question_id": "1a2b3c4d",
+          "question_text": "Little interest or pleasure in doing things",
+          "answer_value": "Not at all",
+          "answer_type": "choice",
+          "answer_text": "Not at all"
+        },
+        {
+          "question_id": "5e6f7g8h",
+          "question_text": "Feeling down, depressed, or hopeless",
+          "answer_value": "Several days",
+          "answer_type": "choice",
+          "answer_text": "Several days"
+        }
+      ],
+      "status": "submitted"
+    }
+  ]
+}
