@@ -9,5 +9,4 @@ user:
   default_tier: C
 current:
   spec: .specwright/specs/register-and-canonize-questionnaires.md
-  aip: /home/user/canonizer/.specwright/aips/email-formats-and-registry-update.yaml
-
+  aip: /home/user/canonizer/.specwright/aips/register-and-canonize-questionnaires.yaml

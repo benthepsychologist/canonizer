@@ -1,0 +1,82 @@
+aip_id: AIP-canonizer-2025-11-17-001
+context:
+  background: 'The canonizer tool separates data transformation into two layers:
+
+    - **Layer 1 (Canonizer)**: Platform normalization - converting platform-specific API formats to canonical
+    schemas
+
+    - **Layer 2 (Separate tool)**: Domain processing - extracting domain entities (questionnaires, etc.)
+    from canonical data
+
+
+    This work implements Layer 1 for Google Forms, enabling consistent form response processing regardless
+    of platform (Google Forms, Typeform, Microsoft Forms, etc.).'
+  constraints:
+  - Must follow canonizer-registry structure and validation rules
+  - Must use JSONata for transforms (no code execution)
+  - Golden tests required for all transforms
+created: '2025-11-13T20:35:57.903545+00:00'
+meta:
+  created_at: '2025-11-13T20:35:57.903545+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - Google Forms source schema created (com.google/forms_response)
+  - Canonical form_response schema created (org.canonical/form_response)
+  - Google Forms to canonical transform created with JSONata
+  - Golden tests pass for transform
+  - All artifacts added to canonizer-registry
+  - Registry validation passes
+  - Transform discoverable via `can registry` CLI
+  goal: Implement Layer 1 platform normalization for form responses
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-11-17-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Schema Design
+  kind: code
+  role: coding_agent
+  step_id: step-001
+- description: JSONata Transform Creation
+  kind: code
+  role: coding_agent
+  step_id: step-002
+- description: Local Validation
+  kind: code
+  role: coding_agent
+  step_id: step-003
+- description: Registry Integration
+  kind: code
+  role: coding_agent
+  step_id: step-004
+- description: Registry Publication
+  kind: code
+  role: coding_agent
+  step_id: step-005
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: main
+spec_version: 1.0.0
+tier: C
+title: Add Form Response Schemas and Google Forms Transform
+updated: '2025-11-17T14:30:00+00:00'
+version: '0.1'
+
