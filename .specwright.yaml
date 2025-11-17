@@ -8,6 +8,6 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/email-formats-and-registry-update.md
+  spec: .specwright/specs/register-and-canonize-questionnaires.md
   aip: /home/user/canonizer/.specwright/aips/email-formats-and-registry-update.yaml
 
