@@ -1,0 +1,166 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Source schema for Google Forms API responses. Represents FormResponse resource from Google Forms API v1. Contains form submission data including question answers, respondent information, and timestamps. This is the input format for transformation to canonical questionnaire responses.",
+  "self": {
+    "vendor": "com.google",
+    "name": "forms_response",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "formId": {
+      "type": "string",
+      "description": "The form ID that this response belongs to"
+    },
+    "responseId": {
+      "type": "string",
+      "description": "Unique identifier for this form response"
+    },
+    "createTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp for the first time the response was submitted (RFC 3339 format)",
+      "examples": ["2024-03-31T17:52:00Z"]
+    },
+    "lastSubmittedTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp for the most recent time the response was submitted (RFC 3339 format)",
+      "examples": ["2024-03-31T17:52:00Z"]
+    },
+    "respondentEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "The email address of the respondent (if the form is configured to collect email addresses)"
+    },
+    "answers": {
+      "type": "object",
+      "description": "Map of question ID to answer. The keys are question IDs in string format.",
+      "patternProperties": {
+        "^[a-f0-9]+$": {
+          "type": "object",
+          "description": "Answer to a specific question",
+          "properties": {
+            "questionId": {
+              "type": "string",
+              "description": "The question's ID as a string"
+            },
+            "textAnswers": {
+              "type": "object",
+              "description": "Answers to a text-based question (mutually exclusive with fileUploadAnswers)",
+              "properties": {
+                "answers": {
+                  "type": "array",
+                  "description": "Array of text answers",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "description": "The text value of the answer"
+                      }
+                    },
+                    "required": ["value"]
+                  }
+                }
+              },
+              "required": ["answers"]
+            },
+            "fileUploadAnswers": {
+              "type": "object",
+              "description": "Answers to a file upload question (mutually exclusive with textAnswers)",
+              "properties": {
+                "answers": {
+                  "type": "array",
+                  "description": "Array of uploaded files",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "fileId": {
+                        "type": "string",
+                        "description": "The ID of the uploaded file in Google Drive"
+                      },
+                      "fileName": {
+                        "type": "string",
+                        "description": "The file name as stored in Drive"
+                      },
+                      "mimeType": {
+                        "type": "string",
+                        "description": "The MIME type of the file"
+                      }
+                    },
+                    "required": ["fileId"]
+                  }
+                }
+              },
+              "required": ["answers"]
+            },
+            "grade": {
+              "type": "object",
+              "description": "Grading information for this answer (if the form uses grading)",
+              "properties": {
+                "score": {
+                  "type": "number",
+                  "description": "The numeric score awarded for this answer"
+                },
+                "correct": {
+                  "type": "boolean",
+                  "description": "Whether the answer is marked as correct"
+                },
+                "feedback": {
+                  "type": "object",
+                  "description": "Feedback for this specific answer",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "Text feedback"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["questionId"]
+        }
+      }
+    },
+    "totalScore": {
+      "type": "number",
+      "description": "The total score for the quiz response (if form is configured as a quiz)"
+    }
+  },
+  "required": ["formId", "responseId", "createTime", "lastSubmittedTime"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "formId": "1FAIpQLSe...",
+      "responseId": "ACYDBNj...",
+      "createTime": "2024-03-31T17:52:00Z",
+      "lastSubmittedTime": "2024-03-31T17:52:00Z",
+      "respondentEmail": "example@example.com",
+      "answers": {
+        "1a2b3c4d": {
+          "questionId": "1a2b3c4d",
+          "textAnswers": {
+            "answers": [
+              {
+                "value": "Never"
+              }
+            ]
+          }
+        },
+        "5e6f7g8h": {
+          "questionId": "5e6f7g8h",
+          "textAnswers": {
+            "answers": [
+              {
+                "value": "Several days"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

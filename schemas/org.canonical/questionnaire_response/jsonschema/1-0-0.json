@@ -1,0 +1,211 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Canonical schema for questionnaire responses. Represents one or more completed questionnaires from a respondent, including item responses and optional computed scores. Supports both single-questionnaire sessions and multi-questionnaire assessment batteries.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "questionnaire_response",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "response_id": {
+      "type": "string",
+      "description": "Unique identifier for this response session",
+      "examples": ["assess_14", "resp_abc123"]
+    },
+    "authored": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when the response was completed",
+      "format": "date-time",
+      "examples": ["2024-03-31T17:52:00Z", "2024-11-12T19:14:45.909157+00:00"]
+    },
+    "source": {
+      "type": "object",
+      "description": "Information about where this response came from",
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Source system that collected the response",
+          "examples": ["google_forms", "typeform", "qualtrics", "manual_entry"]
+        },
+        "form_id": {
+          "type": "string",
+          "description": "Identifier of the form in the source system"
+        },
+        "form_name": {
+          "type": "string",
+          "description": "Name of the form or assessment battery",
+          "examples": ["mbc_initial", "mbc_followup", "intake_assessment"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "respondent": {
+      "type": "object",
+      "description": "Information about the person who completed the questionnaire(s)",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the respondent",
+          "examples": ["bfa_29", "client_123"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the respondent"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the respondent"
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "External system identifiers (CRM contact ID, etc.)",
+          "patternProperties": {
+            "^[a-zA-Z0-9_]+$": {
+              "type": "string"
+            }
+          },
+          "examples": [{"contact_id": "14a028ba-17eb-ef11-be21-6045bd5b9d8b", "crm_id": "CONT-001"}]
+        }
+      },
+      "additionalProperties": true
+    },
+    "questionnaires": {
+      "type": "array",
+      "description": "Array of questionnaire responses (one or more questionnaires completed in this session)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "questionnaire_id": {
+            "type": "string",
+            "description": "Identifier of the questionnaire instrument (matches Questionnaire.id)",
+            "examples": ["phq_9", "gad_7", "fscrs"]
+          },
+          "questionnaire_name": {
+            "type": "string",
+            "description": "Name of the questionnaire",
+            "examples": ["Patient Health Questionnaire-9"]
+          },
+          "questionnaire_version": {
+            "type": "string",
+            "description": "Version of the questionnaire instrument used",
+            "examples": ["1.0", "2.1"]
+          },
+          "item_responses": {
+            "type": "object",
+            "description": "Map of item responses, keyed by item identifier (e.g., 'phq_9_1', 'phq_9_2')",
+            "patternProperties": {
+              "^[a-z0-9_]+$": {
+                "type": ["number", "string", "boolean", "null"],
+                "description": "Response value (type depends on question type)"
+              }
+            },
+            "examples": [
+              {
+                "phq_9_1": 0,
+                "phq_9_2": 1,
+                "phq_9_3": 2
+              }
+            ]
+          },
+          "scores": {
+            "type": "object",
+            "description": "Computed scores for this questionnaire (optional - may be computed downstream)",
+            "patternProperties": {
+              "^[a-z0-9_]+$": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number",
+                    "description": "Computed score value"
+                  },
+                  "interpretation": {
+                    "type": "object",
+                    "description": "Interpretation of the score",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "description": "Interpretation label",
+                        "examples": ["Minimal", "Mild", "Moderate", "Severe"]
+                      },
+                      "severity": {
+                        "type": "string",
+                        "description": "Severity classification",
+                        "examples": ["minimal", "mild", "moderate", "severe"]
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Detailed interpretation"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["value"],
+                "additionalProperties": false
+              }
+            },
+            "examples": [
+              {
+                "phq_9": {
+                  "value": 12,
+                  "interpretation": {
+                    "label": "Moderate",
+                    "severity": "moderate",
+                    "description": "Moderate depression"
+                  }
+                }
+              }
+            ]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Whether this questionnaire was fully completed (all required items answered)",
+            "default": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata specific to this questionnaire response",
+            "additionalProperties": true
+          }
+        },
+        "required": ["questionnaire_id", "item_responses"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "status": {
+      "type": "string",
+      "description": "Overall status of the response",
+      "enum": ["completed", "in-progress", "partial", "entered-in-error"],
+      "default": "completed"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about this response session",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Clinician or provider associated with this response"
+        },
+        "encounter_id": {
+          "type": "string",
+          "description": "Associated clinical encounter identifier"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location where response was collected"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or context"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["response_id", "authored", "questionnaires"],
+  "additionalProperties": false
+}

@@ -1,0 +1,246 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Canonical schema for psychological/clinical questionnaire instruments. Defines the structure, items, scoring rules, and interpretation guidelines for assessment measures. Based on standardized instruments (PHQ-9, GAD-7, etc.) with extensible structure for custom measures.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "questionnaire",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the questionnaire (e.g., 'phq_9', 'gad_7')",
+      "examples": ["phq_9", "gad_7", "msi", "fscrs"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Full name of the questionnaire",
+      "examples": ["Patient Health Questionnaire-9", "Generalized Anxiety Disorder-7"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of what the questionnaire measures and how it works"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the questionnaire instrument",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "examples": ["1.0", "2.1.0"]
+    },
+    "interpretation": {
+      "type": "string",
+      "description": "Clinical interpretation guidelines and usage notes"
+    },
+    "instructions": {
+      "type": "string",
+      "description": "Instructions presented to respondent before questionnaire items",
+      "examples": ["Over the last 2 weeks, how often have you been bothered by the following problems?"]
+    },
+    "item_prefix": {
+      "type": "string",
+      "description": "Prefix used for item identifiers in data storage (e.g., 'phq_9_' results in 'phq_9_1', 'phq_9_2', etc.)",
+      "examples": ["phq_9_", "gad_7_", "fscrs_"]
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of questionnaire items (questions) in order of administration",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_number": {
+            "type": "integer",
+            "description": "1-indexed item number",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "description": "Question or statement text presented to respondent"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this item must be answered",
+            "default": true
+          }
+        },
+        "required": ["item_number", "text"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "anchors": {
+      "type": "object",
+      "description": "Response scale definition (Likert scale, yes/no, etc.)",
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "Minimum value on the response scale"
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum value on the response scale"
+        },
+        "labels": {
+          "type": "object",
+          "description": "Text labels for response options, keyed by numeric value",
+          "patternProperties": {
+            "^-?\\d+(\\.\\d+)?$": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "examples": [
+            {
+              "0": "Not at all",
+              "1": "Several days",
+              "2": "More than half the days",
+              "3": "Nearly every day"
+            }
+          ]
+        }
+      },
+      "required": ["min", "max", "labels"],
+      "additionalProperties": false
+    },
+    "scores": {
+      "type": "object",
+      "description": "Scoring rules for subscales and composite scores",
+      "patternProperties": {
+        "^[a-z0-9_]+$": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Human-readable name for this score"
+            },
+            "included_items": {
+              "type": "array",
+              "description": "Array of item numbers included in this score",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1
+            },
+            "reversed_items": {
+              "type": "array",
+              "description": "Array of item numbers that are reverse-scored (higher response = lower score)",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "default": []
+            },
+            "scoring": {
+              "type": "object",
+              "description": "Scoring computation rules",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "description": "Method for computing score from item responses",
+                  "enum": ["sum", "average", "sum_then_double", "sum_then_multiply", "custom"],
+                  "examples": ["sum", "average", "sum_then_double"]
+                },
+                "multiplier": {
+                  "type": "number",
+                  "description": "Multiplier applied after summing (for sum_then_multiply method)",
+                  "examples": [2, 0.5]
+                },
+                "min": {
+                  "type": "number",
+                  "description": "Minimum possible score"
+                },
+                "max": {
+                  "type": "number",
+                  "description": "Maximum possible score"
+                },
+                "higher_is_better": {
+                  "type": "boolean",
+                  "description": "Whether higher scores indicate better outcomes (false = higher is worse)"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Additional notes about scoring computation"
+                }
+              },
+              "required": ["method", "min", "max", "higher_is_better"],
+              "additionalProperties": false
+            },
+            "ranges": {
+              "type": "array",
+              "description": "Interpretation ranges for score values",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "description": "Minimum score for this range (inclusive)"
+                  },
+                  "max": {
+                    "type": "number",
+                    "description": "Maximum score for this range (inclusive)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Short label for this range",
+                    "examples": ["Minimal", "Mild", "Moderate", "Severe"]
+                  },
+                  "severity": {
+                    "type": "string",
+                    "description": "Severity classification",
+                    "examples": ["minimal", "mild", "moderate", "severe", "low", "high"]
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Detailed description of what this range means clinically"
+                  }
+                },
+                "required": ["min", "max", "label", "severity", "description"],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["included_items", "scoring", "ranges"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the questionnaire",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Original source or publication reference"
+        },
+        "license": {
+          "type": "string",
+          "description": "License or usage restrictions"
+        },
+        "citation": {
+          "type": "string",
+          "description": "Preferred citation format"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to more information"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorization",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["depression", "screening"], ["anxiety", "clinical"]]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["id", "name", "description", "items", "anchors", "scores"],
+  "additionalProperties": false
+}
