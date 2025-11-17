@@ -1,0 +1,59 @@
+{
+  "formId": "1FAIpQLSe_abc123def456",
+  "responseId": "ACYDBNj_xyz789uvw012",
+  "createTime": "2024-05-22T15:09:51Z",
+  "lastSubmittedTime": "2024-05-22T15:09:51Z",
+  "respondentEmail": "client@example.com",
+  "answers": {
+    "1a2b3c4d": {
+      "questionId": "1a2b3c4d",
+      "textAnswers": {
+        "answers": [
+          {
+            "value": "Not at all"
+          }
+        ]
+      }
+    },
+    "5e6f7g8h": {
+      "questionId": "5e6f7g8h",
+      "textAnswers": {
+        "answers": [
+          {
+            "value": "Several days"
+          }
+        ]
+      }
+    },
+    "9i0j1k2l": {
+      "questionId": "9i0j1k2l",
+      "textAnswers": {
+        "answers": [
+          {
+            "value": "More than half the days"
+          }
+        ]
+      }
+    },
+    "3m4n5o6p": {
+      "questionId": "3m4n5o6p",
+      "textAnswers": {
+        "answers": [
+          {
+            "value": "Not at all"
+          }
+        ]
+      }
+    },
+    "7q8r9s0t": {
+      "questionId": "7q8r9s0t",
+      "textAnswers": {
+        "answers": [
+          {
+            "value": "Several days"
+          }
+        ]
+      }
+    }
+  }
+}
