@@ -8,5 +8,5 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/dataverse-contacts-sessions-reports.md
-  aip: /home/user/canonizer/.specwright/aips/dataverse-contacts-sessions-reports.yaml
+  spec: .specwright/specs/refactor-to-python-package.md
+  aip: /home/user/canonizer/.specwright/aips/refactor-to-python-package.yaml

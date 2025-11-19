@@ -1,0 +1,185 @@
+aip_id: AIP-canonizer-2025-11-18-001
+context:
+  background: "**Current State:**\nCanonizer is a CLI tool with internal `TransformRuntime` class:\n```bash\n\
+    can transform run --meta transforms/email/gmail.meta.yaml --input email.json --output canonical.json\n\
+    ```\n\n**The Problem:**\n- No clean programmatic API - must invoke CLI or directly instantiate `TransformRuntime`\n\
+    - CLI-centric design makes library usage awkward\n- lorchestra needs to call Canonizer as a library,\
+    \ not subprocess\n- Mixing orchestration concerns (events, BQ) with transformation logic is a mistake\n\
+    \n**The Solution:**\n\nCreate a **pure transformation library** with zero orchestration concerns:\n\
+    \n**Core principle:** `raw_json + transform_id → canonical_json`\n\nCanonizer should ONLY:\n- Load\
+    \ transforms (JSONata files + metadata)\n- Validate input against source schema\n- Execute transformation\n\
+    - Validate output against canonical schema\n- Return transformed JSON\n\nCanonizer should NOT:\n-\
+    \ Know about BigQuery\n- Know about events or event envelopes\n- Emit events\n- Query databases\n\
+    - Handle orchestration logic\n\n**Orchestration happens outside** (in lorchestra jobs):\n```python\n\
+    # lorchestra job (NOT in canonizer)\nfrom canonizer import canonicalize\nfrom lorchestra.stack_clients.event_client\
+    \ import emit_event\n\ndef canonicalize_email_from_events(bq_client, ...):\n    # 1. Query raw events\
+    \ from BQ\n    rows = bq_client.query(\"SELECT * FROM raw_events WHERE event_type = 'email.gmail.raw'\"\
+    )\n\n    # 2. Transform each (pure function call)\n    for row in rows:\n        canonical = canonicalize(row[\"\
+    payload\"], transform_id=\"email/gmail_to_jmap_lite@1.0.0\")\n\n        # 3. Emit canonical event\n\
+    \        emit_event(\"email.canonicalized\", payload=canonical, ...)\n```"
+  constraints:
+  - 'No breaking changes to core logic**: `core/runtime.py`, `core/validator.py`, `core/jsonata_exec.py`
+    remain unchanged'
+  - 'Backward compatibility**: Existing CLI must continue to work as thin wrapper'
+  - 'No new external dependencies**: Use existing stack (pydantic, jsonschema, jsonata-python)'
+  - 'Test coverage**: Maintain current 44% overall (core modules at 90%+)'
+  - 'Protected paths**: No edits to `schemas/`, `transforms/` directories (data, not code)'
+  - 'NO orchestration logic**: No events, no BQ, no event_client, no job patterns'
+created: '2025-11-18T17:32:48.098628+00:00'
+meta:
+  created_at: '2025-11-18T17:32:48.098628+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - CI green (lint + unit tests passing)
+  - 'Core API implemented: `canonicalize(raw_document, transform_id)` returns canonical dict'
+  - 'Batch API implemented: `run_batch(docs, transform_id)` returns list of canonical dicts'
+  - 'Convenience functions: `canonicalize_email_from_gmail()`, `canonicalize_form_response()`'
+  - All existing unit tests still pass (no regression)
+  - New integration tests for API functions (≥5 tests)
+  - Test coverage maintained at ≥44% overall (core modules at 90%+)
+  - CLI remains functional as thin wrapper (backward compatibility)
+  - '`pyproject.toml` updated to separate CLI dependencies'
+  - 'Documentation updated: README with API examples, API reference docs'
+  goal: Transform Canonizer from CLI tool to pure JSON transformation library with programmatic API
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-11-18-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Create Core API Module
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - canonizer/api.py
+  - canonizer/__init__.py
+  - tests/unit/test_api.py
+  prompt: "Create `canonizer/api.py` with pure transformation functions:\n**Core API:**\n```python\ndef\
+    \ canonicalize(\n    raw_document: dict,\n    *,\n    transform_id: str,\n    schemas_dir: str | None\
+    \ = None,\n    validate_input: bool = True,\n    validate_output: bool = True,\n) -> dict:\n    \"\
+    \"\"\n    Transform raw JSON to canonical format.\n    Args:\n        raw_document: Source JSON document\n\
+    \        transform_id: Transform to use (e.g., \"email/gmail_to_jmap_lite@1.0.0\")\n        schemas_dir:\
+    \ Schema directory (default: \"schemas\")\n        validate_input: Validate against source schema\n\
+    \        validate_output: Validate against canonical schema\n    Returns:\n        Canonical JSON\
+    \ document\n    Raises:\n        ValidationError: If validation fails\n        TransformError: If\
+    \ transformation fails\n    \"\"\"\n    # Use existing TransformRuntime internally\n    ...\ndef run_batch(\n\
+    \    documents: list[dict],\n    *,\n    transform_id: str,\n    schemas_dir: str | None = None,\n\
+    ) -> list[dict]:\n    \"\"\"Transform multiple documents.\"\"\"\n    return [canonicalize(doc, transform_id=transform_id,\
+    \ schemas_dir=schemas_dir) for doc in documents]\n```\n**Convenience functions:**\n```python\ndef\
+    \ canonicalize_email_from_gmail(raw_email: dict, *, format: str = \"lite\") -> dict:\n    \"\"\"Gmail\
+    \ API message → JMAP canonical.\"\"\"\n    transform_id = f\"email/gmail_to_jmap_{format}@1.0.0\"\n\
+    \    return canonicalize(raw_email, transform_id=transform_id)\ndef canonicalize_email_from_exchange(raw_email:\
+    \ dict, *, format: str = \"lite\") -> dict:\n    \"\"\"Exchange Graph API message → JMAP canonical.\"\
+    \"\"\n    transform_id = f\"email/exchange_to_jmap_{format}@1.0.0\"\n    return canonicalize(raw_email,\
+    \ transform_id=transform_id)\ndef canonicalize_form_response(raw_form: dict) -> dict:\n    \"\"\"\
+    Google Forms response → canonical form_response.\"\"\"\n    return canonicalize(raw_form, transform_id=\"\
+    forms/google_forms_to_canonical@1.0.0\")\n```"
+  role: coding_agent
+  step_id: step-001
+- description: Refactor CLI to Use API
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - canonizer/cli/cmds/transform.py
+  - tests/integration/test_cli_compat.py
+  prompt: 'Update CLI to be a thin wrapper around the new API:
+
+    **Old CLI logic:**
+
+    ```python
+
+    runtime = TransformRuntime()
+
+    result = runtime.execute(meta, input_data)
+
+    ```
+
+    **New CLI logic:**
+
+    ```python
+
+    from canonizer import canonicalize
+
+    canonical = canonicalize(input_data, transform_id=infer_from_meta(meta))
+
+    ```
+
+    CLI should:
+
+    1. Read JSON file(s)
+
+    2. Call `canonicalize()` or `run_batch()`
+
+    3. Write JSON file(s)
+
+    4. Handle exceptions and format error messages'
+  role: coding_agent
+  step_id: step-002
+- description: Documentation & Examples
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - README.md
+  - docs/API.md
+  - examples/basic_usage.py
+  - examples/lorchestra_job.py
+  - CHANGELOG.md
+  prompt: "Update all documentation to show API-first usage:\n**README.md** - Add programmatic usage section:\n\
+    ```python\n# Simple usage\nfrom canonizer import canonicalize\ncanonical = canonicalize(\n    raw_gmail_message,\n\
+    \    transform_id=\"email/gmail_to_jmap_lite@1.0.0\"\n)\n# Convenience functions\nfrom canonizer import\
+    \ canonicalize_email_from_gmail\ncanonical = canonicalize_email_from_gmail(raw_gmail_message, format=\"\
+    lite\")\n# Batch processing\nfrom canonizer import run_batch\ncanonicals = run_batch(raw_emails, transform_id=\"\
+    email/gmail_to_jmap_lite@1.0.0\")\n```\n**docs/API.md** - Complete API reference with all functions\n\
+    **examples/basic_usage.py** - Simple examples\n**examples/lorchestra_job.py** - Show how lorchestra\
+    \ job would use canonizer:\n```python\n# In lorchestra job (separate package/repo)\nfrom canonizer\
+    \ import canonicalize\nfrom lorchestra.stack_clients.event_client import emit_event\nfrom google.cloud\
+    \ import bigquery\ndef canonicalize_email_from_events():\n    bq = bigquery.Client()\n    rows = bq.query(\"\
+    SELECT * FROM raw_events WHERE event_type = 'email.gmail.raw'\").result()\n    for row in rows:\n\
+    \        canonical = canonicalize(row.payload, transform_id=\"email/gmail_to_jmap_lite@1.0.0\")\n\
+    \        emit_event(\"email.canonicalized\", payload=canonical)\n```"
+  role: coding_agent
+  step_id: step-003
+- description: Package Config & Final Validation
+  gate_ref: 'G3: Pre-Release'
+  kind: code
+  outputs:
+  - pyproject.toml
+  - canonizer/__init__.py
+  - artifacts/governance/decision-log.md
+  prompt: 'Update package configuration and run full validation:
+
+    1. **pyproject.toml** - Move CLI deps to optional, bump to 0.4.0
+
+    2. Export main API from `canonizer/__init__.py`
+
+    3. Run full test suite
+
+    4. Verify package installs correctly'
+  role: coding_agent
+  step_id: step-004
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/pure-transform-api
+spec_version: 1.0.0
+tier: C
+title: Refactor Canonizer to Pure Transform Library
+updated: '2025-11-18T17:32:48.098628+00:00'
+version: '0.1'
+

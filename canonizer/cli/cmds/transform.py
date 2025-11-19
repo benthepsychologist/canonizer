@@ -1,4 +1,7 @@
-"""Transform command: execute JSON transformations."""
+"""Transform command: execute JSON transformations.
+
+This is now a thin wrapper around the canonizer API.
+"""
 
 import json
 import sys
@@ -6,10 +9,9 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
 
-from canonizer.core.runtime import TransformRuntime
+from canonizer import canonicalize
 from canonizer.core.validator import ValidationError
 
 app = typer.Typer(help="Execute JSON transformations")
@@ -74,25 +76,20 @@ def run(
             input_text = sys.stdin.read()
             input_data = json.loads(input_text)
 
-        # Execute transform
-        runtime = TransformRuntime(schemas_dir=schemas_dir)
-        result = runtime.execute(
-            transform_meta_path=meta,
-            input_data=input_data,
+        # Execute transform using the pure API
+        # Convert meta path (str) to transform_id for API
+        canonical_data = canonicalize(
+            input_data,
+            transform_id=str(meta),  # Pass full path to .meta.yaml
+            schemas_dir=str(schemas_dir),
             validate_input=validate_input,
             validate_output=validate_output,
         )
 
         # Output result
         if json_output:
-            # JSON-only output
-            output_data = {
-                "data": result.data,
-                "execution_time_ms": result.execution_time_ms,
-                "runtime": result.runtime,
-            }
-
-            output_json = json.dumps(output_data, indent=2)
+            # JSON-only output (simplified - API doesn't return execution metadata)
+            output_json = json.dumps(canonical_data, indent=2)
 
             if output:
                 output.write_text(output_json)
@@ -101,24 +98,13 @@ def run(
         else:
             # Rich formatted output
             if output:
-                output.write_text(json.dumps(result.data, indent=2))
+                output.write_text(json.dumps(canonical_data, indent=2))
                 console.print(f"[green]✓[/green] Output written to {output}")
             else:
-                console.print(json.dumps(result.data, indent=2))
+                console.print(json.dumps(canonical_data, indent=2))
 
-            # Show execution info
-            info_table = Table(show_header=False, box=None)
-            info_table.add_column("Key", style="cyan")
-            info_table.add_column("Value", style="white")
-            info_table.add_row("Runtime", result.runtime)
-            info_table.add_row(
-                "Execution Time", f"{result.execution_time_ms:.2f}ms"
-            )
-            info_table.add_row("Status", "[green]success[/green]")
-
-            console.print(
-                Panel(info_table, title="Transform Execution", border_style="green")
-            )
+            # Show simple success message
+            console.print("[green]✓ Transform completed successfully[/green]")
 
     except FileNotFoundError as e:
         console_err.print(f"[red]Error:[/red] {e}")

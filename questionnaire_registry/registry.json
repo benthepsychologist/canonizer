@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "name": "Canonizer Questionnaire Registry",
+  "description": "Registry of validated psychological and clinical assessment instruments",
+  "url": "https://github.com/benthepsychologist/canonizer/tree/main/questionnaire_registry",
+  "schema_version": "iglu:org.canonical/questionnaire/jsonschema/1-0-0",
+  "questionnaires": [
+    {
+      "id": "fscrs",
+      "name": "Forms of Self-Criticizing/Attacking and Self-Reassuring Scale",
+      "short_name": "FSCRS",
+      "description": "Measures self-criticism (inadequate self and hated self) and self-reassurance",
+      "versions": ["1.0.0"],
+      "latest": "1.0.0",
+      "license": "research_only",
+      "item_count": 22,
+      "subscales": [
+        "fscrs_inadequacy",
+        "fscrs_self_hatred",
+        "fscrs_self_reassurance",
+        "fscrs_self_criticism"
+      ],
+      "validated_populations": [
+        "female_university_students",
+        "clinical_depression",
+        "general_adult"
+      ],
+      "citation": "Gilbert et al. (2004). British Journal of Clinical Psychology, 43(1), 31-50.",
+      "doi": "10.1348/014466504772812959",
+      "path": "fscrs/1.0.0/questionnaire.json"
+    }
+  ],
+  "index_updated": "2025-11-17T18:30:00Z"
+}

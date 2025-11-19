@@ -1,0 +1,407 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "iglu:org.canonical/questionnaire/jsonschema/1-0-0",
+  "description": "Canonical schema for validated psychological/clinical questionnaires with scoring algorithms",
+  "type": "object",
+  "properties": {
+    "questionnaire_id": {
+      "type": "string",
+      "description": "Unique identifier (e.g., 'fscrs', 'phq9', 'gad7')",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Questionnaire version (semantic versioning)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full questionnaire name"
+        },
+        "short_name": {
+          "type": "string",
+          "description": "Abbreviated name or acronym"
+        },
+        "description": {
+          "type": "string",
+          "description": "What the questionnaire measures"
+        },
+        "interpretation": {
+          "type": "string",
+          "description": "How to interpret scores and subscales"
+        },
+        "citation": {
+          "type": "string",
+          "description": "Primary reference citation"
+        },
+        "doi": {
+          "type": "string",
+          "description": "DOI of primary reference"
+        },
+        "license": {
+          "type": "string",
+          "enum": ["public_domain", "creative_commons", "proprietary", "research_only"],
+          "description": "Usage license"
+        },
+        "language": {
+          "type": "string",
+          "description": "Language code (ISO 639-1)",
+          "default": "en"
+        }
+      }
+    },
+    "administration": {
+      "type": "object",
+      "properties": {
+        "instructions": {
+          "type": "string",
+          "description": "Instructions presented to respondent"
+        },
+        "time_estimate_minutes": {
+          "type": "number",
+          "description": "Estimated completion time in minutes"
+        },
+        "item_prefix": {
+          "type": "string",
+          "description": "Prefix for item field names (e.g., 'fscrs_', 'phq9_')",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "item_numbering": {
+          "type": "string",
+          "enum": ["numeric", "alphabetic", "none"],
+          "description": "How items are numbered for display",
+          "default": "numeric"
+        }
+      }
+    },
+    "scale": {
+      "type": "object",
+      "required": ["type", "anchors"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["likert", "binary", "visual_analog", "numeric"],
+          "description": "Type of response scale"
+        },
+        "anchors": {
+          "type": "object",
+          "required": ["min", "max", "labels"],
+          "properties": {
+            "min": {
+              "type": "number",
+              "description": "Minimum scale value"
+            },
+            "max": {
+              "type": "number",
+              "description": "Maximum scale value"
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels for each scale point",
+              "patternProperties": {
+                "^-?\\d+$": {
+                  "type": "string"
+                }
+              }
+            },
+            "min_label": {
+              "type": "string",
+              "description": "Label for minimum anchor (e.g., 'Not at all')"
+            },
+            "max_label": {
+              "type": "string",
+              "description": "Label for maximum anchor (e.g., 'Extremely')"
+            }
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "Questionnaire items (questions)",
+      "items": {
+        "type": "object",
+        "required": ["item_number", "text"],
+        "properties": {
+          "item_number": {
+            "type": "integer",
+            "description": "Item sequence number (1-based)",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "description": "Item question text"
+          },
+          "reverse_scored": {
+            "type": "boolean",
+            "description": "Whether this item is reverse-scored",
+            "default": false
+          },
+          "recoding": {
+            "type": "object",
+            "description": "Explicit recoding/transformation for this item",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["reverse", "custom_map"],
+                "description": "Recoding method"
+              },
+              "formula": {
+                "type": "string",
+                "description": "Recoding formula (e.g., 'max - value', '5 - value')"
+              },
+              "map": {
+                "type": "object",
+                "description": "Custom value mapping",
+                "patternProperties": {
+                  "^-?\\d+$": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "subscales": {
+            "type": "array",
+            "description": "Which subscales include this item",
+            "items": {
+              "type": "string"
+            }
+          },
+          "optional": {
+            "type": "boolean",
+            "description": "Whether this item is optional",
+            "default": false
+          }
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "description": "Scoring algorithms and subscales",
+      "patternProperties": {
+        "^[a-z0-9_-]+$": {
+          "type": "object",
+          "required": ["included_items", "scoring"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Human-readable subscale name"
+            },
+            "description": {
+              "type": "string",
+              "description": "What this subscale measures"
+            },
+            "included_items": {
+              "type": "array",
+              "description": "Item numbers included in this score (1-based)",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "reversed_items": {
+              "type": "array",
+              "description": "Item numbers that are reverse-scored (1-based)",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "recoding": {
+              "type": "object",
+              "description": "Item-specific recoding for this subscale",
+              "patternProperties": {
+                "^\\d+$": {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "enum": ["reverse", "custom_map"]
+                    },
+                    "formula": {
+                      "type": "string"
+                    },
+                    "map": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "scoring": {
+              "type": "object",
+              "required": ["method"],
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "enum": ["sum", "mean", "weighted_sum", "custom"],
+                  "description": "Scoring calculation method"
+                },
+                "weights": {
+                  "type": "object",
+                  "description": "Item weights for weighted_sum method",
+                  "patternProperties": {
+                    "^\\d+$": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "formula": {
+                  "type": "string",
+                  "description": "Custom scoring formula"
+                },
+                "min": {
+                  "type": "number",
+                  "description": "Minimum possible score"
+                },
+                "max": {
+                  "type": "number",
+                  "description": "Maximum possible score"
+                },
+                "higher_is_better": {
+                  "type": "boolean",
+                  "description": "Whether higher scores indicate better outcomes"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Additional scoring notes"
+                }
+              }
+            },
+            "ranges": {
+              "type": "array",
+              "description": "Clinical interpretation ranges",
+              "items": {
+                "type": "object",
+                "required": ["min", "max", "label"],
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "description": "Range minimum (inclusive)"
+                  },
+                  "max": {
+                    "type": "number",
+                    "description": "Range maximum (inclusive)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Range label (e.g., 'Minimal', 'Mild', 'Severe')"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["minimal", "mild", "moderate", "severe", "low", "high"],
+                    "description": "Severity classification"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Clinical interpretation of this range"
+                  },
+                  "action": {
+                    "type": "string",
+                    "description": "Recommended clinical action for this range"
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Display color for this range (hex code)",
+                    "pattern": "^#[0-9A-Fa-f]{6}$"
+                  }
+                }
+              }
+            },
+            "reliability": {
+              "type": "object",
+              "description": "Psychometric properties of this subscale",
+              "properties": {
+                "cronbach_alpha": {
+                  "type": "number",
+                  "description": "Cronbach's alpha (internal consistency)",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "test_retest": {
+                  "type": "number",
+                  "description": "Test-retest reliability coefficient",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation and normative data",
+      "properties": {
+        "validated_populations": {
+          "type": "array",
+          "description": "Populations where this questionnaire is validated",
+          "items": {
+            "type": "string"
+          }
+        },
+        "normative_data": {
+          "type": "object",
+          "description": "Normative statistics",
+          "patternProperties": {
+            "^[a-z0-9_-]+$": {
+              "type": "object",
+              "properties": {
+                "mean": {
+                  "type": "number"
+                },
+                "sd": {
+                  "type": "number"
+                },
+                "sample_size": {
+                  "type": "integer"
+                },
+                "population": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "sensitivity": {
+          "type": "number",
+          "description": "Diagnostic sensitivity",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "specificity": {
+          "type": "number",
+          "description": "Diagnostic specificity",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["platform"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Source platform name"
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "Source platform version"
+        },
+        "registry_url": {
+          "type": "string",
+          "description": "URL of questionnaire registry",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  "required": ["questionnaire_id", "version", "metadata", "items", "scores", "source"]
+}

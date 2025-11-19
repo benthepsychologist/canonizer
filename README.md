@@ -1,26 +1,55 @@
 # Canonizer
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/benthepsychologist/canonizer/releases)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/benthepsychologist/canonizer/releases)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Registry](https://img.shields.io/badge/registry-official-green.svg)](https://github.com/benthepsychologist/canonizer-registry)
 
-**Pure JSON transformation tool. No ingestion. No storage. Just transforms.**
+**Pure JSON transformation library. No ingestion. No storage. No orchestration. Just transforms.**
 
 The tool that should have come in the box. Transform JSON from source shapes (Gmail, Exchange, QuickBooks) to canonical schemas with versioning and validation.
 
 Your orchestrator (Snowplow, Airflow, Dagster) calls Canonizer. Canonizer doesn't call anything.
 
-📖 **[Changelog](CHANGELOG.md)** | 🔧 **[Registry Guide](docs/REGISTRY.md)** | 📧 **[Email Canonicalization](docs/EMAIL_CANONICALIZATION.md)** | 📦 **[Registry](https://github.com/benthepsychologist/canonizer-registry)**
+📖 **[Changelog](CHANGELOG.md)** | 📚 **[API Reference](docs/API.md)** | 🔧 **[Registry Guide](docs/REGISTRY.md)** | 📧 **[Email Canonicalization](docs/EMAIL_CANONICALIZATION.md)** | 📦 **[Registry](https://github.com/benthepsychologist/canonizer-registry)**
+
+## Quick Start
+
+### Programmatic Usage (Primary)
+
+```python
+from canonizer import canonicalize
+
+# Transform raw JSON to canonical format
+canonical = canonicalize(
+    raw_gmail_message,
+    transform_id="email/gmail_to_jmap_lite@1.0.0"
+)
+
+# Or use convenience functions
+from canonizer import canonicalize_email_from_gmail
+
+canonical = canonicalize_email_from_gmail(raw_gmail_message, format="lite")
+```
+
+### CLI Usage (Optional)
+
+```bash
+pip install canonizer[cli]  # Install with CLI support
+
+can transform run \
+  --meta transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml \
+  --input email.json \
+  --output canonical.json
+```
 
 ## What is Canonizer?
 
-Canonizer is a **pure function** that transforms JSON:
+Canonizer is a **pure transformation library**: `raw_json + transform_id → canonical_json`
 
 ```python
-def canonizer(input_json: dict, transform: str) -> dict:
-    """Validate → Transform → Validate → Return"""
-    return transformed_json
+# Pure function - no side effects
+canonical = canonicalize(raw_document, transform_id="...")
 ```
 
 It fills the gap between **schema registries** (Iglu) and **data pipelines** (Airbyte/dbt) by managing semantic JSON transforms with versioning and mechanical evolution.

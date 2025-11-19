@@ -1,14 +1,14 @@
 [project]
 name = "canonizer"
-version = "0.1.0"
-description = "Pure JSON transformation tool. No ingestion. No storage. Just transforms."
+version = "0.4.0"
+description = "Pure JSON transformation library. No ingestion. No storage. No orchestration. Just transforms."
 authors = [{name = "Ben Machina", email = "ben@therapyai.com"}]
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
-keywords = ["json", "transform", "jsonata", "schema-registry", "iglu", "semver", "snowplow"]
+keywords = ["json", "transform", "jsonata", "schema-registry", "iglu", "semver", "snowplow", "canonicalization"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
@@ -16,10 +16,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+# Core dependencies (no CLI)
 dependencies = [
     "pydantic>=2.5.0",
-    "typer>=0.9.0",
-    "rich>=13.7.0",
     "jsonschema>=4.20.0",
     "pyyaml>=6.0.1",
     "jsonata-python>=0.6.0",
@@ -29,6 +28,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# CLI dependencies (optional)
+cli = [
+    "typer>=0.9.0",
+    "rich>=13.7.0",
+]
+
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -38,7 +43,7 @@ dev = [
     "pre-commit>=3.5.0",
 ]
 
-# LLM scaffolding (deferred to v0.2)
+# LLM scaffolding (deferred to future version)
 llm = [
     "anthropic>=0.18.0",
 ]
