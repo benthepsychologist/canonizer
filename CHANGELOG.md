@@ -242,9 +242,139 @@ This is the initial release. No migration required.
 - Add integration tests for new transforms
 - Consider publishing to canonizer-registry
 
+## [0.4.0] - 2025-11-19
+
+### Added
+
+#### Pure Transformation Library API (AIP-canonizer-2025-11-18-001)
+
+**Major architectural refactor**: Canonizer is now a library-first package with a clean programmatic API.
+
+- **Core API functions:**
+  - `canonicalize(raw_document, *, transform_id, ...)` - Pure transformation function
+  - `run_batch(documents, *, transform_id, ...)` - Batch processing
+  - `canonicalize_email_from_gmail(raw_email, *, format="lite")` - Gmail convenience wrapper
+  - `canonicalize_email_from_exchange(raw_email, *, format="lite")` - Exchange convenience wrapper
+  - `canonicalize_form_response(raw_form)` - Forms convenience wrapper
+
+- **New module:** `canonizer/api.py` (249 lines, 5 public functions)
+
+- **Comprehensive testing:**
+  - 15 new unit tests for API (`tests/unit/test_api.py`)
+  - 9 CLI compatibility tests (`tests/integration/test_cli_compat.py`)
+  - Total: 115 tests passing (up from 94)
+
+- **Complete documentation:**
+  - `docs/API.md` - Complete API reference (221 lines)
+  - `examples/basic_usage.py` - Simple usage examples
+  - `examples/lorchestra_job.py` - Orchestration pattern for lorchestra integration
+  - Updated README with API-first quick start
+
+### Changed
+
+#### Package Architecture
+- **Version:** 0.3.0 → 0.4.0
+- **Development Status:** Alpha → Beta
+- **CLI dependencies (typer, rich) moved to optional `[cli]` extra**
+  - `pip install canonizer` - Library only (no CLI)
+  - `pip install canonizer[cli]` - With CLI tools
+- **Core library now has minimal dependencies** (no typer/rich required)
+
+#### CLI Refactoring
+- `canonizer/cli/cmds/transform.py` refactored to use `canonicalize()` API
+- CLI is now a thin wrapper around the programmatic API
+- All existing CLI commands remain backward compatible
+- No breaking changes
+
+### Design Principles
+
+**Pure Function Approach:**
+```python
+canonical = canonicalize(raw_document, transform_id="email/gmail_to_jmap_lite@1.0.0")
+```
+
+**Zero Orchestration Logic:**
+- NO event emission
+- NO BigQuery queries
+- NO job patterns
+- Just: `raw_json + transform_id → canonical_json`
+
+**Orchestration happens outside** (in lorchestra, Airflow, etc.):
+```python
+from canonizer import canonicalize
+from lorchestra.stack_clients.event_client import emit_event
+
+for row in bq_client.query("SELECT * FROM raw_events WHERE ..."):
+    canonical = canonicalize(row.payload, transform_id="...")
+    emit_event("email.canonicalized", payload=canonical)
+```
+
+### Quality Metrics
+- **115 tests passing** (24 new tests added)
+- **46% overall coverage** (exceeds 44% target)
+- **93-100% coverage on core modules**
+- **82% coverage on new API module**
+- **Ruff linting:** All checks passed
+- **No regressions:** All existing tests still passing
+
+### Migration Guide
+
+#### Before v0.4.0 (CLI-centric)
+```python
+from canonizer.core.runtime import TransformRuntime
+runtime = TransformRuntime()
+result = runtime.execute(meta, input_data)
+```
+
+#### After v0.4.0 (Library-first)
+```python
+from canonizer import canonicalize
+canonical = canonicalize(raw_document, transform_id="email/gmail_to_jmap_lite@1.0.0")
+```
+
+#### CLI (Unchanged)
+```bash
+can transform run --meta transforms/... --input email.json --output canonical.json
+```
+
+### Technical Details
+
+**Transform ID Resolution:**
+- Registry-style: `"email/gmail_to_jmap_lite@1.0.0"`
+- Full path: `"transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml"`
+
+**Error Handling:**
+- `ValidationError` for schema validation failures
+- `FileNotFoundError` for missing transforms
+- `ValueError` for invalid transform IDs
+
+**Batch Processing:**
+```python
+from canonizer import run_batch
+canonicals = run_batch(raw_emails, transform_id="email/gmail_to_jmap_lite@1.0.0")
+```
+
+### Breaking Changes
+
+**None.** This is a backward-compatible enhancement.
+
+### Known Limitations
+- CLI commands still have 0% test coverage (integration tests cover CLI behavior)
+- API doesn't return execution metadata (execution time, runtime version)
+- Async API not yet implemented
+
+### Credits
+- Developed by Ben Machina
+- Built with Claude Code (Anthropic Sonnet 4.5)
+- Follows AIP (Agentic Implementation Plan) methodology
+
+---
+
 ## [Unreleased]
 
-### Planned for v0.4
+### Planned for v0.5
+- Async API: `async def canonicalize_async(...)`
+- Streaming batch API for large datasets
 - `can registry publish` - Open PR via GitHub API
 - Auto-bump version based on diff/patch
 - Compatibility matrix validation
@@ -252,6 +382,7 @@ This is the initial release. No migration required.
 - Increased CLI test coverage (target: 70%+)
 - Calendar event canonicalization
 - Additional healthcare data transforms (HL7, FHIR)
+- Performance profiling and optimization
 
 ---
 

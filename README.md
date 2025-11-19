@@ -158,7 +158,31 @@ can validate run \
   --data canonical_email.json
 ```
 
-### 4. Use the Python API
+### 4. Use the Python API (Recommended)
+
+The primary way to use Canonizer is through the programmatic API:
+
+```python
+from canonizer import canonicalize
+
+# Transform raw JSON to canonical format
+canonical = canonicalize(
+    raw_gmail_message,
+    transform_id="email/gmail_to_jmap_lite@1.0.0"
+)
+
+# Or use convenience functions
+from canonizer import canonicalize_email_from_gmail
+
+canonical = canonicalize_email_from_gmail(raw_gmail_message, format="lite")
+
+# Batch processing
+from canonizer import run_batch
+
+canonicals = run_batch(raw_emails, transform_id="email/gmail_to_jmap_lite@1.0.0")
+```
+
+**For advanced registry operations:**
 
 ```python
 from canonizer.registry import RegistryClient
@@ -175,9 +199,6 @@ for t in transforms:
 transform = client.fetch_transform("email/gmail_to_canonical")
 print(transform.meta.version)  # "1.0.0"
 print(transform.jsonata)  # JSONata source code
-
-# Fetch a schema
-schema = client.fetch_schema("iglu:org.canonical/email/jsonschema/1-0-0")
 ```
 
 ## Email Canonicalization (JMAP-based)
