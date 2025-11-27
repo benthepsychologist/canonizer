@@ -8,5 +8,5 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/refactor-to-python-package.md
-  aip: /home/user/canonizer/.specwright/aips/refactor-to-python-package.yaml
+  spec: .specwright/specs/local-registry-mvp.md
+  aip: /workspace/canonizer/.specwright/aips/local-registry-mvp.yaml

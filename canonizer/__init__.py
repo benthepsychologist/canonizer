@@ -17,7 +17,7 @@ Example:
     ... )
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # Export main API
 from canonizer.api import (
@@ -26,11 +26,13 @@ from canonizer.api import (
     canonicalize_email_from_gmail,
     canonicalize_form_response,
     run_batch,
+    validate_payload,
 )
 
 __all__ = [
     "canonicalize",
     "run_batch",
+    "validate_payload",
     "canonicalize_email_from_gmail",
     "canonicalize_email_from_exchange",
     "canonicalize_form_response",

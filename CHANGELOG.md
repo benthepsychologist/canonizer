@@ -370,9 +370,188 @@ canonicals = run_batch(raw_emails, transform_id="email/gmail_to_jmap_lite@1.0.0"
 
 ---
 
+## [0.5.0] - 2025-11-27
+
+### Added
+
+#### Local Registry MVP (AIP-canonizer-2025-11-26-001)
+
+**New `.canonizer/` directory model** for project-local schema and transform management.
+
+- **New CLI commands:**
+  - `canonizer init [path]` - Initialize a `.canonizer/` directory in a project
+  - `canonizer import run --from <registry> "<ref>"` - Import schemas/transforms from a registry
+  - `canonizer import list` - List locally imported schemas and transforms
+
+- **New modules:**
+  - `canonizer/local/__init__.py` - Local registry module
+  - `canonizer/local/config.py` - Configuration models (`CanonizerConfig`, `RegistryConfig`)
+  - `canonizer/local/lock.py` - Lock file models (`LockFile`, `SchemaLock`, `TransformLock`)
+  - `canonizer/local/resolver.py` - Resolution functions for local registry
+
+- **Resolution functions:**
+  - `find_canonizer_root()` - Find `.canonizer/` directory from current path
+  - `resolve_schema(iglu_ref)` - Resolve Iglu schema reference to local path
+  - `resolve_transform(transform_ref)` - Resolve transform reference to local path
+  - `resolve_jsonata(transform_ref)` - Resolve transform reference to JSONata file
+  - `parse_iglu_ref(ref)` - Parse Iglu URI format
+  - `parse_transform_ref(ref)` - Parse transform reference format
+
+- **Configuration files:**
+  - `.canonizer/config.yaml` - Project configuration
+  - `.canonizer/lock.json` - Integrity tracking with SHA256 hashes
+  - `.canonizer/registry/` - Local copies of schemas and transforms
+
+### Changed
+
+#### API Resolution Priority
+
+The `validate_payload()` and `canonicalize()` functions now use this resolution order:
+
+1. Explicit `schemas_dir` parameter (if provided)
+2. Local `.canonizer/registry/` directory (if `.canonizer/` exists)
+3. `CANONIZER_REGISTRY_ROOT` environment variable (if set)
+4. Current working directory (backward compatibility fallback)
+
+**Example:**
+```python
+from canonizer import canonicalize
+
+# Automatically uses .canonizer/ if present
+canonical = canonicalize(
+    raw_email,
+    transform_id="email/gmail_to_jmap_lite@1.0.0"
+)
+```
+
+#### New Error Types
+
+- `TransformNotFoundError` - Transform not found in local registry
+- `SchemaNotFoundError` - Schema not found in local registry
+- `CanonizerRootNotFoundError` - No `.canonizer/` directory found
+- `InvalidReferenceError` - Invalid Iglu or transform reference format
+
+### Technical Details
+
+#### Directory Structure
+
+```
+project/
+├── .canonizer/
+│   ├── config.yaml           # Project configuration
+│   ├── lock.json             # Integrity tracking
+│   ├── .gitignore            # Excludes registry/
+│   └── registry/             # Local copies (gitignored)
+│       ├── schemas/
+│       │   └── com.google/gmail_email/jsonschema/1-0-0.json
+│       └── transforms/
+│           └── email/gmail_to_jmap_lite/1.0.0/
+│               ├── spec.meta.yaml
+│               └── spec.jsonata
+└── src/
+    └── ...
+```
+
+#### Config File Format (`.canonizer/config.yaml`)
+
+```yaml
+version: "1"
+registry:
+  mode: local
+  root: registry  # Relative to .canonizer/
+```
+
+#### Lock File Format (`.canonizer/lock.json`)
+
+```json
+{
+  "version": "1",
+  "updated_at": "2025-11-26T22:50:05.731334+00:00",
+  "schemas": {
+    "iglu:com.google/gmail_email/jsonschema/1-0-0": {
+      "path": "schemas/com.google/gmail_email/jsonschema/1-0-0.json",
+      "hash": "sha256:4f0b31b..."
+    }
+  },
+  "transforms": {
+    "email/gmail_to_jmap_lite@1.0.0": {
+      "path": "transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml",
+      "hash": "sha256:0bbdd42..."
+    }
+  }
+}
+```
+
+### Quality Metrics
+
+- **186 tests passing** (71 new tests added)
+- **57% overall coverage** (up from 46%)
+- **93-100% coverage on local modules**
+- **Ruff linting:** All checks passed
+- **No regressions:** All existing tests still passing
+
+### Migration Guide
+
+#### Before v0.5.0 (Registry-based)
+
+Required `CANONIZER_REGISTRY_ROOT` environment variable or explicit `schemas_dir`:
+
+```python
+from canonizer import canonicalize
+
+canonical = canonicalize(
+    raw_email,
+    transform_id="email/gmail_to_jmap_lite@1.0.0",
+    schemas_dir="/path/to/registry/schemas"
+)
+```
+
+#### After v0.5.0 (Local Registry)
+
+Initialize once per project:
+
+```bash
+canonizer init .
+canonizer import run --from /path/to/canonizer-registry "email/gmail_to_jmap_lite@1.0.0"
+```
+
+Then use without explicit paths:
+
+```python
+from canonizer import canonicalize
+
+canonical = canonicalize(
+    raw_email,
+    transform_id="email/gmail_to_jmap_lite@1.0.0"
+)
+```
+
+### Breaking Changes
+
+**None.** This is a backward-compatible enhancement. All existing code continues to work.
+
+### Known Limitations
+
+- Import command only supports local filesystem registries (not HTTP URLs yet)
+- No `canonizer update` command to sync with upstream registry
+- No integrity verification on transform execution (planned for v0.6)
+- Lock file not automatically updated when transforms change
+
+### Credits
+
+- Developed by Ben Machina
+- Built with Claude Code (Anthropic Opus 4.5)
+- Follows AIP (Agentic Implementation Plan) methodology
+
+---
+
 ## [Unreleased]
 
-### Planned for v0.5
+### Planned for v0.6
+- Remote registry support (`canonizer import --from https://...`)
+- Schema freshness checking
+- `canonizer update` command to sync with upstream
+- Integrity verification on transform execution
 - Async API: `async def canonicalize_async(...)`
 - Streaming batch API for large datasets
 - `can registry publish` - Open PR via GitHub API

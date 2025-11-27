@@ -1,6 +1,6 @@
 # Canonizer
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/benthepsychologist/canonizer/releases)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/benthepsychologist/canonizer/releases)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Registry](https://img.shields.io/badge/registry-official-green.svg)](https://github.com/benthepsychologist/canonizer-registry)
@@ -15,12 +15,23 @@ Your orchestrator (Snowplow, Airflow, Dagster) calls Canonizer. Canonizer doesn'
 
 ## Quick Start
 
-### Programmatic Usage (Primary)
+### 1. Initialize Local Registry (New in v0.5!)
+
+```bash
+# Initialize .canonizer/ in your project
+canonizer init .
+
+# Import transforms from the official registry
+canonizer import run --from /path/to/canonizer-registry "email/gmail_to_jmap_lite@1.0.0"
+```
+
+### 2. Programmatic Usage (Primary)
 
 ```python
 from canonizer import canonicalize
 
 # Transform raw JSON to canonical format
+# Automatically uses .canonizer/ if present
 canonical = canonicalize(
     raw_gmail_message,
     transform_id="email/gmail_to_jmap_lite@1.0.0"
@@ -32,7 +43,7 @@ from canonizer import canonicalize_email_from_gmail
 canonical = canonicalize_email_from_gmail(raw_gmail_message, format="lite")
 ```
 
-### CLI Usage (Optional)
+### 3. CLI Usage (Optional)
 
 ```bash
 pip install canonizer[cli]  # Install with CLI support
@@ -267,7 +278,67 @@ cat canonical_email.json
 
 ---
 
-## Transform Registry
+## Local Registry (New in v0.5!)
+
+Canonizer now supports **project-local schema and transform management** via the `.canonizer/` directory.
+
+### Why Local Registry?
+
+- **No environment variables** - Works automatically when `.canonizer/` exists
+- **Project isolation** - Each project can pin specific transform versions
+- **Git-friendly** - Config and lock files are committed; actual files are gitignored
+- **Integrity tracking** - SHA256 checksums in `lock.json` verify imports
+
+### Directory Structure
+
+```
+your-project/
+├── .canonizer/
+│   ├── config.yaml           # Project configuration
+│   ├── lock.json             # Integrity tracking (committed)
+│   ├── .gitignore            # Excludes registry/
+│   └── registry/             # Local copies (gitignored)
+│       ├── schemas/
+│       └── transforms/
+└── src/
+    └── your_code.py          # Just imports canonizer
+```
+
+### Usage
+
+```bash
+# Initialize in your project
+canonizer init .
+
+# Import a transform (auto-imports referenced schemas)
+canonizer import run --from /path/to/canonizer-registry "email/gmail_to_jmap_lite@1.0.0"
+
+# List what's imported
+canonizer import list
+```
+
+```python
+from canonizer import canonicalize
+
+# Works automatically - no paths needed!
+canonical = canonicalize(
+    raw_email,
+    transform_id="email/gmail_to_jmap_lite@1.0.0"
+)
+```
+
+### Resolution Priority
+
+When resolving schemas and transforms, Canonizer checks in order:
+
+1. Explicit `schemas_dir` parameter (if provided)
+2. Local `.canonizer/registry/` (if `.canonizer/` exists)
+3. `CANONIZER_REGISTRY_ROOT` environment variable
+4. Current working directory (backward compatibility)
+
+---
+
+## Remote Transform Registry
 
 Canonizer includes a **Git-based transform registry** for discovering and sharing transforms.
 
@@ -478,11 +549,12 @@ mypy canonizer/
 
 ## Roadmap
 
-- **v0.1** (Current): Core runtime, diff/patch, remote registry client
-- **v0.2**: LLM scaffolding for complex transforms
-- **v0.3**: Schema compatibility checks and migration tools
-- **v0.4**: Multi-engine support (jq, Python transforms)
-- **v0.5**: Performance optimization (batch transforms)
+- **v0.1**: Core runtime, diff/patch, remote registry client
+- **v0.2**: Email canonicalization (6 transforms)
+- **v0.3**: Dataverse transforms
+- **v0.4**: Pure transformation library API
+- **v0.5** (Current): Local registry MVP (`.canonizer/` directory)
+- **v0.6**: Remote registry import, schema freshness checks
 - **v1.0**: Production-ready with monitoring hooks
 
 ## Philosophy
@@ -535,6 +607,6 @@ Fills the gap between schema registries (Iglu) and data pipelines (Airbyte/dbt).
 
 ---
 
-**Status:** Alpha (v0.1) - Active development, breaking changes expected
+**Status:** Beta (v0.5) - Local registry MVP complete, API stable
 
 **Built by:** [Ben Machina](https://github.com/ben_machina)

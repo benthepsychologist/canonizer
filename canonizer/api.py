@@ -1,16 +1,157 @@
 """Pure JSON transformation API for Canonizer.
 
-This module provides a clean, programmatic interface for transforming raw JSON
-documents to canonical formats using JSONata transforms.
+This module provides a clean, programmatic interface for:
+1. Validating JSON documents against schemas (source OR canonical)
+2. Transforming raw JSON to canonical formats using JSONata transforms
 
-Core principle: raw_json + transform_id → canonical_json
+Core principles:
+- validate_payload(payload, schema_iglu) → (is_valid, errors)
+- canonicalize(payload, transform_id) → canonical_dict
 
 NO orchestration logic - no events, no BigQuery, no job patterns.
 """
 
+import os
 from pathlib import Path
+from typing import Any, Optional
 
 from canonizer.core.runtime import TransformRuntime
+from canonizer.core.validator import SchemaValidator, ValidationError, load_schema_from_iglu_uri
+from canonizer.local.resolver import (
+    CanonizerRootNotFoundError,
+    find_canonizer_root,
+    resolve_schema,
+    resolve_transform,
+)
+from canonizer.local.config import CanonizerConfig, CONFIG_FILENAME
+
+
+# ============================================================================
+# Registry Root Resolution
+# ============================================================================
+
+
+def _try_find_canonizer_root() -> Optional[Path]:
+    """Try to find .canonizer/ directory, return None if not found."""
+    try:
+        return find_canonizer_root()
+    except CanonizerRootNotFoundError:
+        return None
+
+
+def get_registry_root() -> Path:
+    """Get the canonizer registry root directory.
+
+    Resolution order:
+    1. Local .canonizer/registry/ directory (if .canonizer/ exists)
+    2. CANONIZER_REGISTRY_ROOT environment variable
+    3. Current working directory (fallback for backward compatibility)
+
+    Returns:
+        Path to registry root containing schemas/ and transforms/
+
+    Raises:
+        RuntimeError: If CANONIZER_REGISTRY_ROOT is set but path doesn't exist
+
+    Example:
+        >>> root = get_registry_root()
+        >>> print(root / "schemas")
+        /workspace/canonizer/schemas
+    """
+    # Try local .canonizer/ first
+    canonizer_root = _try_find_canonizer_root()
+    if canonizer_root:
+        config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
+        return config.get_registry_path(canonizer_root)
+
+    # Fall back to environment variable
+    env_root = os.environ.get("CANONIZER_REGISTRY_ROOT")
+    if env_root:
+        path = Path(env_root)
+        if not path.exists():
+            raise RuntimeError(
+                f"CANONIZER_REGISTRY_ROOT path does not exist: {path}"
+            )
+        return path
+
+    # Fallback to CWD for backward compatibility
+    return Path.cwd()
+
+
+# ============================================================================
+# Validation API
+# ============================================================================
+
+
+def validate_payload(
+    payload: dict[str, Any],
+    schema_iglu: str,
+    *,
+    schemas_dir: str | Path | None = None,
+) -> tuple[bool, list[str]]:
+    """Validate a payload against a schema (source OR canonical).
+
+    Use this to validate raw payloads before transformation,
+    or canonical payloads after.
+
+    Args:
+        payload: JSON payload to validate
+        schema_iglu: Iglu URI for schema (e.g., "iglu:com.google/gmail_email/jsonschema/1-0-0")
+        schemas_dir: Schema directory. Resolution order:
+            1. Explicit schemas_dir parameter (if provided)
+            2. Local .canonizer/registry/schemas/ (if .canonizer/ exists)
+            3. CANONIZER_REGISTRY_ROOT/schemas (if env var set)
+            4. Current directory/schemas (fallback)
+
+    Returns:
+        Tuple of (is_valid, errors):
+        - is_valid: True if payload passes validation
+        - errors: List of error messages (empty if valid)
+
+    Example:
+        >>> from canonizer import validate_payload
+        >>> is_valid, errors = validate_payload(
+        ...     gmail_message,
+        ...     "iglu:com.google/gmail_email/jsonschema/1-0-0"
+        ... )
+        >>> if not is_valid:
+        ...     print(f"Validation failed: {errors}")
+    """
+    try:
+        # Determine schema path
+        if schemas_dir is not None:
+            # Explicit schemas_dir provided - use it
+            schemas_dir = Path(schemas_dir)
+            schema_path = load_schema_from_iglu_uri(schema_iglu, schemas_dir)
+        else:
+            # Try local .canonizer/ resolution first
+            canonizer_root = _try_find_canonizer_root()
+            if canonizer_root:
+                schema_path = resolve_schema(schema_iglu, canonizer_root)
+            else:
+                # Fall back to old resolution
+                schemas_dir = get_registry_root() / "schemas"
+                schema_path = load_schema_from_iglu_uri(schema_iglu, schemas_dir)
+
+        if not schema_path.exists():
+            return False, [f"Schema file not found: {schema_path}"]
+
+        # Validate payload against schema
+        validator = SchemaValidator(schema_path)
+        validator.validate(payload)
+
+        return True, []
+
+    except ValidationError as e:
+        return False, e.errors
+
+    except Exception as e:
+        return False, [str(e)]
+
+
+# ============================================================================
+# Transform API
+# ============================================================================
 
 
 def canonicalize(
@@ -59,9 +200,14 @@ def canonicalize(
         # Already a file path
         transform_meta_path = Path(transform_id)
 
-    # Initialize runtime
+    # Determine schemas_dir
     if schemas_dir is None:
-        schemas_dir = "schemas"
+        canonizer_root = _try_find_canonizer_root()
+        if canonizer_root:
+            config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
+            schemas_dir = config.get_registry_path(canonizer_root) / "schemas"
+        else:
+            schemas_dir = get_registry_root() / "schemas"
 
     runtime = TransformRuntime(schemas_dir=schemas_dir)
 
@@ -215,6 +361,11 @@ def _resolve_transform_id(transform_id: str) -> Path:
     """
     Resolve registry-style transform ID to local .meta.yaml path.
 
+    Resolution order:
+    1. Local .canonizer/registry/transforms/ (if .canonizer/ exists)
+    2. CANONIZER_REGISTRY_ROOT/transforms/ (if env var set)
+    3. Current directory/transforms/ (fallback)
+
     Args:
         transform_id: Registry-style ID (e.g., "email/gmail_to_jmap_lite@1.0.0")
 
@@ -232,17 +383,24 @@ def _resolve_transform_id(transform_id: str) -> Path:
             f'Expected format: "domain/name@version" (e.g., "email/gmail_to_jmap_lite@1.0.0")'
         )
 
+    # Try local .canonizer/ resolution first
+    canonizer_root = _try_find_canonizer_root()
+    if canonizer_root:
+        return resolve_transform(transform_id, canonizer_root)
+
+    # Fall back to old resolution
     path_part, version = transform_id.rsplit("@", 1)
+    registry_root = get_registry_root()
 
     # Convert to local path
     # "email/gmail_to_jmap_lite@1.0.0" → "transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml"
-    local_path = Path("transforms") / path_part / version / "spec.meta.yaml"
+    local_path = registry_root / "transforms" / path_part / version / "spec.meta.yaml"
 
     if not local_path.exists():
         raise FileNotFoundError(
             f"Transform not found: {transform_id}\n"
             f"Expected path: {local_path}\n"
-            f"Make sure the transform exists locally or use the full path to .meta.yaml"
+            f"Run 'canonizer init' and 'canonizer import' to set up local registry"
         )
 
     return local_path

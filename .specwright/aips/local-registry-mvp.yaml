@@ -1,0 +1,122 @@
+aip_id: AIP-canonizer-2025-11-26-001
+context:
+  background: ''
+  constraints: []
+created: '2025-11-26T00:00:00+00:00'
+meta:
+  created_at: '2025-11-26T00:00:00+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - '`canonizer init` creates `.canonizer/` directory structure'
+  - '`config.yaml` format defined (local mode only for now)'
+  - '`lock.json` format defined (refs + paths + hashes)'
+  - '`resolve_schema(schema_ref, canonizer_root)` implemented'
+  - '`resolve_transform(transform_ref, canonizer_root)` implemented'
+  - '`validate_payload()` uses local resolution'
+  - '`canonicalize()` uses local resolution'
+  - No more CWD or env var dependency for path resolution
+  goal: Implement local .canonizer/ directory model with schema/transform resolution, deferring remote
+    registry to follow-up spec
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-11-26-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Define File Formats
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - canonizer/local/config.py
+  - canonizer/local/lock.py
+  - tests/unit/test_local_config.py
+  prompt: Define the config.yaml and lock.json file formats with Pydantic models for validation.
+  role: coding_agent
+  step_id: step-001
+- description: Implement `canonizer init` Command
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - canonizer/cli/cmds/init.py
+  - tests/unit/test_cli_init.py
+  prompt: Create the `canonizer init` CLI command that sets up the `.canonizer/` directory structure.
+  role: coding_agent
+  step_id: step-002
+- description: Implement Resolution Functions
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - canonizer/local/resolver.py
+  - tests/unit/test_resolver.py
+  prompt: 'Create resolution functions that convert schema/transform refs to local paths.
+
+    ```python
+
+    def resolve_schema(schema_ref: str, canonizer_root: Path) -> Path
+
+    def resolve_transform(transform_ref: str, canonizer_root: Path) -> Path
+
+    def find_canonizer_root(start_path: Path) -> Path
+
+    ```'
+  role: coding_agent
+  step_id: step-003
+- description: Wire API Functions
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - canonizer/api.py
+  - tests/integration/test_local_registry.py
+  prompt: 'Update `validate_payload()` and `canonicalize()` to use local resolution when `.canonizer/`
+    exists.
+
+    Maintain backward compatibility:
+
+    - If explicit `schemas_dir` passed, use it
+
+    - Else if `.canonizer/` found, use local resolution
+
+    - Else fall back to current behavior'
+  role: coding_agent
+  step_id: step-004
+- description: Manual Population Helper
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - canonizer/cli/cmds/import_cmd.py
+  prompt: 'Create a helper command or script to copy schemas/transforms from a registry repo clone into
+    `.canonizer/`.
+
+    ```bash
+
+    canonizer import --from /path/to/canonizer-registry --ref iglu:com.google/gmail_email/jsonschema/1-0-0
+
+    ```'
+  role: coding_agent
+  step_id: step-005
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/local-registry-mvp
+spec_version: 0.1.0
+tier: C
+title: Local Registry MVP
+updated: '2025-11-26T00:00:00+00:00'
+version: '0.1'
+
