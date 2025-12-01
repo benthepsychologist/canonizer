@@ -85,14 +85,12 @@ Your orchestrator (Airflow, Dagster, Snowplow) calls Canonizer. Canonizer doesn'
 
 ---
 
-## Next Up (v0.5)
+## Completed (v0.5)
 
 ### Local Registry MVP
-**Spec:** `local-registry-mvp.md` (status: stub)
+**Spec:** `local-registry-mvp.md` (status: complete)
 
-**Problem:** Currently requires `CANONIZER_REGISTRY_ROOT` env var or CWD inside registry repo. This is brittle.
-
-**Solution:** Each project gets a `.canonizer/` directory:
+Each project gets a `.canonizer/` directory:
 
 ```
 myproject/
@@ -106,16 +104,19 @@ myproject/
 ```
 
 **Deliverables:**
-- [ ] `canonizer init` creates `.canonizer/` directory structure
-- [ ] `config.yaml` format for local mode
-- [ ] `lock.json` format for dependency pinning
-- [ ] `resolve_schema()` and `resolve_transform()` functions
-- [ ] Wire `validate_payload()` and `canonicalize()` to local resolution
-- [ ] No more CWD or env var dependency
+- [x] `canonizer init` creates `.canonizer/` directory structure
+- [x] `config.yaml` format for local mode
+- [x] `lock.json` format for dependency pinning
+- [x] `resolve_schema()` and `resolve_transform()` functions
+- [x] Wire `validate_payload()` and `canonicalize()` to local resolution
+- [x] No more CWD or env var dependency
+- [x] `canonizer import run` - import single schema/transform from registry clone
+- [x] `canonizer import all` - bulk import with filters (--category, --schemas-only, --transforms-only)
+- [x] `canonizer import list` - list available items in a registry
 
 ---
 
-## Planned (v0.6+)
+## Next Up (v0.6)
 
 ### Remote Registry Infrastructure
 **Spec:** `remote-registry.md` (status: stub, depends on local-registry-mvp)
