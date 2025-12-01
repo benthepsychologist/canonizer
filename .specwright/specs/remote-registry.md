@@ -8,8 +8,8 @@ labels: [registry, remote, cdn, infrastructure]
 project_slug: canonizer
 spec_version: 0.1.0
 created: 2025-11-26T00:00:00+00:00
-updated: 2025-11-26T00:00:00+00:00
-status: stub
+updated: 2025-12-01T00:00:00+00:00
+status: complete
 depends_on: local-registry-mvp
 ---
 

@@ -116,20 +116,23 @@ myproject/
 
 ---
 
-## Next Up (v0.6)
+## Completed (v0.6)
 
-### Remote Registry Infrastructure
-**Spec:** `remote-registry.md` (status: stub, depends on local-registry-mvp)
-
-**Prerequisites:** Local Registry MVP completed
+### Remote Registry Integration
+**Spec:** `remote-registry.md` (status: complete)
 
 **Deliverables:**
-- [ ] Static file hosting (GitHub Pages or Cloudflare R2)
-- [ ] `canonizer registry pull <ref>` - fetch from remote
-- [ ] `canonizer registry sync` - sync all lock.json dependencies
-- [ ] Hash verification on pull
-- [ ] CI publishes to static host on merge
-- [ ] `index.json` generation for discovery
+- [x] `can registry pull <ref> --local` - pull from remote to `.canonizer/registry/`
+- [x] `can registry sync` - sync all lock.json dependencies from remote
+- [x] Hash verification on pull
+- [x] Referenced schemas auto-pulled with transforms
+- [ ] Static file hosting (GitHub Pages) - optional, raw.githubusercontent works
+- [ ] CI publishes to static host on merge - deferred
+- [ ] `index.json` generation for discovery - using existing REGISTRY_INDEX.json
+
+---
+
+## Planned (v0.7+)
 
 ### LLM Scaffolding
 **Spec:** Deferred from `canonizer-aip-v0.md`

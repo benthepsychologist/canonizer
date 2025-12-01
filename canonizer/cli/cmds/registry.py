@@ -1,11 +1,18 @@
 """Registry command: interact with the Canonizer transform registry."""
 
+import shutil
 from pathlib import Path
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
+from canonizer.local.lock import LockFile
+from canonizer.local.resolver import (
+    CanonizerRootNotFoundError,
+    find_canonizer_root,
+    schema_ref_to_path,
+)
 from canonizer.registry.client import RegistryClient
 
 app = typer.Typer(help="Interact with the Canonizer transform registry")
@@ -212,6 +219,17 @@ def pull(
         ...,
         help="Transform to pull (format: <id>@<version> or <id>@latest)",
     ),
+    local: bool = typer.Option(
+        False,
+        "--local",
+        "-l",
+        help="Pull to .canonizer/registry/ instead of global cache",
+    ),
+    with_schemas: bool = typer.Option(
+        True,
+        "--with-schemas/--no-schemas",
+        help="Also pull referenced schemas (default: yes)",
+    ),
     registry_url: str | None = typer.Option(
         None,
         "--registry-url",
@@ -224,17 +242,20 @@ def pull(
     ),
 ):
     """
-    Download a transform to local cache.
+    Download a transform from remote registry.
 
     Examples:
-        # Pull specific version
+        # Pull to global cache (~/.cache/canonizer/)
         can registry pull email/gmail_to_canonical@1.0.0
 
-        # Pull latest version
-        can registry pull email/gmail_to_canonical@latest
+        # Pull to local .canonizer/registry/ (project-local)
+        can registry pull email/gmail_to_canonical@1.0.0 --local
 
-        # Pull without checksum verification (not recommended)
-        can registry pull email/gmail_to_canonical@1.0.0 --no-verify
+        # Pull latest version
+        can registry pull email/gmail_to_canonical@latest --local
+
+        # Pull without referenced schemas
+        can registry pull email/gmail_to_canonical@1.0.0 --local --no-schemas
     """
     try:
         # Parse transform spec
@@ -254,19 +275,100 @@ def pull(
             verify_checksum=not no_verify,
         )
 
-        # Display success
-        console.print("[green]✓[/green] Transform downloaded successfully", style="bold green")
-        console.print(f"\n[bold]Transform:[/bold] {transform.meta.id}")
-        console.print(f"[bold]Version:[/bold] {transform.meta.version}")
-        console.print(f"[bold]From:[/bold] {transform.meta.from_schema}")
-        console.print(f"[bold]To:[/bold] {transform.meta.to_schema}")
-        console.print(f"[bold]Status:[/bold] {transform.meta.status}")
-        console.print(f"\n[dim]Cached at:[/dim] {transform.meta_path.parent}")
-        console.print(f"[dim]Use with:[/dim] can transform run --meta {transform.meta_path}")
+        if local:
+            # Pull to .canonizer/registry/
+            try:
+                canonizer_root = find_canonizer_root(Path.cwd())
+            except CanonizerRootNotFoundError:
+                console_err.print(
+                    "[red]Error:[/red] No .canonizer/ directory found. "
+                    "Run 'canonizer init' first, or omit --local to use global cache."
+                )
+                raise typer.Exit(code=1)
+
+            # Load lock file
+            lock_path = canonizer_root / "lock.json"
+            lock = LockFile.load(lock_path) if lock_path.exists() else LockFile.empty()
+
+            # Copy transform to local registry
+            registry_dir = canonizer_root / "registry"
+            dest_dir = registry_dir / "transforms" / transform_id / transform.meta.version
+            dest_dir.mkdir(parents=True, exist_ok=True)
+
+            # Copy files from cache
+            shutil.copy(transform.meta_path, dest_dir / "spec.meta.yaml")
+            shutil.copy(transform.jsonata_path, dest_dir / "spec.jsonata")
+
+            # Update lock file
+            transform_ref = f"{transform_id}@{transform.meta.version}"
+            lock.add_transform(
+                ref=transform_ref,
+                path=str(dest_dir.relative_to(canonizer_root)),
+                checksum=f"sha256:{transform.meta.checksum.jsonata_sha256}",
+            )
+
+            console.print(f"  [green]✓[/green] Transform copied to {dest_dir.relative_to(canonizer_root.parent)}")
+
+            # Pull referenced schemas if requested
+            if with_schemas:
+                schemas_to_pull = []
+                if transform.meta.from_schema:
+                    schemas_to_pull.append(transform.meta.from_schema)
+                if transform.meta.to_schema:
+                    schemas_to_pull.append(transform.meta.to_schema)
+
+                for schema_ref in schemas_to_pull:
+                    try:
+                        console.print(f"[cyan]Pulling schema:[/cyan] {schema_ref}")
+                        schema = client.fetch_schema(schema_ref, use_cache=False)
+
+                        # Determine destination path
+                        schema_rel_path = schema_ref_to_path(schema_ref)
+                        schema_dest = registry_dir / "schemas" / schema_rel_path
+                        schema_dest.parent.mkdir(parents=True, exist_ok=True)
+
+                        import json
+                        schema_dest.write_text(json.dumps(schema, indent=2))
+
+                        # Compute hash and add to lock
+                        import hashlib
+                        schema_hash = hashlib.sha256(json.dumps(schema, sort_keys=True).encode()).hexdigest()
+                        lock.add_schema(
+                            ref=schema_ref,
+                            path=str(schema_dest.relative_to(canonizer_root)),
+                            checksum=f"sha256:{schema_hash}",
+                        )
+
+                        console.print(f"  [green]✓[/green] {schema_ref}")
+                    except Exception as e:
+                        console.print(f"  [yellow]⚠[/yellow] {schema_ref}: {e}")
+
+            # Save lock file
+            lock.save(lock_path)
+            console.print("\n[green]✓[/green] Updated lock.json")
+
+            # Display success
+            console.print(f"\n[bold]Transform:[/bold] {transform.meta.id}")
+            console.print(f"[bold]Version:[/bold] {transform.meta.version}")
+            console.print(f"[bold]From:[/bold] {transform.meta.from_schema}")
+            console.print(f"[bold]To:[/bold] {transform.meta.to_schema}")
+            console.print(f"\n[dim]Saved to:[/dim] {dest_dir}")
+        else:
+            # Display success (global cache)
+            console.print("[green]✓[/green] Transform downloaded successfully", style="bold green")
+            console.print(f"\n[bold]Transform:[/bold] {transform.meta.id}")
+            console.print(f"[bold]Version:[/bold] {transform.meta.version}")
+            console.print(f"[bold]From:[/bold] {transform.meta.from_schema}")
+            console.print(f"[bold]To:[/bold] {transform.meta.to_schema}")
+            console.print(f"[bold]Status:[/bold] {transform.meta.status}")
+            console.print(f"\n[dim]Cached at:[/dim] {transform.meta_path.parent}")
+            console.print(f"[dim]Use with:[/dim] can transform run --meta {transform.meta_path}")
 
     except ValueError as e:
         console_err.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)
+    except typer.Exit:
+        raise
     except Exception as e:
         console_err.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)
@@ -395,6 +497,162 @@ def validate(
         else:
             console_err.print("\n[red]✗[/red] Validation failed", style="bold red")
             console_err.print("[dim]Fix the errors above and try again[/dim]")
+            raise typer.Exit(code=1)
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        console_err.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def sync(
+    registry_url: str | None = typer.Option(
+        None,
+        "--registry-url",
+        help="Custom registry URL (defaults to official registry)",
+    ),
+    no_verify: bool = typer.Option(
+        False,
+        "--no-verify",
+        help="Skip checksum verification (not recommended)",
+    ),
+):
+    """
+    Sync all dependencies from lock.json to local .canonizer/registry/.
+
+    Reads the lock.json file and pulls any missing or outdated schemas
+    and transforms from the remote registry.
+
+    Examples:
+        # Sync all dependencies
+        can registry sync
+
+        # Sync from custom registry
+        can registry sync --registry-url https://example.com/registry/
+    """
+    import hashlib
+    import json
+
+    try:
+        # Find .canonizer/ directory
+        try:
+            canonizer_root = find_canonizer_root(Path.cwd())
+        except CanonizerRootNotFoundError:
+            console_err.print(
+                "[red]Error:[/red] No .canonizer/ directory found. "
+                "Run 'canonizer init' first."
+            )
+            raise typer.Exit(code=1)
+
+        # Load lock file
+        lock_path = canonizer_root / "lock.json"
+        if not lock_path.exists():
+            console.print("[yellow]No lock.json found. Nothing to sync.[/yellow]")
+            raise typer.Exit(code=0)
+
+        lock = LockFile.load(lock_path)
+
+        client = RegistryClient(registry_url=registry_url)
+
+        schemas_synced = 0
+        schemas_skipped = 0
+        schemas_failed = 0
+        transforms_synced = 0
+        transforms_skipped = 0
+        transforms_failed = 0
+
+        # Sync schemas
+        if lock.schemas:
+            console.print(f"\n[bold cyan]Syncing {len(lock.schemas)} schemas...[/bold cyan]")
+            for schema_ref, entry in lock.schemas.items():
+                local_path = canonizer_root / entry.path
+                expected_hash = entry.hash
+
+                # Check if already exists and matches
+                if local_path.exists():
+                    with open(local_path) as f:
+                        content = f.read()
+                    computed_hash = f"sha256:{hashlib.sha256(content.encode()).hexdigest()}"
+                    if computed_hash == expected_hash:
+                        console.print(f"  [dim]⊘[/dim] {schema_ref} (up to date)")
+                        schemas_skipped += 1
+                        continue
+
+                # Fetch from remote
+                try:
+                    schema = client.fetch_schema(schema_ref, use_cache=False)
+                    schema_json = json.dumps(schema, indent=2)
+
+                    # Verify hash if requested
+                    if not no_verify:
+                        computed_hash = f"sha256:{hashlib.sha256(json.dumps(schema, sort_keys=True).encode()).hexdigest()}"
+                        if computed_hash != expected_hash:
+                            console.print(f"  [red]✗[/red] {schema_ref} (hash mismatch)")
+                            schemas_failed += 1
+                            continue
+
+                    # Write to local
+                    local_path.parent.mkdir(parents=True, exist_ok=True)
+                    local_path.write_text(schema_json)
+                    console.print(f"  [green]✓[/green] {schema_ref}")
+                    schemas_synced += 1
+                except Exception as e:
+                    console.print(f"  [red]✗[/red] {schema_ref}: {e}")
+                    schemas_failed += 1
+
+        # Sync transforms
+        if lock.transforms:
+            console.print(f"\n[bold cyan]Syncing {len(lock.transforms)} transforms...[/bold cyan]")
+            for transform_ref, entry in lock.transforms.items():
+                local_dir = canonizer_root / entry.path
+                expected_hash = entry.hash
+
+                # Check if already exists and matches
+                jsonata_path = local_dir / "spec.jsonata"
+                if jsonata_path.exists():
+                    content = jsonata_path.read_bytes()
+                    computed_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+                    if computed_hash == expected_hash:
+                        console.print(f"  [dim]⊘[/dim] {transform_ref} (up to date)")
+                        transforms_skipped += 1
+                        continue
+
+                # Parse transform ref
+                if "@" not in transform_ref:
+                    console.print(f"  [red]✗[/red] {transform_ref} (invalid ref format)")
+                    transforms_failed += 1
+                    continue
+
+                transform_id, version = transform_ref.rsplit("@", 1)
+
+                # Fetch from remote
+                try:
+                    transform = client.fetch_transform(
+                        transform_id=transform_id,
+                        version=version,
+                        use_cache=False,
+                        verify_checksum=not no_verify,
+                    )
+
+                    # Copy to local
+                    local_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(transform.meta_path, local_dir / "spec.meta.yaml")
+                    shutil.copy(transform.jsonata_path, local_dir / "spec.jsonata")
+
+                    console.print(f"  [green]✓[/green] {transform_ref}")
+                    transforms_synced += 1
+                except Exception as e:
+                    console.print(f"  [red]✗[/red] {transform_ref}: {e}")
+                    transforms_failed += 1
+
+        # Summary
+        console.print("\n[bold]Sync complete:[/bold]")
+        console.print(f"  Schemas: {schemas_synced} synced, {schemas_skipped} up-to-date, {schemas_failed} failed")
+        console.print(f"  Transforms: {transforms_synced} synced, {transforms_skipped} up-to-date, {transforms_failed} failed")
+
+        if schemas_failed > 0 or transforms_failed > 0:
             raise typer.Exit(code=1)
 
     except typer.Exit:

@@ -480,9 +480,15 @@ can registry search --status stable          # By status
 can registry info <id>@<version>             # Specific version
 can registry info <id>@latest                # Latest version
 
-# Pull transform to local cache
+# Pull transform to global cache (~/.cache/canonizer/)
 can registry pull <id>@<version>
-can registry pull email/gmail_to_canonical@1.0.0
+
+# Pull transform to local .canonizer/registry/ (New in v0.6!)
+can registry pull <id>@<version> --local
+can registry pull email/gmail_to_jmap_lite@1.0.0 --local
+
+# Sync all lock.json dependencies from remote (New in v0.6!)
+can registry sync
 
 # Validate transform directory
 can registry validate <path>
