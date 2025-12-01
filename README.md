@@ -310,11 +310,23 @@ your-project/
 # Initialize in your project
 canonizer init .
 
-# Import a transform (auto-imports referenced schemas)
+# Import a single transform (auto-imports referenced schemas)
 canonizer import run --from /path/to/canonizer-registry "email/gmail_to_jmap_lite@1.0.0"
 
-# List what's imported
-canonizer import list
+# Bulk import entire registry
+canonizer import all --from /path/to/canonizer-registry
+
+# Bulk import by category
+canonizer import all --from /path/to/canonizer-registry --category email
+
+# Import only schemas (no transforms)
+canonizer import all --from /path/to/canonizer-registry --schemas-only
+
+# Import only transforms (with their referenced schemas)
+canonizer import all --from /path/to/canonizer-registry --transforms-only
+
+# List available items in a registry
+canonizer import list --from /path/to/canonizer-registry
 ```
 
 ```python
@@ -433,7 +445,27 @@ can transform list --dir transforms/
 can validate run --schema <schema.json> --data <json>
 ```
 
-### Registry Commands
+### Import Commands (Local Registry)
+```bash
+# Initialize .canonizer/ in your project
+canonizer init .
+
+# Import a single transform (auto-imports referenced schemas)
+canonizer import run --from <registry-path> "<transform-ref>"
+
+# Bulk import everything from a registry clone
+canonizer import all --from <registry-path>
+
+# Bulk import with filters
+canonizer import all --from <registry-path> --category email    # By category
+canonizer import all --from <registry-path> --schemas-only      # Only schemas
+canonizer import all --from <registry-path> --transforms-only   # Only transforms
+
+# List available items in a registry
+canonizer import list --from <registry-path>
+```
+
+### Registry Commands (Remote)
 ```bash
 # List all available transforms
 can registry list [--status stable] [--refresh]

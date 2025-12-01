@@ -8,5 +8,5 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/local-registry-mvp.md
-  aip: /workspace/canonizer/.specwright/aips/local-registry-mvp.yaml
+  spec: .specwright/specs/bulk-import-command.md
+  aip: .specwright/aips/bulk-import-command.yaml

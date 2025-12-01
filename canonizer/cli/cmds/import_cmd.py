@@ -2,22 +2,19 @@
 
 import shutil
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
 
 from canonizer.local.config import (
-    CANONIZER_DIR,
     CONFIG_FILENAME,
     CanonizerConfig,
 )
-from canonizer.local.lock import LockFile, compute_file_hash
+from canonizer.local.lock import LockFile
 from canonizer.local.resolver import (
     CanonizerRootNotFoundError,
     InvalidReferenceError,
     find_canonizer_root,
-    parse_iglu_ref,
     parse_transform_ref,
     schema_ref_to_path,
     transform_ref_to_path,
@@ -170,7 +167,7 @@ def import_run(
         "-f",
         help="Path to source registry repository",
     ),
-    target: Optional[Path] = typer.Option(
+    target: Path | None = typer.Option(
         None,
         "--to",
         "-t",
@@ -216,8 +213,8 @@ def import_run(
         canonizer_root = find_canonizer_root(start_path)
     except CanonizerRootNotFoundError:
         console.print(
-            f"[red]Error:[/red] No .canonizer/ directory found. "
-            f"Run 'canonizer init' first."
+            "[red]Error:[/red] No .canonizer/ directory found. "
+            "Run 'canonizer init' first."
         )
         raise typer.Exit(code=1)
 
@@ -258,18 +255,248 @@ def import_run(
                             console.print(f"[blue]Importing schema:[/blue] {schema_ref}")
                             schema_dest = import_schema(schema_ref, source, canonizer_root, config, lock)
                             console.print(f"  [green]✓[/green] Copied to {schema_dest.relative_to(canonizer_root.parent)}")
-                        except FileNotFoundError as e:
+                        except FileNotFoundError:
                             console.print(f"  [yellow]⚠[/yellow] Schema not found: {schema_ref}")
 
         # Save updated lock file
         lock.save(lock_path)
-        console.print(f"\n[green]✓[/green] Updated lock.json")
+        console.print("\n[green]✓[/green] Updated lock.json")
 
     except InvalidReferenceError as e:
         console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)
     except FileNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+def collect_schema_refs(source_registry: Path) -> list[str]:
+    """Collect all schema references from a registry directory.
+
+    Args:
+        source_registry: Path to source registry repo
+
+    Returns:
+        List of schema references (iglu:vendor/name/jsonschema/version)
+    """
+    refs = []
+    schemas_dir = source_registry / "schemas"
+    if schemas_dir.exists():
+        for vendor_dir in sorted(schemas_dir.iterdir()):
+            if vendor_dir.is_dir():
+                for schema_dir in sorted(vendor_dir.iterdir()):
+                    if schema_dir.is_dir():
+                        jsonschema_dir = schema_dir / "jsonschema"
+                        if jsonschema_dir.exists():
+                            for version_file in sorted(jsonschema_dir.glob("*.json")):
+                                version = version_file.stem
+                                ref = f"iglu:{vendor_dir.name}/{schema_dir.name}/jsonschema/{version}"
+                                refs.append(ref)
+    return refs
+
+
+def collect_transform_refs(
+    source_registry: Path, category: str | None = None
+) -> list[str]:
+    """Collect all transform references from a registry directory.
+
+    Args:
+        source_registry: Path to source registry repo
+        category: Optional category filter (e.g., 'email', 'forms')
+
+    Returns:
+        List of transform references (category/name@version)
+    """
+    refs = []
+    transforms_dir = source_registry / "transforms"
+    if transforms_dir.exists():
+        for cat_dir in sorted(transforms_dir.iterdir()):
+            if cat_dir.is_dir():
+                if category and cat_dir.name != category:
+                    continue
+                for transform_dir in sorted(cat_dir.iterdir()):
+                    if transform_dir.is_dir():
+                        for version_dir in sorted(transform_dir.iterdir()):
+                            if version_dir.is_dir() and (version_dir / "spec.meta.yaml").exists():
+                                ref = f"{cat_dir.name}/{transform_dir.name}@{version_dir.name}"
+                                refs.append(ref)
+    return refs
+
+
+@app.command("all")
+def import_all(
+    source: Path = typer.Option(
+        ...,
+        "--from",
+        "-f",
+        help="Path to source registry repository",
+    ),
+    target: Path | None = typer.Option(
+        None,
+        "--to",
+        "-t",
+        help="Path to project with .canonizer/ (defaults to current directory)",
+    ),
+    category: str | None = typer.Option(
+        None,
+        "--category",
+        "-c",
+        help="Filter transforms by category (e.g., 'email', 'forms')",
+    ),
+    schemas_only: bool = typer.Option(
+        False,
+        "--schemas-only",
+        help="Import only schemas (no transforms)",
+    ),
+    transforms_only: bool = typer.Option(
+        False,
+        "--transforms-only",
+        help="Import only transforms (and their referenced schemas)",
+    ),
+) -> None:
+    """Bulk import all schemas and transforms from a registry repository.
+
+    Examples:
+        # Import everything
+        canonizer import all --from ../canonizer-registry
+
+        # Import only email transforms
+        canonizer import all --from ../canonizer-registry --category email
+
+        # Import only schemas
+        canonizer import all --from ../canonizer-registry --schemas-only
+
+        # Import only transforms (with their referenced schemas)
+        canonizer import all --from ../canonizer-registry --transforms-only
+    """
+    # Validate source registry
+    source = source.resolve()
+    if not source.exists():
+        console.print(f"[red]Error:[/red] Source registry not found: {source}")
+        raise typer.Exit(code=1)
+
+    # Check it looks like a registry
+    if not (source / "schemas").exists() and not (source / "transforms").exists():
+        console.print(
+            f"[yellow]Warning:[/yellow] {source} doesn't look like a registry "
+            "(no schemas/ or transforms/ directory)"
+        )
+
+    # Validate mutually exclusive options
+    if schemas_only and transforms_only:
+        console.print(
+            "[red]Error:[/red] Cannot use --schemas-only and --transforms-only together"
+        )
+        raise typer.Exit(code=1)
+
+    # Find .canonizer/ directory
+    try:
+        start_path = target or Path.cwd()
+        canonizer_root = find_canonizer_root(start_path)
+    except CanonizerRootNotFoundError:
+        console.print(
+            "[red]Error:[/red] No .canonizer/ directory found. "
+            "Run 'canonizer init' first."
+        )
+        raise typer.Exit(code=1)
+
+    # Load config and lock
+    config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
+    lock_path = canonizer_root / "lock.json"
+    lock = LockFile.load(lock_path) if lock_path.exists() else LockFile.empty()
+
+    # Collect refs to import
+    schema_refs: list[str] = []
+    transform_refs: list[str] = []
+
+    if not transforms_only:
+        schema_refs = collect_schema_refs(source)
+
+    if not schemas_only:
+        transform_refs = collect_transform_refs(source, category)
+
+    # Show summary
+    console.print(f"\n[bold]Source registry:[/bold] {source}")
+    console.print(f"[bold]Target:[/bold] {canonizer_root}")
+    if category:
+        console.print(f"[bold]Category filter:[/bold] {category}")
+    console.print(f"\n[bold]Found:[/bold] {len(schema_refs)} schemas, {len(transform_refs)} transforms")
+
+    if not schema_refs and not transform_refs:
+        console.print("[yellow]Nothing to import.[/yellow]")
+        raise typer.Exit(code=0)
+
+    # Import schemas
+    schemas_imported = 0
+    schemas_failed = 0
+
+    if schema_refs:
+        console.print(f"\n[bold cyan]Importing {len(schema_refs)} schemas...[/bold cyan]")
+        for ref in schema_refs:
+            try:
+                dest = import_schema(ref, source, canonizer_root, config, lock)
+                console.print(f"  [green]✓[/green] {ref}")
+                schemas_imported += 1
+            except FileNotFoundError as e:
+                console.print(f"  [red]✗[/red] {ref}: {e}")
+                schemas_failed += 1
+            except Exception as e:
+                console.print(f"  [red]✗[/red] {ref}: {e}")
+                schemas_failed += 1
+
+    # Import transforms
+    transforms_imported = 0
+    transforms_failed = 0
+    schemas_from_transforms = 0
+
+    if transform_refs:
+        console.print(f"\n[bold cyan]Importing {len(transform_refs)} transforms...[/bold cyan]")
+        for ref in transform_refs:
+            try:
+                dest = import_transform(ref, source, canonizer_root, config, lock)
+                console.print(f"  [green]✓[/green] {ref}")
+                transforms_imported += 1
+
+                # Import referenced schemas if transforms_only mode
+                # (In regular mode, schemas are already imported above)
+                if transforms_only:
+                    meta_path = dest / "spec.meta.yaml"
+                    if meta_path.exists():
+                        import yaml
+                        with open(meta_path) as f:
+                            meta = yaml.safe_load(f)
+
+                        for schema_key in ["from_schema", "to_schema"]:
+                            if schema_key in meta:
+                                schema_ref = meta[schema_key]
+                                try:
+                                    import_schema(schema_ref, source, canonizer_root, config, lock)
+                                    console.print(f"    [green]✓[/green] {schema_ref}")
+                                    schemas_from_transforms += 1
+                                except FileNotFoundError:
+                                    console.print(f"    [yellow]⚠[/yellow] {schema_ref} (not found)")
+                                except Exception as e:
+                                    console.print(f"    [yellow]⚠[/yellow] {schema_ref}: {e}")
+
+            except FileNotFoundError as e:
+                console.print(f"  [red]✗[/red] {ref}: {e}")
+                transforms_failed += 1
+            except Exception as e:
+                console.print(f"  [red]✗[/red] {ref}: {e}")
+                transforms_failed += 1
+
+    # Save lock file
+    lock.save(lock_path)
+
+    # Summary
+    console.print("\n[bold]Import complete:[/bold]")
+    console.print(f"  Schemas: {schemas_imported} imported, {schemas_failed} failed")
+    if transforms_only and schemas_from_transforms > 0:
+        console.print(f"  Schemas (from transforms): {schemas_from_transforms} imported")
+    console.print(f"  Transforms: {transforms_imported} imported, {transforms_failed} failed")
+    console.print("\n[green]✓[/green] Updated lock.json")
+
+    if schemas_failed > 0 or transforms_failed > 0:
         raise typer.Exit(code=1)
 
 
@@ -281,7 +508,7 @@ def import_list(
         "-f",
         help="Path to source registry repository",
     ),
-    category: Optional[str] = typer.Option(
+    category: str | None = typer.Option(
         None,
         "--category",
         "-c",

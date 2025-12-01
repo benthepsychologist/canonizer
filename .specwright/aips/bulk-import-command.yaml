@@ -1,0 +1,71 @@
+version: "0.1"
+spec_path: .specwright/specs/bulk-import-command.md
+tier: C
+title: Bulk Import Command
+owner: benthepsychologist
+goal: Add `canonizer import all` command to bulk import schemas and transforms from a local registry clone
+labels:
+  - registry
+  - local
+  - cli
+  - import
+project_slug: canonizer
+spec_version: 0.1.0
+created: 2025-12-01T00:00:00+00:00
+updated: 2025-12-01T00:00:00+00:00
+orchestrator_contract: standard
+repo:
+  working_branch: feat/bulk-import
+
+status: pending
+current_step: 1
+
+steps:
+  - number: 1
+    title: Add `import all` Command
+    gate: G0
+    gate_name: Plan Approval
+    status: pending
+    outputs:
+      - canonizer/cli/cmds/import_cmd.py
+      - tests/unit/test_import_cmd.py
+    commands:
+      - ruff check canonizer/cli/cmds/import_cmd.py
+      - pytest tests/unit/test_import_cmd.py -v
+
+  - number: 2
+    title: Test and Validate
+    gate: G1
+    gate_name: Code Readiness
+    status: pending
+    outputs:
+      - tests/integration/test_bulk_import.py
+    commands:
+      - pytest tests/unit/test_import_cmd.py -v
+      - pytest tests/integration/test_bulk_import.py -v
+
+  - number: 3
+    title: Documentation
+    gate: G2
+    gate_name: Pre-Release
+    status: pending
+    outputs:
+      - README.md
+
+acceptance_criteria:
+  - description: "`canonizer import all --from <path>` imports all transforms and schemas"
+    status: pending
+  - description: "`--category <name>` filters transforms by category"
+    status: pending
+  - description: "`--schemas-only` imports only schemas"
+    status: pending
+  - description: "`--transforms-only` imports only transforms (with referenced schemas)"
+    status: pending
+  - description: "Progress output shows what's being imported"
+    status: pending
+  - description: "`lock.json` is updated with all imported items"
+    status: pending
+  - description: "Existing items are skipped or updated (not duplicated)"
+    status: pending
+  - description: "Unit tests cover the new command"
+    status: pending
