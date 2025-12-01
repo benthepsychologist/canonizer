@@ -41,7 +41,7 @@
       "description": "The date and time the message was sent"
     },
     "hasAttachments": {
-      "type": "boolean",
+      "type": ["boolean", "null"],
       "description": "Indicates whether the message has attachments"
     },
     "internetMessageId": {
@@ -49,7 +49,7 @@
       "description": "The message ID in the format specified by RFC2822"
     },
     "subject": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "The subject of the message"
     },
     "body": {
@@ -82,19 +82,19 @@
       "description": "Indicates the position of the message within the conversation (base64 encoded)"
     },
     "isDeliveryReceiptRequested": {
-      "type": "boolean",
+      "type": ["boolean", "null"],
       "description": "Indicates whether a delivery receipt is requested for the message"
     },
     "isReadReceiptRequested": {
-      "type": "boolean",
+      "type": ["boolean", "null"],
       "description": "Indicates whether a read receipt is requested for the message"
     },
     "isRead": {
-      "type": "boolean",
+      "type": ["boolean", "null"],
       "description": "Indicates whether the message has been read"
     },
     "isDraft": {
-      "type": "boolean",
+      "type": ["boolean", "null"],
       "description": "Indicates whether the message is a draft"
     },
     "webLink": {
