@@ -1,0 +1,49 @@
+{
+  "id": "in_1MtHbELkdIwHu7ixl4OzzPMv",
+  "object": "invoice",
+  "number": "ACME-0001",
+  "customer": "cus_NffrFeUfNV2Hib",
+  "customer_email": "john.smith@example.com",
+  "customer_name": "John Smith",
+  "status": "paid",
+  "amount_due": 15000,
+  "amount_paid": 15000,
+  "amount_remaining": 0,
+  "subtotal": 14000,
+  "total": 15000,
+  "tax": 1000,
+  "currency": "usd",
+  "description": "Monthly subscription - March 2024",
+  "due_date": 1711929600,
+  "period_start": 1709251200,
+  "period_end": 1711929600,
+  "lines": {
+    "object": "list",
+    "data": [
+      {
+        "id": "il_1MtHbELkdIwHu7ixabc123",
+        "object": "line_item",
+        "amount": 14000,
+        "currency": "usd",
+        "description": "Pro Plan (Mar 1 - Mar 31, 2024)",
+        "quantity": 1,
+        "unit_amount": 14000,
+        "period": {
+          "start": 1709251200,
+          "end": 1711929600
+        }
+      }
+    ],
+    "has_more": false,
+    "url": "/v1/invoices/in_1MtHbELkdIwHu7ixl4OzzPMv/lines"
+  },
+  "payment_intent": "pi_3MtweELkdIwHu7ix0Dt0gF2H",
+  "subscription": "sub_1MtweELkdIwHu7ixabc123",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_123/test_abc",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_123/test_abc/pdf",
+  "metadata": {
+    "order_id": "ORD-12345"
+  },
+  "livemode": true,
+  "created": 1709337600
+}

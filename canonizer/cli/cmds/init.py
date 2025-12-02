@@ -1,7 +1,6 @@
 """CLI command for initializing a local .canonizer/ directory."""
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -21,7 +20,7 @@ console = Console()
 
 
 def init(
-    path: Optional[Path] = typer.Argument(
+    path: Path | None = typer.Argument(
         None,
         help="Directory to initialize (defaults to current directory)",
     ),
@@ -99,7 +98,7 @@ registry/
 __pycache__/
 """
         gitignore_path.write_text(gitignore_content)
-        console.print(f"  [green]✓[/green] Created .gitignore")
+        console.print("  [green]✓[/green] Created .gitignore")
 
         # Summary
         console.print()

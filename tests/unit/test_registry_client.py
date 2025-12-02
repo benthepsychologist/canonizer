@@ -2,8 +2,6 @@
 
 import hashlib
 import json
-from datetime import datetime, timezone
-from pathlib import Path
 from unittest.mock import Mock
 
 import httpx
@@ -11,7 +9,6 @@ import pytest
 import yaml
 
 from canonizer.registry.client import RegistryClient
-from canonizer.registry.transform_meta import Checksum, Provenance
 
 
 @pytest.fixture

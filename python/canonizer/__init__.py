@@ -10,10 +10,10 @@ Public API:
 """
 
 from canonizer.api import (
-    canonicalize,
-    validate_payload,
-    run_batch,
     TransformError,
+    canonicalize,
+    run_batch,
+    validate_payload,
 )
 
 __version__ = "0.5.0"

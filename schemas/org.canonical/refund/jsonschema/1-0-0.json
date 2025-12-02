@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Refund",
+  "description": "Canonical refund schema for billing systems. Represents a refund of a previous payment.",
+  "type": "object",
+  "required": ["refund_id", "amount", "currency", "status", "meta"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for self-describing records"
+    },
+    "refund_id": {
+      "type": "string",
+      "description": "Unique identifier for the refund",
+      "examples": ["re_3MtweELkdIwHu7ix1P8GHrdT"]
+    },
+    "payment_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the original payment (PaymentIntent)",
+      "examples": ["pi_3MtweELkdIwHu7ix0Dt0gF2H"]
+    },
+    "charge_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the charge being refunded"
+    },
+    "amount": {
+      "$ref": "#/definitions/money",
+      "description": "Refund amount"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO 4217 currency code",
+      "examples": ["usd"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "requires_action", "succeeded", "failed", "canceled"],
+      "description": "Refund status"
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "enum": ["duplicate", "fraudulent", "requested_by_customer", null],
+      "description": "Reason for the refund"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description of the refund"
+    },
+    "failure_reason": {
+      "type": ["string", "null"],
+      "description": "Reason for refund failure if applicable",
+      "examples": ["expired_or_canceled_card", "lost_or_stolen_card"]
+    },
+    "receipt_number": {
+      "type": ["string", "null"],
+      "description": "Receipt number for the refund"
+    },
+    "external_metadata": {
+      "type": ["object", "null"],
+      "description": "Original metadata from source system",
+      "additionalProperties": {"type": "string"}
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Record metadata"
+    }
+  },
+  "definitions": {
+    "money": {
+      "type": "object",
+      "description": "Monetary amount",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Amount in smallest currency unit (cents)"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Three-letter ISO 4217 currency code"
+        }
+      },
+      "required": ["amount", "currency"]
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata",
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created"
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "platform": {
+              "type": "string",
+              "description": "Source platform identifier",
+              "examples": ["stripe"]
+            },
+            "platform_version": {
+              "type": ["string", "null"],
+              "description": "API version or schema version"
+            }
+          }
+        }
+      }
+    }
+  }
+}

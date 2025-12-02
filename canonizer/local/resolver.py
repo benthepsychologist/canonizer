@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from canonizer.local.config import (
     CANONIZER_DIR,
@@ -58,11 +57,11 @@ IGLU_SCHEMA_PATTERN = re.compile(
 )
 
 TRANSFORM_PATTERN = re.compile(
-    r"^([a-zA-Z0-9_/-]+)@(\d+\.\d+\.\d+)$"
+    r"^([a-zA-Z0-9_/-]+)@(\d+[.\-]\d+[.\-]\d+)$"
 )
 
 
-def find_canonizer_root(start_path: Optional[Path] = None) -> Path:
+def find_canonizer_root(start_path: Path | None = None) -> Path:
     """Find the .canonizer/ directory by walking up the directory tree.
 
     Args:
@@ -145,7 +144,7 @@ def parse_transform_ref(transform_ref: str) -> tuple[str, str]:
 
 def resolve_schema(
     schema_ref: str,
-    canonizer_root: Optional[Path] = None,
+    canonizer_root: Path | None = None,
     must_exist: bool = True,
 ) -> Path:
     """Resolve a schema reference to a local file path.
@@ -192,7 +191,7 @@ def resolve_schema(
 
 def resolve_transform(
     transform_ref: str,
-    canonizer_root: Optional[Path] = None,
+    canonizer_root: Path | None = None,
     must_exist: bool = True,
 ) -> Path:
     """Resolve a transform reference to a local meta.yaml path.
@@ -239,7 +238,7 @@ def resolve_transform(
 
 def resolve_jsonata(
     transform_ref: str,
-    canonizer_root: Optional[Path] = None,
+    canonizer_root: Path | None = None,
     must_exist: bool = True,
 ) -> Path:
     """Resolve a transform reference to its JSONata file path.

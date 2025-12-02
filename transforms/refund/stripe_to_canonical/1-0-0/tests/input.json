@@ -1,0 +1,20 @@
+{
+  "id": "re_3MtweELkdIwHu7ix1P8GHrdT",
+  "object": "refund",
+  "amount": 5000,
+  "currency": "usd",
+  "charge": "ch_3MtweELkdIwHu7ix0abc123",
+  "payment_intent": "pi_3MtweELkdIwHu7ix0Dt0gF2H",
+  "status": "succeeded",
+  "reason": "requested_by_customer",
+  "description": null,
+  "balance_transaction": "txn_3MtweELkdIwHu7ixdef456",
+  "failure_balance_transaction": null,
+  "failure_reason": null,
+  "receipt_number": "1234-5678",
+  "metadata": {
+    "refund_reason": "Customer requested partial refund"
+  },
+  "livemode": true,
+  "created": 1709424000
+}

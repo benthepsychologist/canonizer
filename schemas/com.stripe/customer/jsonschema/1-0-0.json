@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stripe Customer",
+  "description": "Stripe Customer object from Stripe API. Based on https://docs.stripe.com/api/customers/object",
+  "type": "object",
+  "required": ["id", "object"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the customer",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "object": {
+      "type": "string",
+      "const": "customer",
+      "description": "String representing the object type"
+    },
+    "email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Customer's email address"
+    },
+    "name": {
+      "type": ["string", "null"],
+      "description": "Customer's full name or business name"
+    },
+    "phone": {
+      "type": ["string", "null"],
+      "description": "Customer's phone number"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "An arbitrary string attached to the customer"
+    },
+    "address": {
+      "type": ["object", "null"],
+      "description": "Customer's address",
+      "properties": {
+        "line1": {
+          "type": ["string", "null"],
+          "description": "Address line 1 (street, PO Box, etc.)"
+        },
+        "line2": {
+          "type": ["string", "null"],
+          "description": "Address line 2 (apartment, suite, etc.)"
+        },
+        "city": {
+          "type": ["string", "null"],
+          "description": "City, district, suburb, town, or village"
+        },
+        "state": {
+          "type": ["string", "null"],
+          "description": "State, county, province, or region"
+        },
+        "postal_code": {
+          "type": ["string", "null"],
+          "description": "ZIP or postal code"
+        },
+        "country": {
+          "type": ["string", "null"],
+          "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+        }
+      }
+    },
+    "shipping": {
+      "type": ["object", "null"],
+      "description": "Mailing and shipping address",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "Customer name for shipping"
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "description": "Customer phone"
+        },
+        "address": {
+          "type": ["object", "null"],
+          "description": "Shipping address",
+          "properties": {
+            "line1": {"type": ["string", "null"]},
+            "line2": {"type": ["string", "null"]},
+            "city": {"type": ["string", "null"]},
+            "state": {"type": ["string", "null"]},
+            "postal_code": {"type": ["string", "null"]},
+            "country": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "balance": {
+      "type": ["integer", "null"],
+      "description": "Current balance in smallest currency unit (cents)"
+    },
+    "currency": {
+      "type": ["string", "null"],
+      "description": "Three-letter ISO currency code"
+    },
+    "default_source": {
+      "type": ["string", "null"],
+      "description": "ID of the default payment source"
+    },
+    "delinquent": {
+      "type": ["boolean", "null"],
+      "description": "Whether customer has unpaid invoices"
+    },
+    "invoice_prefix": {
+      "type": ["string", "null"],
+      "description": "Prefix for generating unique invoice numbers"
+    },
+    "invoice_settings": {
+      "type": ["object", "null"],
+      "description": "Default invoice settings",
+      "properties": {
+        "default_payment_method": {
+          "type": ["string", "null"],
+          "description": "ID of default payment method for invoices"
+        },
+        "footer": {
+          "type": ["string", "null"],
+          "description": "Default footer for invoices"
+        },
+        "custom_fields": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "value": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "livemode": {
+      "type": "boolean",
+      "description": "True if in live mode, false if test mode"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Custom key-value pairs",
+      "additionalProperties": {"type": "string"}
+    },
+    "preferred_locales": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "Customer's preferred languages"
+    },
+    "tax_exempt": {
+      "type": ["string", "null"],
+      "enum": ["none", "exempt", "reverse", null],
+      "description": "Customer's tax exemption status"
+    },
+    "created": {
+      "type": "integer",
+      "description": "Creation time as Unix timestamp"
+    }
+  },
+  "additionalProperties": true
+}

@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from canonizer.local.config import CanonizerConfig
+from canonizer.local.lock import LockFile
 from canonizer.local.resolver import (
     CanonizerRootNotFoundError,
     InvalidReferenceError,
@@ -19,8 +21,6 @@ from canonizer.local.resolver import (
     schema_ref_to_path,
     transform_ref_to_path,
 )
-from canonizer.local.config import CanonizerConfig
-from canonizer.local.lock import LockFile
 
 
 def create_canonizer_dir(base_path: Path) -> Path:

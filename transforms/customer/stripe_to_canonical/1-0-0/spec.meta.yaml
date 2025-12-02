@@ -1,0 +1,27 @@
+id: customer/stripe_to_canonical
+version: 1-0-0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:com.stripe/customer/jsonschema/1-0-0
+to_schema: iglu:org.canonical/customer/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: ""
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-12-02T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Stripe Customer to canonical customer format.
+  Maps customer details, addresses, and billing information.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

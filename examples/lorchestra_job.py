@@ -90,7 +90,7 @@ def canonicalize_forms_batch_job():
         # 4. Emit batch of canonical events
         for canonical in canonicals:
             # emit_event("form_response.canonicalized", payload=canonical)
-            print(f"✓ Canonicalized form response")
+            print("✓ Canonicalized form response")
 
     except Exception as e:
         print(f"✗ Batch canonicalization failed: {e}")

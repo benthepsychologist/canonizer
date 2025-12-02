@@ -4,7 +4,6 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
 import yaml
 
 from canonizer.local.config import (
@@ -22,8 +21,8 @@ class TestInitCommand:
 
     def test_init_creates_directory_structure(self):
         """Test that init creates the full directory structure."""
-        from canonizer.cli.cmds.init import init
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -44,6 +43,7 @@ class TestInitCommand:
     def test_init_creates_config_yaml(self):
         """Test that init creates a valid config.yaml."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -66,6 +66,7 @@ class TestInitCommand:
     def test_init_creates_lock_json(self):
         """Test that init creates a valid lock.json."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -90,6 +91,7 @@ class TestInitCommand:
     def test_init_creates_gitignore(self):
         """Test that init creates .gitignore for registry."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -106,9 +108,11 @@ class TestInitCommand:
 
     def test_init_current_directory(self):
         """Test that init works in current directory."""
-        from typer.testing import CliRunner
-        from canonizer.cli.main import app
         import os
+
+        from typer.testing import CliRunner
+
+        from canonizer.cli.main import app
 
         runner = CliRunner()
 
@@ -128,6 +132,7 @@ class TestInitCommand:
     def test_init_fails_if_exists_without_force(self):
         """Test that init fails if .canonizer/ already exists."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -145,6 +150,7 @@ class TestInitCommand:
     def test_init_succeeds_with_force(self):
         """Test that init succeeds with --force even if directory exists."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -166,6 +172,7 @@ class TestInitCommand:
     def test_init_fails_for_nonexistent_path(self):
         """Test that init fails if target directory doesn't exist."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -177,6 +184,7 @@ class TestInitCommand:
     def test_init_output_messages(self):
         """Test that init shows appropriate output messages."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
 
         runner = CliRunner()
@@ -199,6 +207,7 @@ class TestInitIntegration:
     def test_init_config_loadable(self):
         """Test that created config.yaml is loadable by CanonizerConfig."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
         from canonizer.local.config import CanonizerConfig
 
@@ -216,6 +225,7 @@ class TestInitIntegration:
     def test_init_lock_loadable(self):
         """Test that created lock.json is loadable by LockFile."""
         from typer.testing import CliRunner
+
         from canonizer.cli.main import app
         from canonizer.local.lock import LockFile
 

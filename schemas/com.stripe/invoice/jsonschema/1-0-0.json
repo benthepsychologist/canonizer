@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stripe Invoice",
+  "description": "Stripe Invoice object from Stripe API. Based on https://docs.stripe.com/api/invoices/object",
+  "type": "object",
+  "required": ["id", "object"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the invoice",
+      "examples": ["in_1MtHbELkdIwHu7ixl4OzzPMv"]
+    },
+    "object": {
+      "type": "string",
+      "const": "invoice",
+      "description": "String representing the object type"
+    },
+    "number": {
+      "type": ["string", "null"],
+      "description": "Invoice number for human reference",
+      "examples": ["ACME-0001"]
+    },
+    "customer": {
+      "type": ["string", "null"],
+      "description": "Customer ID",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "customer_email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Customer email at time of invoice"
+    },
+    "customer_name": {
+      "type": ["string", "null"],
+      "description": "Customer name at time of invoice"
+    },
+    "customer_phone": {
+      "type": ["string", "null"],
+      "description": "Customer phone at time of invoice"
+    },
+    "customer_address": {
+      "type": ["object", "null"],
+      "description": "Customer address at time of invoice"
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["draft", "open", "paid", "uncollectible", "void", null],
+      "description": "Status of the invoice"
+    },
+    "amount_due": {
+      "type": "integer",
+      "description": "Final amount due in smallest currency unit"
+    },
+    "amount_paid": {
+      "type": "integer",
+      "description": "Amount paid in smallest currency unit"
+    },
+    "amount_remaining": {
+      "type": "integer",
+      "description": "Amount remaining in smallest currency unit"
+    },
+    "subtotal": {
+      "type": "integer",
+      "description": "Subtotal before discounts/taxes"
+    },
+    "total": {
+      "type": "integer",
+      "description": "Total after discounts/taxes"
+    },
+    "tax": {
+      "type": ["integer", "null"],
+      "description": "Tax amount"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO currency code (lowercase)"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Invoice description (memo)"
+    },
+    "due_date": {
+      "type": ["integer", "null"],
+      "description": "Due date as Unix timestamp"
+    },
+    "effective_at": {
+      "type": ["integer", "null"],
+      "description": "Effective date as Unix timestamp"
+    },
+    "period_start": {
+      "type": ["integer", "null"],
+      "description": "Start of billing period"
+    },
+    "period_end": {
+      "type": ["integer", "null"],
+      "description": "End of billing period"
+    },
+    "lines": {
+      "type": ["object", "null"],
+      "description": "Line items",
+      "properties": {
+        "object": {"type": "string", "const": "list"},
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "object": {"type": "string"},
+              "amount": {"type": "integer"},
+              "currency": {"type": "string"},
+              "description": {"type": ["string", "null"]},
+              "quantity": {"type": ["integer", "null"]},
+              "unit_amount": {"type": ["integer", "null"]},
+              "period": {
+                "type": "object",
+                "properties": {
+                  "start": {"type": "integer"},
+                  "end": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "has_more": {"type": "boolean"},
+        "url": {"type": "string"}
+      }
+    },
+    "collection_method": {
+      "type": ["string", "null"],
+      "enum": ["charge_automatically", "send_invoice", null],
+      "description": "Payment collection method"
+    },
+    "billing_reason": {
+      "type": ["string", "null"],
+      "description": "Reason invoice was created"
+    },
+    "subscription": {
+      "type": ["string", "null"],
+      "description": "ID of the subscription if applicable"
+    },
+    "payment_intent": {
+      "type": ["string", "null"],
+      "description": "ID of PaymentIntent for this invoice"
+    },
+    "default_payment_method": {
+      "type": ["string", "null"],
+      "description": "Default payment method ID"
+    },
+    "hosted_invoice_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URL for hosted invoice page"
+    },
+    "invoice_pdf": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URL to download invoice PDF"
+    },
+    "receipt_number": {
+      "type": ["string", "null"],
+      "description": "Receipt number for paid invoice"
+    },
+    "statement_descriptor": {
+      "type": ["string", "null"],
+      "description": "Text appearing on customer statement"
+    },
+    "footer": {
+      "type": ["string", "null"],
+      "description": "Footer displayed on invoice"
+    },
+    "livemode": {
+      "type": "boolean",
+      "description": "True if live mode, false if test mode"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Custom key-value pairs",
+      "additionalProperties": {"type": "string"}
+    },
+    "attempted": {
+      "type": "boolean",
+      "description": "Whether payment was attempted"
+    },
+    "attempt_count": {
+      "type": "integer",
+      "description": "Number of payment attempts"
+    },
+    "auto_advance": {
+      "type": "boolean",
+      "description": "Whether Stripe auto-advances invoice"
+    },
+    "paid": {
+      "type": "boolean",
+      "description": "Whether invoice has been paid"
+    },
+    "created": {
+      "type": "integer",
+      "description": "Creation time as Unix timestamp"
+    }
+  },
+  "additionalProperties": true
+}

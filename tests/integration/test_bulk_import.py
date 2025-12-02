@@ -5,9 +5,6 @@ a registry clone into a project's .canonizer/ directory.
 """
 
 import json
-import os
-import shutil
-import tempfile
 from pathlib import Path
 
 import pytest

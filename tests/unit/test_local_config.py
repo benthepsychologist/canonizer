@@ -1,6 +1,5 @@
 """Tests for local registry configuration and lock file models."""
 
-import json
 import tempfile
 from pathlib import Path
 

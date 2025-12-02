@@ -1,14 +1,13 @@
 """Unit tests for TransformLoader."""
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 import yaml
 
 from canonizer.registry.loader import TransformLoader
-from canonizer.registry.transform_meta import TransformMeta
 
 
 def test_load_transform_success(tmp_path: Path):
@@ -35,7 +34,7 @@ def test_load_transform_success(tmp_path: Path):
         },
         "provenance": {
             "author": "Test <test@example.com>",
-            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "created_utc": datetime.now(UTC).isoformat(),
         },
         "status": "stable",
     }
@@ -78,7 +77,7 @@ def test_load_transform_missing_jsonata_file(tmp_path: Path):
         },
         "provenance": {
             "author": "Test <test@example.com>",
-            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "created_utc": datetime.now(UTC).isoformat(),
         },
     }
 
@@ -110,7 +109,7 @@ def test_load_transform_checksum_mismatch(tmp_path: Path):
         },
         "provenance": {
             "author": "Test <test@example.com>",
-            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "created_utc": datetime.now(UTC).isoformat(),
         },
     }
 
@@ -178,7 +177,7 @@ def test_load_transform_with_test_fixtures(tmp_path: Path):
         },
         "provenance": {
             "author": "Test <test@example.com>",
-            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "created_utc": datetime.now(UTC).isoformat(),
         },
     }
 

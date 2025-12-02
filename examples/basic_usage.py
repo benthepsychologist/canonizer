@@ -65,7 +65,7 @@ canonical_fast = canonicalize(
     validate_output=False,  # Skip output validation
 )
 
-print(f"\nExample 5: Fast mode (no validation) completed")
+print("\nExample 5: Fast mode (no validation) completed")
 
 # Example 6: Using full path instead of registry ID
 canonical_path = canonicalize(
@@ -73,6 +73,6 @@ canonical_path = canonicalize(
     transform_id="transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml"
 )
 
-print(f"\nExample 6: Using full path completed")
+print("\nExample 6: Using full path completed")
 
 print("\n✓ All examples completed successfully")

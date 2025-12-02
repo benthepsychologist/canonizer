@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "payment_id": id,
+  "customer_id": customer,
+  "invoice_id": invoice,
+  "amount": {
+    "amount": amount,
+    "currency": currency
+  },
+  "amount_received": amount_received ? {
+    "amount": amount_received,
+    "currency": currency
+  } : null,
+  "currency": currency,
+  "status": $lookup({
+    "requires_payment_method": "pending",
+    "requires_confirmation": "pending",
+    "requires_action": "requires_action",
+    "processing": "processing",
+    "requires_capture": "requires_capture",
+    "canceled": "canceled",
+    "succeeded": "succeeded"
+  }, status),
+  "description": description,
+  "payment_method_type": payment_method_types ? payment_method_types[0] : null,
+  "receipt_email": receipt_email,
+  "statement_descriptor": statement_descriptor ? (statement_descriptor & (statement_descriptor_suffix ? (" " & statement_descriptor_suffix) : "")) : null,
+  "latest_charge_id": latest_charge,
+  "error": last_payment_error ? {
+    "type": last_payment_error.type,
+    "code": last_payment_error.code,
+    "message": last_payment_error.message,
+    "decline_code": last_payment_error.decline_code
+  } : null,
+  "event_time": $fromMillis(created * 1000),
+  "canceled_at": canceled_at ? $fromMillis(canceled_at * 1000) : null,
+  "cancellation_reason": cancellation_reason,
+  "external_metadata": metadata,
+  "meta": {
+    "created_at": $fromMillis(created * 1000),
+    "source": {
+      "platform": "stripe",
+      "platform_version": "v1"
+    }
+  }
+}

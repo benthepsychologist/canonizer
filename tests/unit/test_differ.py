@@ -1,6 +1,5 @@
 """Tests for schema differ."""
 
-import pytest
 
 from canonizer.core.differ import ChangeType, SchemaDiffer
 

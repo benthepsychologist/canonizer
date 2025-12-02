@@ -21,8 +21,15 @@ def version():
 
 
 # Import commands
-from canonizer.cli.cmds import diff, init, patch, registry, transform, validate  # noqa: E402
-from canonizer.cli.cmds import import_cmd  # noqa: E402
+from canonizer.cli.cmds import (  # noqa: E402
+    diff,
+    import_cmd,  # noqa: E402
+    init,
+    patch,
+    registry,
+    transform,
+    validate,
+)
 
 app.command(name="init")(init.init)
 app.add_typer(transform.app, name="transform")

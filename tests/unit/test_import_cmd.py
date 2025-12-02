@@ -1,21 +1,18 @@
 """Tests for canonizer import CLI commands."""
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 import yaml
 from typer.testing import CliRunner
 
-from canonizer.cli.main import app
 from canonizer.cli.cmds.import_cmd import (
     collect_schema_refs,
     collect_transform_refs,
 )
+from canonizer.cli.main import app
 from canonizer.local.config import (
     CANONIZER_DIR,
-    CONFIG_FILENAME,
     LOCK_FILENAME,
     REGISTRY_DIR,
 )

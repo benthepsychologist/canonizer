@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "customer_id": id,
+  "email": email,
+  "name": name,
+  "phone": phone,
+  "description": description,
+  "address": address ? {
+    "line1": address.line1,
+    "line2": address.line2,
+    "city": address.city,
+    "state": address.state,
+    "postal_code": address.postal_code,
+    "country": address.country
+  } : null,
+  "shipping_address": shipping.address ? {
+    "line1": shipping.address.line1,
+    "line2": shipping.address.line2,
+    "city": shipping.address.city,
+    "state": shipping.address.state,
+    "postal_code": shipping.address.postal_code,
+    "country": shipping.address.country
+  } : null,
+  "status": delinquent = true ? "delinquent" : "active",
+  "balance": $type(balance) = "number" ? {
+    "amount": balance,
+    "currency": currency ? currency : "usd"
+  } : null,
+  "default_currency": currency,
+  "tax_exempt": tax_exempt = "exempt" ? true : (tax_exempt = "none" ? false : null),
+  "preferred_locales": preferred_locales,
+  "external_metadata": metadata,
+  "meta": {
+    "created_at": $fromMillis(created * 1000),
+    "source": {
+      "platform": "stripe",
+      "platform_version": "v1"
+    }
+  }
+}

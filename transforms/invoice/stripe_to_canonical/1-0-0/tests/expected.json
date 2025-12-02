@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "invoice_id": "in_1MtHbELkdIwHu7ixl4OzzPMv",
+  "invoice_number": "ACME-0001",
+  "customer_id": "cus_NffrFeUfNV2Hib",
+  "customer_email": "john.smith@example.com",
+  "customer_name": "John Smith",
+  "status": "paid",
+  "amount_due": {
+    "amount": 15000,
+    "currency": "usd"
+  },
+  "amount_paid": {
+    "amount": 15000,
+    "currency": "usd"
+  },
+  "amount_remaining": {
+    "amount": 0,
+    "currency": "usd"
+  },
+  "subtotal": {
+    "amount": 14000,
+    "currency": "usd"
+  },
+  "total": {
+    "amount": 15000,
+    "currency": "usd"
+  },
+  "tax": {
+    "amount": 1000,
+    "currency": "usd"
+  },
+  "currency": "usd",
+  "description": "Monthly subscription - March 2024",
+  "line_items": [
+    {
+      "id": "il_1MtHbELkdIwHu7ixabc123",
+      "description": "Pro Plan (Mar 1 - Mar 31, 2024)",
+      "quantity": 1,
+      "unit_amount": 14000,
+      "amount": 14000,
+      "currency": "usd",
+      "period_start": "2024-03-01T00:00:00.000Z",
+      "period_end": "2024-04-01T00:00:00.000Z"
+    }
+  ],
+  "event_time": "2024-03-02T00:00:00.000Z",
+  "due_date": "2024-04-01T00:00:00.000Z",
+  "period_start": "2024-03-01T00:00:00.000Z",
+  "period_end": "2024-04-01T00:00:00.000Z",
+  "payment_intent_id": "pi_3MtweELkdIwHu7ix0Dt0gF2H",
+  "subscription_id": "sub_1MtweELkdIwHu7ixabc123",
+  "hosted_url": "https://invoice.stripe.com/i/acct_123/test_abc",
+  "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_abc/pdf",
+  "external_metadata": {
+    "order_id": "ORD-12345"
+  },
+  "meta": {
+    "created_at": "2024-03-02T00:00:00.000Z",
+    "source": {
+      "platform": "stripe",
+      "platform_version": "v1"
+    }
+  }
+}

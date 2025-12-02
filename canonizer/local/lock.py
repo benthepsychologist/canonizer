@@ -27,9 +27,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -85,21 +84,21 @@ class LockFile(BaseModel):
         default="1",
         description="Lock file format version",
     )
-    updated_at: Optional[str] = Field(
+    updated_at: str | None = Field(
         default=None,
         description="ISO 8601 timestamp of last update",
     )
-    schemas: Dict[str, SchemaLock] = Field(
+    schemas: dict[str, SchemaLock] = Field(
         default_factory=dict,
         description="Map of schema refs to lock entries",
     )
-    transforms: Dict[str, TransformLock] = Field(
+    transforms: dict[str, TransformLock] = Field(
         default_factory=dict,
         description="Map of transform refs to lock entries",
     )
 
     @classmethod
-    def load(cls, lock_path: Path) -> "LockFile":
+    def load(cls, lock_path: Path) -> LockFile:
         """Load lock file from JSON.
 
         Args:
@@ -121,10 +120,10 @@ class LockFile(BaseModel):
         return cls.model_validate(data)
 
     @classmethod
-    def empty(cls) -> "LockFile":
+    def empty(cls) -> LockFile:
         """Create an empty lock file."""
         return cls(
-            updated_at=datetime.now(timezone.utc).isoformat(),
+            updated_at=datetime.now(UTC).isoformat(),
         )
 
     def save(self, lock_path: Path) -> None:
@@ -135,7 +134,7 @@ class LockFile(BaseModel):
         """
         lock_path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.updated_at = datetime.now(timezone.utc).isoformat()
+        self.updated_at = datetime.now(UTC).isoformat()
         data = self.model_dump(mode="json")
 
         with open(lock_path, "w") as f:
@@ -174,7 +173,7 @@ class LockFile(BaseModel):
         hash_value = f"sha256:{hashlib.sha256(jsonata_content).hexdigest()}"
         self.transforms[transform_ref] = TransformLock(path=path, hash=hash_value)
 
-    def get_schema_path(self, schema_ref: str) -> Optional[str]:
+    def get_schema_path(self, schema_ref: str) -> str | None:
         """Get the path for a schema reference.
 
         Args:
@@ -186,7 +185,7 @@ class LockFile(BaseModel):
         entry = self.schemas.get(schema_ref)
         return entry.path if entry else None
 
-    def get_transform_path(self, transform_ref: str) -> Optional[str]:
+    def get_transform_path(self, transform_ref: str) -> str | None:
         """Get the path for a transform reference.
 
         Args:

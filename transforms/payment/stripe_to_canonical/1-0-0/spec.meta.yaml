@@ -1,0 +1,27 @@
+id: payment/stripe_to_canonical
+version: 1-0-0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:com.stripe/payment_intent/jsonschema/1-0-0
+to_schema: iglu:org.canonical/payment/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: ""
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-12-02T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Stripe PaymentIntent to canonical payment format.
+  Maps payment details, status, and error information.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

@@ -12,7 +12,6 @@ from canonizer import (
     canonicalize_form_response,
     run_batch,
 )
-from canonizer.core.validator import ValidationError
 from canonizer.local.resolver import TransformNotFoundError
 
 

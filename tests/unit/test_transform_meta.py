@@ -1,13 +1,18 @@
 """Unit tests for TransformMeta model."""
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from canonizer.registry.transform_meta import Checksum, Compat, Provenance, TestFixture, TransformMeta
+from canonizer.registry.transform_meta import (
+    Checksum,
+    Provenance,
+    TestFixture,
+    TransformMeta,
+)
 
 
 def test_transform_meta_valid():
@@ -23,7 +28,7 @@ def test_transform_meta_valid():
         checksum=Checksum(jsonata_sha256="a" * 64),
         provenance=Provenance(
             author="Ben Machina <ben@therapyai.com>",
-            created_utc=datetime.now(timezone.utc),
+            created_utc=datetime.now(UTC),
         ),
     )
 
@@ -45,7 +50,7 @@ def test_transform_meta_invalid_id():
             to_schema="iglu:org.canonical/email/jsonschema/1-0-0",
             spec_path="test.jsonata",
             checksum=Checksum(jsonata_sha256="a" * 64),
-            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
         )
 
     assert "id" in str(exc_info.value)
@@ -61,7 +66,7 @@ def test_transform_meta_invalid_version():
             to_schema="iglu:org.canonical/email/jsonschema/1-0-0",
             spec_path="test.jsonata",
             checksum=Checksum(jsonata_sha256="a" * 64),
-            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
         )
 
     assert "version" in str(exc_info.value)
@@ -77,7 +82,7 @@ def test_transform_meta_invalid_schema_uri():
             to_schema="iglu:org.canonical/email/jsonschema/1-0-0",
             spec_path="test.jsonata",
             checksum=Checksum(jsonata_sha256="a" * 64),
-            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
         )
 
     assert "from_schema" in str(exc_info.value)
@@ -93,7 +98,7 @@ def test_transform_meta_invalid_spec_path():
             to_schema="iglu:org.canonical/email/jsonschema/1-0-0",
             spec_path="transform.yaml",  # Invalid: not .jsonata
             checksum=Checksum(jsonata_sha256="a" * 64),
-            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
         )
 
     assert "spec_path" in str(exc_info.value)
@@ -109,7 +114,7 @@ def test_transform_meta_invalid_checksum_format():
             to_schema="iglu:org.canonical/email/jsonschema/1-0-0",
             spec_path="test.jsonata",
             checksum=Checksum(jsonata_sha256="abc123"),  # Invalid: not 64 hex chars
-            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+            provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
         )
 
     assert "jsonata_sha256" in str(exc_info.value)
@@ -130,7 +135,7 @@ def test_transform_meta_with_tests():
             )
         ],
         checksum=Checksum(jsonata_sha256="a" * 64),
-        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
     )
 
     assert len(meta.tests) == 1
@@ -156,7 +161,7 @@ def test_compute_checksum(tmp_path: Path):
         to_schema="iglu:org.canonical/test/jsonschema/1-0-0",
         spec_path="test.jsonata",
         checksum=Checksum(jsonata_sha256=expected_checksum),
-        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
     )
 
     computed = meta.compute_checksum(meta_file)
@@ -179,7 +184,7 @@ def test_verify_checksum_valid(tmp_path: Path):
         to_schema="iglu:org.canonical/test/jsonschema/1-0-0",
         spec_path="test.jsonata",
         checksum=Checksum(jsonata_sha256=expected_checksum),
-        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
     )
 
     assert meta.verify_checksum(meta_file) is True
@@ -199,7 +204,7 @@ def test_verify_checksum_invalid(tmp_path: Path):
         to_schema="iglu:org.canonical/test/jsonschema/1-0-0",
         spec_path="test.jsonata",
         checksum=Checksum(jsonata_sha256="a" * 64),  # Wrong checksum
-        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(timezone.utc)),
+        provenance=Provenance(author="Test <test@example.com>", created_utc=datetime.now(UTC)),
     )
 
     assert meta.verify_checksum(meta_file) is False

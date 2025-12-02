@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
@@ -61,7 +60,7 @@ class CanonizerConfig(BaseModel):
     )
 
     @classmethod
-    def load(cls, config_path: Path) -> "CanonizerConfig":
+    def load(cls, config_path: Path) -> CanonizerConfig:
         """Load configuration from a YAML file.
 
         Args:
@@ -83,7 +82,7 @@ class CanonizerConfig(BaseModel):
         return cls.model_validate(data)
 
     @classmethod
-    def default(cls) -> "CanonizerConfig":
+    def default(cls) -> CanonizerConfig:
         """Create default configuration."""
         return cls()
 

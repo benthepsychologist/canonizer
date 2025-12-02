@@ -1,6 +1,5 @@
 """Tests for transform patcher."""
 
-import pytest
 
 from canonizer.core.differ import ChangeType, SchemaChange, SchemaDiff
 from canonizer.core.patcher import TransformPatcher
@@ -116,8 +115,9 @@ def test_apply_rename_no_match():
 
 def test_bump_version():
     """Test version bumping (MINOR/REVISION)."""
+    from datetime import UTC, datetime
+
     from canonizer.registry.transform_meta import Checksum, Provenance, TransformMeta
-    from datetime import datetime, UTC
 
     meta = TransformMeta(
         id="test",
@@ -143,8 +143,9 @@ def test_bump_version():
 
 def test_bump_version_resets_addition():
     """Test that bumping REVISION resets ADDITION to 0."""
+    from datetime import UTC, datetime
+
     from canonizer.registry.transform_meta import Checksum, Provenance, TransformMeta
-    from datetime import datetime, UTC
 
     meta = TransformMeta(
         id="test",

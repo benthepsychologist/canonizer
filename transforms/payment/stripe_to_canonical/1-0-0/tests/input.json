@@ -1,0 +1,25 @@
+{
+  "id": "pi_3MtweELkdIwHu7ix0Dt0gF2H",
+  "object": "payment_intent",
+  "amount": 15000,
+  "amount_capturable": 0,
+  "amount_received": 15000,
+  "currency": "usd",
+  "customer": "cus_NffrFeUfNV2Hib",
+  "description": "Payment for Invoice ACME-0001",
+  "status": "succeeded",
+  "payment_method": "pm_1MtweELkdIwHu7ixabc123",
+  "payment_method_types": ["card"],
+  "latest_charge": "ch_3MtweELkdIwHu7ix0abc123",
+  "invoice": "in_1MtHbELkdIwHu7ixl4OzzPMv",
+  "receipt_email": "john.smith@example.com",
+  "statement_descriptor": "ACME CORP",
+  "statement_descriptor_suffix": "INV-0001",
+  "capture_method": "automatic",
+  "confirmation_method": "automatic",
+  "metadata": {
+    "order_id": "ORD-12345"
+  },
+  "livemode": true,
+  "created": 1709337600
+}

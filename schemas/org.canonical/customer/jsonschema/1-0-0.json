@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Customer",
+  "description": "Canonical customer schema for billing/CRM systems. Simplified customer representation focused on fields needed for downstream processing.",
+  "type": "object",
+  "required": ["customer_id", "meta"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for self-describing records"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Unique identifier for the customer",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Customer's email address",
+      "examples": ["john@example.com"]
+    },
+    "name": {
+      "type": ["string", "null"],
+      "description": "Customer's full name or business name",
+      "examples": ["John Smith"]
+    },
+    "phone": {
+      "type": ["string", "null"],
+      "description": "Customer's phone number",
+      "examples": ["+1-555-123-4567"]
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description or notes about the customer"
+    },
+    "address": {
+      "$ref": "#/definitions/address",
+      "description": "Customer's primary address"
+    },
+    "shipping_address": {
+      "$ref": "#/definitions/address",
+      "description": "Customer's shipping address if different"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "delinquent", "inactive"],
+      "description": "Customer account status",
+      "examples": ["active"]
+    },
+    "balance": {
+      "$ref": "#/definitions/money",
+      "description": "Current account balance (positive = credit)"
+    },
+    "default_currency": {
+      "type": ["string", "null"],
+      "description": "Three-letter ISO 4217 currency code",
+      "examples": ["usd"]
+    },
+    "tax_exempt": {
+      "type": ["boolean", "null"],
+      "description": "Whether customer is tax exempt",
+      "examples": [false]
+    },
+    "preferred_locales": {
+      "type": ["array", "null"],
+      "items": {"type": "string"},
+      "description": "Preferred languages in order of preference",
+      "examples": [["en", "es"]]
+    },
+    "external_metadata": {
+      "type": ["object", "null"],
+      "description": "Original metadata from source system",
+      "additionalProperties": {"type": "string"}
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Record metadata"
+    }
+  },
+  "definitions": {
+    "address": {
+      "type": ["object", "null"],
+      "description": "Physical address",
+      "properties": {
+        "line1": {
+          "type": ["string", "null"],
+          "description": "Street address line 1"
+        },
+        "line2": {
+          "type": ["string", "null"],
+          "description": "Street address line 2"
+        },
+        "city": {
+          "type": ["string", "null"],
+          "description": "City"
+        },
+        "state": {
+          "type": ["string", "null"],
+          "description": "State or province"
+        },
+        "postal_code": {
+          "type": ["string", "null"],
+          "description": "Postal/ZIP code"
+        },
+        "country": {
+          "type": ["string", "null"],
+          "description": "Two-letter country code"
+        }
+      }
+    },
+    "money": {
+      "type": ["object", "null"],
+      "description": "Monetary amount with currency",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Amount in smallest currency unit (cents)"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Three-letter ISO 4217 currency code"
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata",
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created"
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "platform": {
+              "type": "string",
+              "description": "Source platform identifier",
+              "examples": ["stripe"]
+            },
+            "platform_version": {
+              "type": ["string", "null"],
+              "description": "API version or schema version"
+            }
+          }
+        }
+      }
+    }
+  }
+}

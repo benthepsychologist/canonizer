@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stripe PaymentIntent",
+  "description": "Stripe PaymentIntent object from Stripe API. Based on https://docs.stripe.com/api/payment_intents/object",
+  "type": "object",
+  "required": ["id", "object", "amount", "currency"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the PaymentIntent",
+      "examples": ["pi_3MtweELkdIwHu7ix0Dt0gF2H"]
+    },
+    "object": {
+      "type": "string",
+      "const": "payment_intent",
+      "description": "String representing the object type"
+    },
+    "amount": {
+      "type": "integer",
+      "description": "Amount intended to be collected in smallest currency unit"
+    },
+    "amount_capturable": {
+      "type": ["integer", "null"],
+      "description": "Amount that can be captured"
+    },
+    "amount_received": {
+      "type": ["integer", "null"],
+      "description": "Amount actually received"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO currency code (lowercase)"
+    },
+    "customer": {
+      "type": ["string", "null"],
+      "description": "Customer ID if associated",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description of the payment"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requires_payment_method",
+        "requires_confirmation",
+        "requires_action",
+        "processing",
+        "requires_capture",
+        "canceled",
+        "succeeded"
+      ],
+      "description": "Status of the PaymentIntent"
+    },
+    "payment_method": {
+      "type": ["string", "null"],
+      "description": "ID of payment method used"
+    },
+    "payment_method_types": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of payment method types enabled"
+    },
+    "latest_charge": {
+      "type": ["string", "null"],
+      "description": "ID of the latest charge"
+    },
+    "invoice": {
+      "type": ["string", "null"],
+      "description": "ID of invoice if created from one"
+    },
+    "receipt_email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Email for receipt"
+    },
+    "statement_descriptor": {
+      "type": ["string", "null"],
+      "description": "Text for customer statement"
+    },
+    "statement_descriptor_suffix": {
+      "type": ["string", "null"],
+      "description": "Suffix for statement descriptor"
+    },
+    "capture_method": {
+      "type": ["string", "null"],
+      "enum": ["automatic", "automatic_async", "manual", null],
+      "description": "When to capture funds"
+    },
+    "confirmation_method": {
+      "type": ["string", "null"],
+      "enum": ["automatic", "manual", null],
+      "description": "How to confirm the payment"
+    },
+    "setup_future_usage": {
+      "type": ["string", "null"],
+      "enum": ["off_session", "on_session", null],
+      "description": "Intent for future payments"
+    },
+    "canceled_at": {
+      "type": ["integer", "null"],
+      "description": "Cancellation time as Unix timestamp"
+    },
+    "cancellation_reason": {
+      "type": ["string", "null"],
+      "enum": ["duplicate", "fraudulent", "requested_by_customer", "abandoned", null],
+      "description": "Reason for cancellation"
+    },
+    "last_payment_error": {
+      "type": ["object", "null"],
+      "description": "Last payment error if any",
+      "properties": {
+        "type": {"type": "string"},
+        "code": {"type": ["string", "null"]},
+        "message": {"type": ["string", "null"]},
+        "decline_code": {"type": ["string", "null"]}
+      }
+    },
+    "charges": {
+      "type": ["object", "null"],
+      "description": "Charges associated with this PaymentIntent",
+      "properties": {
+        "object": {"type": "string", "const": "list"},
+        "data": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "has_more": {"type": "boolean"},
+        "url": {"type": "string"}
+      }
+    },
+    "next_action": {
+      "type": ["object", "null"],
+      "description": "Required action for payment completion"
+    },
+    "shipping": {
+      "type": ["object", "null"],
+      "description": "Shipping information",
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "phone": {"type": ["string", "null"]},
+        "address": {"type": ["object", "null"]},
+        "carrier": {"type": ["string", "null"]},
+        "tracking_number": {"type": ["string", "null"]}
+      }
+    },
+    "livemode": {
+      "type": "boolean",
+      "description": "True if live mode, false if test mode"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Custom key-value pairs",
+      "additionalProperties": {"type": "string"}
+    },
+    "created": {
+      "type": "integer",
+      "description": "Creation time as Unix timestamp"
+    }
+  },
+  "additionalProperties": true
+}

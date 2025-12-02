@@ -14,8 +14,7 @@ import pytest
 # Add python package to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from canonizer import canonicalize, validate_payload, run_batch, TransformError
-
+from canonizer import TransformError, canonicalize, run_batch, validate_payload
 
 # Registry root is the main canonizer repo root
 REGISTRY_ROOT = Path(__file__).parent.parent.parent.parent

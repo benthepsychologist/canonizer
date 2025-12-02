@@ -1,0 +1,38 @@
+{
+  "id": "cus_NffrFeUfNV2Hib",
+  "object": "customer",
+  "email": "john.smith@example.com",
+  "name": "John Smith",
+  "phone": "+1-555-123-4567",
+  "description": "Premium customer",
+  "address": {
+    "line1": "123 Main Street",
+    "line2": "Suite 100",
+    "city": "San Francisco",
+    "state": "CA",
+    "postal_code": "94105",
+    "country": "US"
+  },
+  "shipping": {
+    "name": "John Smith",
+    "phone": "+1-555-123-4567",
+    "address": {
+      "line1": "456 Oak Avenue",
+      "line2": null,
+      "city": "San Francisco",
+      "state": "CA",
+      "postal_code": "94102",
+      "country": "US"
+    }
+  },
+  "balance": 0,
+  "currency": "usd",
+  "delinquent": false,
+  "tax_exempt": "none",
+  "preferred_locales": ["en"],
+  "metadata": {
+    "internal_id": "USR-12345"
+  },
+  "livemode": true,
+  "created": 1680000000
+}

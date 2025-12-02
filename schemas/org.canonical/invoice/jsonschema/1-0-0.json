@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Invoice",
+  "description": "Canonical invoice schema for billing systems. Simplified invoice representation focused on fields needed for downstream processing.",
+  "type": "object",
+  "required": ["invoice_id", "currency", "meta"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for self-describing records"
+    },
+    "invoice_id": {
+      "type": "string",
+      "description": "Unique identifier for the invoice",
+      "examples": ["in_1MtHbELkdIwHu7ixl4OzzPMv"]
+    },
+    "invoice_number": {
+      "type": ["string", "null"],
+      "description": "Human-readable invoice number",
+      "examples": ["ACME-0001"]
+    },
+    "customer_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the customer",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "customer_email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Customer email at time of invoice"
+    },
+    "customer_name": {
+      "type": ["string", "null"],
+      "description": "Customer name at time of invoice"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "open", "paid", "uncollectible", "void"],
+      "description": "Invoice status",
+      "examples": ["paid"]
+    },
+    "amount_due": {
+      "$ref": "#/definitions/money",
+      "description": "Amount due"
+    },
+    "amount_paid": {
+      "$ref": "#/definitions/money",
+      "description": "Amount paid"
+    },
+    "amount_remaining": {
+      "$ref": "#/definitions/money",
+      "description": "Amount remaining"
+    },
+    "subtotal": {
+      "$ref": "#/definitions/money",
+      "description": "Subtotal before tax/discounts"
+    },
+    "total": {
+      "$ref": "#/definitions/money",
+      "description": "Total after tax/discounts"
+    },
+    "tax": {
+      "$ref": "#/definitions/money",
+      "description": "Tax amount"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO 4217 currency code",
+      "examples": ["usd"]
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Invoice description or memo"
+    },
+    "line_items": {
+      "type": ["array", "null"],
+      "items": {
+        "$ref": "#/definitions/lineItem"
+      },
+      "description": "Individual line items on the invoice"
+    },
+    "event_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the financial event occurred (for accounting). May differ from created_at."
+    },
+    "due_date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Payment due date"
+    },
+    "period_start": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Billing period start"
+    },
+    "period_end": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Billing period end"
+    },
+    "payment_intent_id": {
+      "type": ["string", "null"],
+      "description": "Reference to payment intent"
+    },
+    "subscription_id": {
+      "type": ["string", "null"],
+      "description": "Reference to subscription if applicable"
+    },
+    "hosted_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URL to hosted invoice page"
+    },
+    "pdf_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URL to download PDF"
+    },
+    "external_metadata": {
+      "type": ["object", "null"],
+      "description": "Original metadata from source system",
+      "additionalProperties": {"type": "string"}
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Record metadata"
+    }
+  },
+  "definitions": {
+    "money": {
+      "type": ["object", "null"],
+      "description": "Monetary amount",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Amount in smallest currency unit (cents)"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Three-letter ISO 4217 currency code"
+        }
+      }
+    },
+    "lineItem": {
+      "type": "object",
+      "description": "Invoice line item",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Line item identifier"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Line item description"
+        },
+        "quantity": {
+          "type": ["integer", "null"],
+          "description": "Quantity"
+        },
+        "unit_amount": {
+          "type": ["integer", "null"],
+          "description": "Unit price in smallest currency unit"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Total line amount"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code"
+        },
+        "period_start": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Service period start"
+        },
+        "period_end": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Service period end"
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata",
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created"
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "platform": {
+              "type": "string",
+              "description": "Source platform identifier",
+              "examples": ["stripe"]
+            },
+            "platform_version": {
+              "type": ["string", "null"],
+              "description": "API version or schema version"
+            }
+          }
+        }
+      }
+    }
+  }
+}

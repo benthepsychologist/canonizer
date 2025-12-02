@@ -13,25 +13,24 @@ NO orchestration logic - no events, no BigQuery, no job patterns.
 
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from canonizer.core.runtime import TransformRuntime
 from canonizer.core.validator import SchemaValidator, ValidationError, load_schema_from_iglu_uri
+from canonizer.local.config import CONFIG_FILENAME, CanonizerConfig
 from canonizer.local.resolver import (
     CanonizerRootNotFoundError,
     find_canonizer_root,
     resolve_schema,
     resolve_transform,
 )
-from canonizer.local.config import CanonizerConfig, CONFIG_FILENAME
-
 
 # ============================================================================
 # Registry Root Resolution
 # ============================================================================
 
 
-def _try_find_canonizer_root() -> Optional[Path]:
+def _try_find_canonizer_root() -> Path | None:
     """Try to find .canonizer/ directory, return None if not found."""
     try:
         return find_canonizer_root()

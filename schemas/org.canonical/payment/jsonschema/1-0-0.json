@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Payment",
+  "description": "Canonical payment schema for billing systems. Represents a payment transaction.",
+  "type": "object",
+  "required": ["payment_id", "amount", "currency", "status", "meta"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for self-describing records"
+    },
+    "payment_id": {
+      "type": "string",
+      "description": "Unique identifier for the payment",
+      "examples": ["pi_3MtweELkdIwHu7ix0Dt0gF2H"]
+    },
+    "customer_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the customer",
+      "examples": ["cus_NffrFeUfNV2Hib"]
+    },
+    "invoice_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the invoice if applicable"
+    },
+    "amount": {
+      "$ref": "#/definitions/money",
+      "description": "Payment amount"
+    },
+    "amount_received": {
+      "$ref": "#/definitions/money",
+      "description": "Amount actually received"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Three-letter ISO 4217 currency code",
+      "examples": ["usd"]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "requires_action",
+        "requires_capture",
+        "succeeded",
+        "failed",
+        "canceled"
+      ],
+      "description": "Payment status"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description of the payment"
+    },
+    "payment_method_type": {
+      "type": ["string", "null"],
+      "description": "Type of payment method used",
+      "examples": ["card", "bank_transfer", "us_bank_account"]
+    },
+    "receipt_email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Email address for receipt"
+    },
+    "statement_descriptor": {
+      "type": ["string", "null"],
+      "description": "Text appearing on customer statement"
+    },
+    "latest_charge_id": {
+      "type": ["string", "null"],
+      "description": "Reference to the latest charge"
+    },
+    "error": {
+      "$ref": "#/definitions/paymentError",
+      "description": "Last payment error if any"
+    },
+    "event_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the payment transaction occurred (for accounting). May differ from created_at."
+    },
+    "canceled_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the payment was canceled"
+    },
+    "cancellation_reason": {
+      "type": ["string", "null"],
+      "enum": ["duplicate", "fraudulent", "requested_by_customer", "abandoned", null],
+      "description": "Reason for cancellation"
+    },
+    "external_metadata": {
+      "type": ["object", "null"],
+      "description": "Original metadata from source system",
+      "additionalProperties": {"type": "string"}
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Record metadata"
+    }
+  },
+  "definitions": {
+    "money": {
+      "type": "object",
+      "description": "Monetary amount",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Amount in smallest currency unit (cents)"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Three-letter ISO 4217 currency code"
+        }
+      },
+      "required": ["amount", "currency"]
+    },
+    "paymentError": {
+      "type": ["object", "null"],
+      "description": "Payment error details",
+      "properties": {
+        "type": {
+          "type": ["string", "null"],
+          "description": "Error type"
+        },
+        "code": {
+          "type": ["string", "null"],
+          "description": "Error code"
+        },
+        "message": {
+          "type": ["string", "null"],
+          "description": "Human-readable error message"
+        },
+        "decline_code": {
+          "type": ["string", "null"],
+          "description": "Card decline code if applicable"
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata",
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created"
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "platform": {
+              "type": "string",
+              "description": "Source platform identifier",
+              "examples": ["stripe"]
+            },
+            "platform_version": {
+              "type": ["string", "null"],
+              "description": "API version or schema version"
+            }
+          }
+        }
+      }
+    }
+  }
+}
