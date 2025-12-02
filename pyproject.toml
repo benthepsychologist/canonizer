@@ -17,11 +17,10 @@ classifiers = [
 ]
 
 # Core dependencies (no CLI)
+# Note: jsonschema and jsonata-python removed - now using Node.js canonizer-core
 dependencies = [
     "pydantic>=2.5.0",
-    "jsonschema>=4.20.0",
     "pyyaml>=6.0.1",
-    "jsonata-python>=0.6.0",
     "jsonpatch>=1.33",
     "jsondiff>=2.0.0",
     "httpx>=0.27.0",

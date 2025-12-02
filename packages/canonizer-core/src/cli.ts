@@ -108,6 +108,70 @@ program
   });
 
 program
+  .command('validate-file')
+  .description('Validate JSON against schema file (not via Iglu URI)')
+  .requiredOption('-f, --file <path>', 'Path to JSON Schema file')
+  .action(async (options) => {
+    try {
+      const fs = await import('fs');
+      const { validateAgainstSchema } = await import('./validator.js');
+
+      // Read and parse schema file
+      const schemaContent = fs.readFileSync(options.file, 'utf-8');
+      const schema = JSON.parse(schemaContent);
+
+      // Read and parse input from stdin
+      const inputStr = await readStdin();
+      const input = parseJson(inputStr);
+
+      // Validate against schema
+      validateAgainstSchema(input, schema, 'input');
+
+      // Success - exit 0 with no output
+      process.exit(0);
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        console.error(err.formatErrors());
+      } else if (err instanceof Error) {
+        console.error(`Error: ${err.message}`);
+      } else {
+        console.error('Unknown error occurred');
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command('jsonata')
+  .description('Execute raw JSONata expression on JSON input')
+  .requiredOption('-e, --expr <expression>', 'JSONata expression to evaluate')
+  .action(async (options) => {
+    try {
+      // Dynamically import jsonata
+      const jsonata = (await import('jsonata')).default;
+
+      // Read and parse input from stdin
+      const inputStr = await readStdin();
+      const input = parseJson(inputStr);
+
+      // Compile and evaluate expression
+      const expression = jsonata(options.expr);
+      const result = await expression.evaluate(input);
+
+      // Output JSON to stdout
+      console.log(JSON.stringify(result));
+      process.exit(0);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error(`Error: ${err.message}`);
+      } else {
+        console.error('Unknown error occurred');
+      }
+      process.exit(1);
+    }
+  });
+
+program
   .command('check')
   .description('Check if a transform can be loaded (validate configuration)')
   .requiredOption('-t, --transform <id>', 'Transform ID with version (e.g., domain/name@1-0-0)')

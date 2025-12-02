@@ -25,8 +25,8 @@ def transforms_dir(fixtures_dir):
     return fixtures_dir / "transforms"
 
 
-def test_simple_transform_end_to_end_python(schemas_dir, transforms_dir):
-    """Test simple transform using Python JSONata runtime."""
+def test_simple_transform_end_to_end(schemas_dir, transforms_dir):
+    """Test simple transform using Node.js JSONata runtime."""
     runtime = TransformRuntime(schemas_dir=schemas_dir)
 
     input_data = {"message": "Hello, World!", "count": 42}
@@ -45,8 +45,8 @@ def test_simple_transform_end_to_end_python(schemas_dir, transforms_dir):
     assert result.data["number"] == 42
     assert "processed_at" in result.data
 
-    # Check runtime metadata
-    assert result.runtime == "python"
+    # Check runtime metadata - always uses Node.js now
+    assert result.runtime == "node"
     assert result.execution_time_ms > 0
 
 

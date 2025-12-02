@@ -369,7 +369,7 @@ class TestImportFromRealRegistry:
         # The workspace itself can serve as a registry source
         workspace = Path("/workspace/canonizer")
 
-        result = runner.invoke(app, [
+        runner.invoke(app, [
             "import", "all",
             "--from", str(workspace),
             "--to", str(initialized_project),

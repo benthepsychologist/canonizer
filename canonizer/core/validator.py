@@ -1,10 +1,11 @@
-"""JSON Schema validation for inputs and outputs."""
+"""JSON Schema validation via Node.js canonizer-core."""
 
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft7Validator
+from canonizer.core.node_bridge import get_canonizer_core_bin
 
 
 class ValidationError(Exception):
@@ -16,7 +17,7 @@ class ValidationError(Exception):
 
 
 class SchemaValidator:
-    """Validates JSON data against JSON Schema."""
+    """Validates JSON data against JSON Schema using Node.js ajv."""
 
     def __init__(self, schema_path: Path | str):
         """
@@ -27,21 +28,18 @@ class SchemaValidator:
 
         Raises:
             FileNotFoundError: If schema file doesn't exist
-            json.JSONDecodeError: If schema is invalid JSON
         """
-        self.schema_path = Path(schema_path)
+        self.schema_path = Path(schema_path).resolve()
         if not self.schema_path.exists():
             raise FileNotFoundError(f"Schema file not found: {self.schema_path}")
 
-        with open(self.schema_path) as f:
-            self.schema = json.load(f)
-
-        # Create validator with format checking enabled
-        self.validator = Draft7Validator(self.schema)
+        # Try to determine if this is a registry-style path
+        parts = self.schema_path.parts
+        self._registry_style = "schemas" in parts
 
     def validate(self, data: Any) -> None:
         """
-        Validate data against schema.
+        Validate data against schema using Node.js.
 
         Args:
             data: JSON data to validate
@@ -49,14 +47,44 @@ class SchemaValidator:
         Raises:
             ValidationError: If validation fails with detailed error messages
         """
-        errors = list(self.validator.iter_errors(data))
+        bin_path = get_canonizer_core_bin()
 
-        if errors:
-            error_messages = [
-                f"{error.json_path}: {error.message}" for error in errors
-            ]
+        if self._registry_style:
+            # Use Iglu URI resolution via registry
+            parts = self.schema_path.parts
+            schemas_idx = parts.index("schemas")
+            vendor = parts[schemas_idx + 1]
+            name = parts[schemas_idx + 2]
+            # jsonschema folder
+            version = parts[schemas_idx + 4].replace(".json", "")
+            schema_uri = f"iglu:{vendor}/{name}/jsonschema/{version}"
+
+            # Determine registry root (parent of schemas/)
+            registry_root = self.schema_path
+            for _ in range(5):  # Go up 5 levels from version.json
+                registry_root = registry_root.parent
+
+            result = subprocess.run(
+                [bin_path, "validate", "--schema", schema_uri, "--registry", str(registry_root)],
+                input=json.dumps(data),
+                capture_output=True,
+                text=True,
+            )
+        else:
+            # Use direct file path validation
+            result = subprocess.run(
+                [bin_path, "validate-file", "--file", str(self.schema_path)],
+                input=json.dumps(data),
+                capture_output=True,
+                text=True,
+            )
+
+        if result.returncode != 0:
+            # Parse error messages from stderr
+            errors = [line for line in result.stderr.strip().split("\n") if line]
             raise ValidationError(
-                f"Validation failed with {len(errors)} error(s)", error_messages
+                f"Validation failed with {len(errors)} error(s)",
+                errors
             )
 
     def is_valid(self, data: Any) -> bool:
@@ -69,12 +97,19 @@ class SchemaValidator:
         Returns:
             True if valid, False otherwise
         """
-        return self.validator.is_valid(data)
+        try:
+            self.validate(data)
+            return True
+        except ValidationError:
+            return False
 
     @staticmethod
     def validate_with_schema(data: Any, schema: dict) -> None:
         """
         Validate data against a schema dict (no file required).
+
+        Note: This creates a temporary file for the schema since Node CLI
+        expects file paths.
 
         Args:
             data: JSON data to validate
@@ -83,16 +118,21 @@ class SchemaValidator:
         Raises:
             ValidationError: If validation fails
         """
-        validator = Draft7Validator(schema)
-        errors = list(validator.iter_errors(data))
+        import os
+        import tempfile
 
-        if errors:
-            error_messages = [
-                f"{error.json_path}: {error.message}" for error in errors
-            ]
-            raise ValidationError(
-                f"Validation failed with {len(errors)} error(s)", error_messages
-            )
+        # Create temporary schema file
+        with tempfile.NamedTemporaryFile(
+            mode='w', suffix='.json', delete=False
+        ) as f:
+            json.dump(schema, f)
+            temp_path = f.name
+
+        try:
+            validator = SchemaValidator(temp_path)
+            validator.validate(data)
+        finally:
+            os.unlink(temp_path)
 
 
 def load_schema_from_iglu_uri(iglu_uri: str, schemas_dir: Path) -> Path:
