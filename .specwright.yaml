@@ -8,5 +8,12 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/node-refactor.md
-  aip: /workspace/canonizer/.specwright/aips/node-refactor.yaml
+  spec: null
+  aip: null
+completed:
+  - spec: .specwright/specs/node-refactor.md
+    aip: .specwright/aips/node-refactor.yaml
+    completed_at: 2025-12-02T19:00:00+00:00
+  - spec: .specwright/specs/dataverse-and-stripe-schemas.md
+    aip: .specwright/aips/dataverse-and-stripe-schemas.yaml
+    completed_at: 2025-12-02T19:20:00+00:00

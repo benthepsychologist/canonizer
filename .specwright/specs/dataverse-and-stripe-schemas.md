@@ -22,14 +22,14 @@ repo:
 
 ## Acceptance Criteria
 
-- [ ] Dataverse source schemas created (contact, session, report)
-- [ ] Dataverse canonical schemas created (contact, clinical_session, clinical_report)
-- [ ] Dataverse transforms versioned with tests
-- [ ] Stripe source schemas created (customer, invoice, payment_intent, refund)
-- [ ] Stripe canonical schemas created (customer, invoice, payment, refund)
-- [ ] Stripe transforms created with tests
-- [ ] All transforms pass validation
-- [ ] CI green (lint + unit)
+- [x] Dataverse source schemas created (contact, session, report)
+- [x] Dataverse canonical schemas created (contact, clinical_session, clinical_document)
+- [x] Dataverse transforms versioned with tests
+- [x] Stripe source schemas created (customer, invoice, payment_intent, refund)
+- [x] Stripe canonical schemas created (customer, invoice, payment, refund)
+- [x] Stripe transforms created with tests
+- [x] All transforms pass validation
+- [x] CI green (lint + unit)
 
 ## Context
 

@@ -340,32 +340,32 @@ Python **only** does:
 ## Acceptance Criteria
 
 ### Phase 1: Node Core
-- [ ] `packages/canonizer-core/` Node package with TypeScript
-- [ ] TransformSpec loader (reads meta.yaml + .jsonata)
-- [ ] JSON Schema validation with ajv (input + output)
-- [ ] JSONata execution with extension function registration
-- [ ] `htmlToMarkdown` extension function (using turndown)
-- [ ] CLI: `canonizer-core run --transform <id> < input.json > output.json`
-- [ ] Unit tests for runtime, validation, and extensions
+- [x] `packages/canonizer-core/` Node package with TypeScript
+- [x] TransformSpec loader (reads meta.yaml + .jsonata)
+- [x] JSON Schema validation with ajv (input + output)
+- [x] JSONata execution with extension function registration
+- [x] `htmlToMarkdown` extension function (using turndown)
+- [x] CLI: `canonizer-core run --transform <id> < input.json > output.json`
+- [x] Unit tests for runtime, validation, and extensions
 
 ### Phase 2: Python Integration
-- [ ] Move Python package to `python/canonizer/`
-- [ ] Python wrapper calls `canonizer-core` CLI (subprocess only)
-- [ ] Remove ALL Python validation/transform logic
-- [ ] Same public API signatures: `canonicalize()`, `validate_payload()`, `run_batch()`
-- [ ] Integration tests passing
-- [ ] Remove Python JSONata dependency
-- [ ] Remove Python jsonschema dependency
+- [x] Move Python package to `python/canonizer/`
+- [x] Python wrapper calls `canonizer-core` CLI (subprocess only)
+- [x] Remove ALL Python validation/transform logic
+- [x] Same public API signatures: `canonicalize()`, `validate_payload()`, `run_batch()`
+- [x] Integration tests passing
+- [x] Remove Python JSONata dependency
+- [x] Remove Python jsonschema dependency
 
 ### Phase 3: Transform Migration
-- [ ] Port all existing transforms to new structure
-- [ ] Add `extensions[]` to meta.yaml format
-- [ ] Update Dataverse transforms to use `htmlToMarkdown()`
-- [ ] All transform tests passing
+- [x] Port all existing transforms to new structure
+- [x] Add `extensions[]` to meta.yaml format
+- [x] Update Dataverse transforms to use `htmlToMarkdown()`
+- [x] All transform tests passing
 
 ### Phase 4: Cleanup
-- [ ] Remove old Python modules (`jsonata_exec.py`, `validator.py`, etc.)
-- [ ] Update documentation
+- [x] Remove old Python modules (`jsonata_exec.py`, `validator.py`, etc.)
+- [x] Update documentation
 - [ ] Update pyproject.toml dependencies
 - [ ] CI/CD updates for Node build
 
