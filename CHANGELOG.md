@@ -108,9 +108,8 @@ canonizer/
 
 ### Dependencies
 - Python 3.11+
-- jsonata-python 0.6+ (Python runtime)
+- Node.js 18+ (for canonizer-core runtime)
 - pydantic 2.5+
-- jsonschema 4.20+
 - typer 0.9+
 - rich 13.7+
 - httpx 0.27+
@@ -166,7 +165,7 @@ This is the initial release. No migration required.
   - Runtime assertions (Node.js JSONata)
 
 ### Technical Details
-- All transforms use Python jsonata runtime (no Node.js dependency for validation)
+- All transforms use Node.js JSONata runtime via canonizer-core
 - All transforms published to canonizer-registry with CI passing
 - Array constructor pattern for JSONata `$map()` single-item compatibility
 - Comprehensive email header mapping (from, to, cc, bcc, replyTo, sender)

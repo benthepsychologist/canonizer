@@ -71,8 +71,8 @@ class TransformMeta(BaseModel):
         default="jsonata", description="Transform engine (currently only jsonata)"
     )
     runtime: Literal["node", "python"] = Field(
-        default="python",
-        description="Runtime to use (node=official, python=fast-path fallback)",
+        default="node",
+        description="Runtime to use (node.js via canonizer-core)",
     )
     from_schema: str = Field(
         ...,

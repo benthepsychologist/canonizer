@@ -1,6 +1,6 @@
 [project]
 name = "canonizer"
-version = "0.4.0"
+version = "0.5.0"
 description = "Pure JSON transformation library. No ingestion. No storage. No orchestration. Just transforms."
 authors = [{name = "Ben Machina", email = "ben@therapyai.com"}]
 readme = "README.md"
