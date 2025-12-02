@@ -1,166 +1,193 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
-  "description": "Source schema for Google Forms API responses. Represents FormResponse resource from Google Forms API v1. Contains form submission data including question answers, respondent information, and timestamps. This is the input format for transformation to canonical questionnaire responses.",
-  "self": {
-    "vendor": "com.google",
-    "name": "forms_response",
-    "format": "jsonschema",
-    "version": "1-0-0"
-  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Google Forms API v1 FormResponse Resource",
+  "description": "Google Forms API forms.responses resource format. See: https://developers.google.com/forms/api/reference/rest/v1/forms.responses",
   "type": "object",
+  "required": ["responseId", "createTime", "lastSubmittedTime"],
   "properties": {
     "formId": {
       "type": "string",
-      "description": "The form ID that this response belongs to"
+      "description": "Output only. The form ID. Note: Not included in response body when listing responses - use the API path or connection_name metadata."
     },
     "responseId": {
       "type": "string",
-      "description": "Unique identifier for this form response"
+      "description": "Output only. The response ID."
     },
     "createTime": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp for the first time the response was submitted (RFC 3339 format)",
-      "examples": ["2024-03-31T17:52:00Z"]
+      "description": "Output only. Timestamp for the first time the response was submitted."
     },
     "lastSubmittedTime": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp for the most recent time the response was submitted (RFC 3339 format)",
-      "examples": ["2024-03-31T17:52:00Z"]
+      "description": "Output only. Timestamp for the most recent time the response was submitted. Does not track late grade changes."
     },
     "respondentEmail": {
       "type": "string",
-      "format": "email",
-      "description": "The email address of the respondent (if the form is configured to collect email addresses)"
+      "description": "Output only. The email address (if collected) of the respondent."
     },
     "answers": {
       "type": "object",
-      "description": "Map of question ID to answer. The keys are question IDs in string format.",
-      "patternProperties": {
-        "^[a-f0-9]+$": {
-          "type": "object",
-          "description": "Answer to a specific question",
-          "properties": {
-            "questionId": {
-              "type": "string",
-              "description": "The question's ID as a string"
-            },
-            "textAnswers": {
-              "type": "object",
-              "description": "Answers to a text-based question (mutually exclusive with fileUploadAnswers)",
-              "properties": {
-                "answers": {
-                  "type": "array",
-                  "description": "Array of text answers",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "value": {
-                        "type": "string",
-                        "description": "The text value of the answer"
-                      }
-                    },
-                    "required": ["value"]
-                  }
-                }
-              },
-              "required": ["answers"]
-            },
-            "fileUploadAnswers": {
-              "type": "object",
-              "description": "Answers to a file upload question (mutually exclusive with textAnswers)",
-              "properties": {
-                "answers": {
-                  "type": "array",
-                  "description": "Array of uploaded files",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "fileId": {
-                        "type": "string",
-                        "description": "The ID of the uploaded file in Google Drive"
-                      },
-                      "fileName": {
-                        "type": "string",
-                        "description": "The file name as stored in Drive"
-                      },
-                      "mimeType": {
-                        "type": "string",
-                        "description": "The MIME type of the file"
-                      }
-                    },
-                    "required": ["fileId"]
-                  }
-                }
-              },
-              "required": ["answers"]
-            },
-            "grade": {
-              "type": "object",
-              "description": "Grading information for this answer (if the form uses grading)",
-              "properties": {
-                "score": {
-                  "type": "number",
-                  "description": "The numeric score awarded for this answer"
-                },
-                "correct": {
-                  "type": "boolean",
-                  "description": "Whether the answer is marked as correct"
-                },
-                "feedback": {
-                  "type": "object",
-                  "description": "Feedback for this specific answer",
-                  "properties": {
-                    "text": {
-                      "type": "string",
-                      "description": "Text feedback"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "required": ["questionId"]
-        }
+      "description": "Output only. The answers to the form questions, keyed by question ID.",
+      "additionalProperties": {
+        "$ref": "#/definitions/Answer"
       }
     },
     "totalScore": {
       "type": "number",
-      "description": "The total score for the quiz response (if form is configured as a quiz)"
+      "description": "Output only. The total number of points the respondent received for their submission. Only set if the form is a quiz and the response is graded."
     }
   },
-  "required": ["formId", "responseId", "createTime", "lastSubmittedTime"],
-  "additionalProperties": false,
-  "examples": [
-    {
-      "formId": "1FAIpQLSe...",
-      "responseId": "ACYDBNj...",
-      "createTime": "2024-03-31T17:52:00Z",
-      "lastSubmittedTime": "2024-03-31T17:52:00Z",
-      "respondentEmail": "example@example.com",
-      "answers": {
-        "1a2b3c4d": {
-          "questionId": "1a2b3c4d",
-          "textAnswers": {
-            "answers": [
-              {
-                "value": "Never"
-              }
-            ]
+  "additionalProperties": true,
+  "definitions": {
+    "Answer": {
+      "type": "object",
+      "description": "An answer to a question.",
+      "required": ["questionId"],
+      "properties": {
+        "questionId": {
+          "type": "string",
+          "description": "Output only. The question's ID."
+        },
+        "grade": {
+          "$ref": "#/definitions/Grade",
+          "description": "Output only. The grade for the answer if the form is a quiz."
+        },
+        "textAnswers": {
+          "$ref": "#/definitions/TextAnswers",
+          "description": "Output only. The answers to a textual question."
+        },
+        "fileUploadAnswers": {
+          "$ref": "#/definitions/FileUploadAnswers",
+          "description": "Output only. The answers to a file upload question."
+        }
+      }
+    },
+    "TextAnswers": {
+      "type": "object",
+      "description": "Answers to a text-based question.",
+      "required": ["answers"],
+      "properties": {
+        "answers": {
+          "type": "array",
+          "description": "Output only. Answers to a question.",
+          "items": {
+            "$ref": "#/definitions/TextAnswer"
+          }
+        }
+      }
+    },
+    "TextAnswer": {
+      "type": "object",
+      "description": "An answer to a text-based question.",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Output only. The answer value. See the documentation for details on how various value types are formatted."
+        }
+      }
+    },
+    "FileUploadAnswers": {
+      "type": "object",
+      "description": "Answers to a file upload question.",
+      "required": ["answers"],
+      "properties": {
+        "answers": {
+          "type": "array",
+          "description": "Output only. All submitted files for a FileUpload question.",
+          "items": {
+            "$ref": "#/definitions/FileUploadAnswer"
+          }
+        }
+      }
+    },
+    "FileUploadAnswer": {
+      "type": "object",
+      "description": "An uploaded file.",
+      "properties": {
+        "fileId": {
+          "type": "string",
+          "description": "Output only. The ID of the Google Drive file."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Output only. The file name."
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "Output only. The MIME type of the file."
+        }
+      }
+    },
+    "Grade": {
+      "type": "object",
+      "description": "Grade information associated with a respondent's answer to a question.",
+      "properties": {
+        "score": {
+          "type": "number",
+          "description": "Output only. The numeric score awarded for the answer."
+        },
+        "correct": {
+          "type": "boolean",
+          "description": "Output only. Whether the question was answered correctly or not."
+        },
+        "feedback": {
+          "$ref": "#/definitions/Feedback",
+          "description": "Output only. Additional feedback given for an answer."
+        }
+      }
+    },
+    "Feedback": {
+      "type": "object",
+      "description": "Feedback for a respondent about their response to a question.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Output only. The main text of the feedback."
+        },
+        "material": {
+          "type": "array",
+          "description": "Output only. Additional information provided as part of the feedback.",
+          "items": {
+            "$ref": "#/definitions/ExtraMaterial"
+          }
+        }
+      }
+    },
+    "ExtraMaterial": {
+      "type": "object",
+      "description": "Supplementary material to the feedback.",
+      "properties": {
+        "link": {
+          "type": "object",
+          "description": "A link to additional material.",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "Required. The URI."
+            },
+            "displayText": {
+              "type": "string",
+              "description": "The text to display for the link."
+            }
           }
         },
-        "5e6f7g8h": {
-          "questionId": "5e6f7g8h",
-          "textAnswers": {
-            "answers": [
-              {
-                "value": "Several days"
-              }
-            ]
+        "video": {
+          "type": "object",
+          "description": "A video.",
+          "properties": {
+            "youtubeUri": {
+              "type": "string",
+              "description": "The YouTube URI."
+            },
+            "displayText": {
+              "type": "string",
+              "description": "The text to display for the video."
+            }
           }
         }
       }
     }
-  ]
+  }
 }
