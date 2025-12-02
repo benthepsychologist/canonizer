@@ -2,6 +2,7 @@ id: forms/google_forms_to_canonical
 version: 1.0.0
 engine: jsonata
 runtime: node
+extensions: []
 
 from_schema: iglu:com.google/forms_response/jsonschema/1-0-0
 to_schema: iglu:org.canonical/form_response/jsonschema/1-0-0

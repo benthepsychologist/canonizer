@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Session Transcript",
+  "description": "Canonical session transcript schema. Represents time-sequenced text from a clinical session. Transcripts are separate from sessions due to different query patterns, storage requirements, and processing pipelines.",
+  "type": "object",
+  "required": ["id", "session", "subject", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the transcript",
+      "examples": ["transcript-abc123"]
+    },
+    "session": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the clinical session this transcript belongs to"
+    },
+    "subject": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the patient/contact"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Date/time of the session this transcript captures",
+      "examples": ["2024-01-20T09:00:00Z"]
+    },
+    "duration": {
+      "type": ["integer", "null"],
+      "description": "Duration of the transcribed content in seconds",
+      "examples": [3000]
+    },
+    "language": {
+      "type": ["string", "null"],
+      "description": "Primary language of the transcript (ISO 639-1)",
+      "default": "en",
+      "examples": ["en"]
+    },
+    "content": {
+      "$ref": "#/definitions/content",
+      "description": "Transcript content"
+    },
+    "processing": {
+      "$ref": "#/definitions/processing",
+      "description": "Information about transcript processing"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "description": "Reference to another entity",
+      "properties": {
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Reference identifier (type/id format)",
+          "examples": ["session/xyz789", "contact/abc123"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type of the referenced resource",
+          "examples": ["ClinicalSession", "Contact"]
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Transcript content container",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["markdown", "plain", "segments"],
+          "description": "Format of the transcript content",
+          "default": "markdown",
+          "examples": ["markdown"]
+        },
+        "text": {
+          "type": ["string", "null"],
+          "description": "Full transcript text (markdown or plain text format)",
+          "examples": ["**Therapist:** How have you been feeling this week?\n\n**Client:** Much better..."]
+        },
+        "segments": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/segment" },
+          "description": "Time-sequenced transcript segments (when format is 'segments')"
+        }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "description": "A timestamped segment of the transcript",
+      "properties": {
+        "speaker": {
+          "type": ["string", "null"],
+          "description": "Speaker identifier (e.g., 'therapist', 'client', 'speaker_1')",
+          "examples": ["therapist"]
+        },
+        "text": {
+          "type": "string",
+          "description": "Spoken text",
+          "examples": ["How have you been feeling this week?"]
+        },
+        "startTime": {
+          "type": ["number", "null"],
+          "description": "Start time in seconds from beginning of session",
+          "examples": [0.0]
+        },
+        "endTime": {
+          "type": ["number", "null"],
+          "description": "End time in seconds from beginning of session",
+          "examples": [3.5]
+        },
+        "confidence": {
+          "type": ["number", "null"],
+          "description": "Transcription confidence score (0-1)",
+          "examples": [0.95]
+        }
+      }
+    },
+    "processing": {
+      "type": "object",
+      "description": "Transcript processing metadata",
+      "properties": {
+        "engine": {
+          "type": ["string", "null"],
+          "description": "Transcription engine used",
+          "examples": ["whisper", "deepgram", "aws-transcribe"]
+        },
+        "engineVersion": {
+          "type": ["string", "null"],
+          "description": "Version of the transcription engine",
+          "examples": ["large-v3"]
+        },
+        "processedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the transcript was processed",
+          "examples": ["2024-01-20T10:15:00Z"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "enum": ["pending", "processing", "completed", "failed", null],
+          "description": "Processing status",
+          "examples": ["completed"]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was last updated",
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["dataverse"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

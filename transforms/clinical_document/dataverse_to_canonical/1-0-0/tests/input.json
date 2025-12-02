@@ -1,0 +1,11 @@
+{
+  "annotationid": "doc-12345-67890",
+  "subject": "Session Progress Note",
+  "_ben_reporttype_value": "Progress Note",
+  "createdon": "2024-03-15T10:15:00Z",
+  "notetext": "<h2>Session Summary</h2><p>Client presented with <strong>improved mood</strong> today. We discussed:</p><ul><li>Progress on weekly goals</li><li>Coping strategies</li><li>Next steps for treatment</li></ul><p>Overall, good progress this week.</p>",
+  "_ben_contactid_value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "_ben_sessionid_value": "session-12345-67890",
+  "statuscode": 2,
+  "modifiedon": "2024-03-15T10:30:00Z"
+}

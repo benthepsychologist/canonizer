@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dataverse Client Report Entity",
+  "description": "Mensio custom cre92_clientreport entity for progress reports. Based on actual production data structure.",
+  "type": "object",
+  "required": ["cre92_clientreportid"],
+  "properties": {
+    "cre92_clientreportid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier of the report"
+    },
+    "cre92_name": {
+      "type": ["string", "null"],
+      "description": "Report name/title (e.g., 'Progress Report for Bryan M')"
+    },
+    "_cre92_client_value": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Lookup to contact (client)"
+    },
+    "_cre92_client_value@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Client name display value"
+    },
+    "cre92_reportdate": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Report date"
+    },
+    "cre92_reportintro": {
+      "type": ["string", "null"],
+      "description": "Report introduction section (HTML content)"
+    },
+    "cre92_reportstory": {
+      "type": ["string", "null"],
+      "description": "Report narrative/story section (HTML content)"
+    },
+    "cre92_currentstrengths": {
+      "type": ["string", "null"],
+      "description": "Current strengths section (HTML content)"
+    },
+    "cre92_currenttherapeuticgoals": {
+      "type": ["string", "null"],
+      "description": "Current therapeutic goals section (HTML content)"
+    },
+    "cre92_questionnairefindings": {
+      "type": ["string", "null"],
+      "description": "Questionnaire findings section (HTML content)"
+    },
+    "cre92_currentquestionnairefindings": {
+      "type": ["string", "null"],
+      "description": "Current questionnaire findings (HTML content)"
+    },
+    "statecode": {
+      "type": ["integer", "null"],
+      "description": "Record status (0=Active, 1=Inactive)"
+    },
+    "statuscode": {
+      "type": ["integer", "null"],
+      "description": "Status reason code"
+    },
+    "createdon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record creation timestamp"
+    },
+    "modifiedon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record last modified timestamp"
+    },
+    "_ownerid_value": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Owner of the record"
+    }
+  },
+  "additionalProperties": true
+}

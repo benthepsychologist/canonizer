@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Clinical Document",
+  "description": "Canonical clinical document schema with FHIR DocumentReference-inspired naming. Represents any narrative clinical content: SOAP notes, client summaries, progress reports, treatment plans. Documents are typed by docType and audience.",
+  "type": "object",
+  "required": ["id", "docType", "status", "subject", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the document",
+      "examples": ["doc-abc123"]
+    },
+    "docType": {
+      "type": "string",
+      "enum": ["soap-note", "client-summary", "progress-report", "treatment-plan", "intake-note", "discharge-summary", "other"],
+      "description": "Type of clinical document",
+      "examples": ["soap-note"]
+    },
+    "audience": {
+      "type": "string",
+      "enum": ["clinician", "client", "internal", "external"],
+      "description": "Intended audience for the document",
+      "default": "clinician",
+      "examples": ["clinician"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "final", "amended", "archived"],
+      "description": "Document lifecycle status (FHIR DocumentReference.docStatus inspired)",
+      "examples": ["final"]
+    },
+    "title": {
+      "type": ["string", "null"],
+      "description": "Human-readable title of the document",
+      "examples": ["SOAP Note - Session 15"]
+    },
+    "subject": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the patient/contact (FHIR DocumentReference.subject)"
+    },
+    "encounter": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the related session/encounter (FHIR DocumentReference.context.encounter)"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the document was clinically relevant (FHIR DocumentReference.date)",
+      "examples": ["2024-01-20T10:00:00Z"]
+    },
+    "author": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the author/practitioner"
+    },
+    "content": {
+      "$ref": "#/definitions/content",
+      "description": "Document content"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "description": "Reference to another entity (FHIR Reference simplified)",
+      "properties": {
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Reference identifier (type/id format)",
+          "examples": ["contact/abc123", "session/xyz789"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type of the referenced resource",
+          "examples": ["Contact", "ClinicalSession"]
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Document content container",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["markdown", "html", "plain"],
+          "description": "Format of the text content",
+          "default": "markdown",
+          "examples": ["markdown"]
+        },
+        "text": {
+          "type": ["string", "null"],
+          "description": "Text content of the document (in the specified format)",
+          "examples": ["## Subjective\nPatient reports improved mood..."]
+        },
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/section" },
+          "description": "Structured sections of the document (for multi-section documents like progress reports)"
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "description": "A section within a multi-section document",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Section title",
+          "examples": ["Current Strengths", "Therapeutic Goals"]
+        },
+        "text": {
+          "type": ["string", "null"],
+          "description": "Section content",
+          "examples": ["Patient demonstrates resilience..."]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was last updated",
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["dataverse"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

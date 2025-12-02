@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Billing Event",
+  "description": "Canonical billing event schema. Represents money events: charges, payments, refunds, adjustments. Source-agnostic - works for Stripe, insurance, manual entries, and sessions-owed tracking.",
+  "type": "object",
+  "required": ["id", "eventType", "status", "amount", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the billing event",
+      "examples": ["billing-abc123"]
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["charge", "payment", "refund", "adjustment", "write-off", "owed"],
+      "description": "Type of billing event",
+      "examples": ["payment"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "succeeded", "failed", "cancelled", "disputed"],
+      "description": "Current status of the billing event",
+      "examples": ["succeeded"]
+    },
+    "amount": {
+      "$ref": "#/definitions/money",
+      "description": "Amount of the billing event"
+    },
+    "subject": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the patient/contact being billed"
+    },
+    "session": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the related clinical session (if applicable)"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the billing event occurred",
+      "examples": ["2024-01-20T10:00:00Z"]
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description of the billing event",
+      "examples": ["Payment for therapy session on Jan 20"]
+    },
+    "paymentMethod": {
+      "$ref": "#/definitions/paymentMethod",
+      "description": "Payment method details"
+    },
+    "invoice": {
+      "$ref": "#/definitions/invoice",
+      "description": "Related invoice information (if applicable)"
+    },
+    "externalIds": {
+      "$ref": "#/definitions/externalIds",
+      "description": "External system identifiers"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "description": "Reference to another entity",
+      "properties": {
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Reference identifier (type/id format)",
+          "examples": ["contact/abc123", "session/xyz789"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type of the referenced resource",
+          "examples": ["Contact", "ClinicalSession"]
+        }
+      }
+    },
+    "money": {
+      "type": "object",
+      "description": "Monetary amount with currency",
+      "required": ["value", "currency"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Amount value (positive for charges/owed, positive for payments received)",
+          "examples": [150.00]
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code (ISO 4217)",
+          "default": "USD",
+          "examples": ["USD"]
+        }
+      }
+    },
+    "paymentMethod": {
+      "type": "object",
+      "description": "Payment method information",
+      "properties": {
+        "type": {
+          "type": ["string", "null"],
+          "enum": ["card", "bank_transfer", "insurance", "cash", "check", "other", null],
+          "description": "Type of payment method",
+          "examples": ["card"]
+        },
+        "brand": {
+          "type": ["string", "null"],
+          "description": "Card brand (visa, mastercard, etc.) or bank name",
+          "examples": ["visa"]
+        },
+        "last4": {
+          "type": ["string", "null"],
+          "description": "Last 4 digits of card or account",
+          "examples": ["4242"]
+        }
+      }
+    },
+    "invoice": {
+      "type": "object",
+      "description": "Related invoice information",
+      "properties": {
+        "id": {
+          "type": ["string", "null"],
+          "description": "Invoice identifier",
+          "examples": ["inv_abc123"]
+        },
+        "number": {
+          "type": ["string", "null"],
+          "description": "Invoice number",
+          "examples": ["INV-2024-001"]
+        },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL to view the invoice",
+          "examples": ["https://pay.stripe.com/invoice/abc123"]
+        }
+      }
+    },
+    "externalIds": {
+      "type": "object",
+      "description": "External system identifiers for traceability",
+      "properties": {
+        "stripe": {
+          "type": "object",
+          "description": "Stripe-specific identifiers",
+          "properties": {
+            "paymentIntentId": {
+              "type": ["string", "null"],
+              "description": "Stripe PaymentIntent ID",
+              "examples": ["pi_abc123"]
+            },
+            "chargeId": {
+              "type": ["string", "null"],
+              "description": "Stripe Charge ID",
+              "examples": ["ch_abc123"]
+            },
+            "invoiceId": {
+              "type": ["string", "null"],
+              "description": "Stripe Invoice ID",
+              "examples": ["in_abc123"]
+            },
+            "refundId": {
+              "type": ["string", "null"],
+              "description": "Stripe Refund ID",
+              "examples": ["re_abc123"]
+            },
+            "customerId": {
+              "type": ["string", "null"],
+              "description": "Stripe Customer ID",
+              "examples": ["cus_abc123"]
+            }
+          }
+        },
+        "dataverse": {
+          "type": "object",
+          "description": "Dataverse-specific identifiers",
+          "properties": {
+            "sessionId": {
+              "type": ["string", "null"],
+              "description": "Dataverse session ID",
+              "examples": ["abc123-def456"]
+            }
+          }
+        },
+        "insurance": {
+          "type": "object",
+          "description": "Insurance-specific identifiers",
+          "properties": {
+            "claimId": {
+              "type": ["string", "null"],
+              "description": "Insurance claim ID",
+              "examples": ["CLM-2024-001"]
+            },
+            "eobId": {
+              "type": ["string", "null"],
+              "description": "Explanation of Benefits ID",
+              "examples": ["EOB-2024-001"]
+            }
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": ["When the record was last updated"],
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["stripe", "dataverse", "manual"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

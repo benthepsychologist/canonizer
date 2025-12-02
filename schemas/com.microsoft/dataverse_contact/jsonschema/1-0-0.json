@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dataverse Contact Entity",
+  "description": "Microsoft Dataverse Contact entity from Dynamics 365 with Mensio custom fields (cre92_ prefix). Based on actual production data structure.",
+  "type": "object",
+  "required": ["contactid"],
+  "properties": {
+    "contactid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier of the contact"
+    },
+    "firstname": {
+      "type": ["string", "null"],
+      "description": "First name of the contact"
+    },
+    "lastname": {
+      "type": ["string", "null"],
+      "description": "Last name of the contact"
+    },
+    "fullname": {
+      "type": ["string", "null"],
+      "description": "Full name (computed by Dataverse)"
+    },
+    "emailaddress1": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Primary email address"
+    },
+    "emailaddress2": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Secondary email address"
+    },
+    "telephone1": {
+      "type": ["string", "null"],
+      "description": "Primary phone number"
+    },
+    "mobilephone": {
+      "type": ["string", "null"],
+      "description": "Mobile phone number"
+    },
+    "birthdate": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date of birth"
+    },
+    "address1_line1": {
+      "type": ["string", "null"],
+      "description": "Street address line 1"
+    },
+    "address1_line2": {
+      "type": ["string", "null"],
+      "description": "Street address line 2"
+    },
+    "address1_city": {
+      "type": ["string", "null"],
+      "description": "City"
+    },
+    "address1_stateorprovince": {
+      "type": ["string", "null"],
+      "description": "State or province"
+    },
+    "address1_postalcode": {
+      "type": ["string", "null"],
+      "description": "Postal/ZIP code"
+    },
+    "address1_country": {
+      "type": ["string", "null"],
+      "description": "Country"
+    },
+    "statecode": {
+      "type": ["integer", "null"],
+      "description": "Record status (0=Active, 1=Inactive)"
+    },
+    "statuscode": {
+      "type": ["integer", "null"],
+      "description": "Status reason code"
+    },
+    "createdon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record creation timestamp"
+    },
+    "modifiedon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record last modified timestamp"
+    },
+    "cre92_clienttype": {
+      "type": ["string", "integer", "null"],
+      "description": "Client type option set (1=Therapy)"
+    },
+    "cre92_clienttype@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Client type display value"
+    },
+    "cre92_lifecyclestage": {
+      "type": ["integer", "null"],
+      "description": "Lifecycle stage (1=Prospect, 2=Onboarding, 3=Active, 4=Paused, 5=Terminated)"
+    },
+    "cre92_lifecyclestage@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Lifecycle stage display value"
+    },
+    "cre92_contactid": {
+      "type": ["string", "null"],
+      "description": "Custom contact ID (e.g., CON-113J6H7J2114)"
+    },
+    "cre92_sharedfolderurl": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "SharePoint shared folder URL for client documents"
+    },
+    "cre92_paymentsource": {
+      "type": ["integer", "null"],
+      "description": "Payment source (1=Stripe Direct)"
+    },
+    "cre92_currentfee": {
+      "type": ["number", "null"],
+      "description": "Current session fee"
+    },
+    "cre92_region": {
+      "type": ["integer", "null"],
+      "description": "Region code"
+    },
+    "cre92_region@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Region display value"
+    },
+    "_ownerid_value": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Owner of the record"
+    }
+  },
+  "additionalProperties": true
+}

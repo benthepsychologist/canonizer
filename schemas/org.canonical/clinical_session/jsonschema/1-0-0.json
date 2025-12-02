@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Clinical Session",
+  "description": "Canonical clinical session/encounter schema with FHIR Encounter-inspired naming. Represents a scheduled interaction between a patient and provider. Sessions contain scheduling metadata and references to related documents, transcripts, and billing events - NOT the content itself.",
+  "type": "object",
+  "required": ["id", "status", "subject", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the session",
+      "examples": ["session-xyz789"]
+    },
+    "title": {
+      "type": ["string", "null"],
+      "description": "Title/name of the session (e.g., 'Benny T - 001')",
+      "examples": ["Benny T - 001"]
+    },
+    "sessionNumber": {
+      "type": ["integer", "null"],
+      "description": "Sequential session number for this client",
+      "examples": [1]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["scheduled", "confirmed", "in-progress", "completed", "fulfilled", "cancelled", "no-show"],
+      "description": "Current status of the session (FHIR Encounter.status inspired)",
+      "examples": ["completed"]
+    },
+    "class": {
+      "type": ["string", "null"],
+      "description": "Classification of the session (e.g., individual, group, telehealth)",
+      "examples": ["individual"]
+    },
+    "type": {
+      "type": ["string", "null"],
+      "description": "Specific type of session",
+      "examples": ["therapy"]
+    },
+    "subject": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the patient/contact (FHIR Encounter.subject)"
+    },
+    "period": {
+      "$ref": "#/definitions/period",
+      "description": "Time period of the session"
+    },
+    "duration": {
+      "type": ["integer", "null"],
+      "description": "Duration in minutes",
+      "examples": [50]
+    },
+    "noteFinalized": {
+      "type": ["boolean", "null"],
+      "description": "Whether the clinical note for this session is finalized",
+      "examples": [true]
+    },
+    "clientSummarySent": {
+      "type": ["boolean", "null"],
+      "description": "Whether the client summary has been sent",
+      "examples": [true]
+    },
+    "transcriptProcessed": {
+      "type": ["boolean", "null"],
+      "description": "Whether the session transcript has been processed",
+      "examples": [true]
+    },
+    "documents": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/reference" },
+      "description": "References to related clinical documents (notes, summaries)"
+    },
+    "transcript": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the session transcript"
+    },
+    "billingEvents": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/reference" },
+      "description": "References to related billing events"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "description": "Reference to another entity (FHIR Reference simplified)",
+      "properties": {
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Reference identifier (type/id format)",
+          "examples": ["contact/abc123", "clinical_document/doc456"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type of the referenced resource",
+          "examples": ["Contact", "ClinicalDocument", "SessionTranscript", "BillingEvent"]
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "description": "Time period with start and end times",
+      "properties": {
+        "start": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Start time (FHIR Period.start)",
+          "examples": ["2024-01-20T09:00:00Z"]
+        },
+        "end": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "End time (FHIR Period.end)",
+          "examples": ["2024-01-20T09:50:00Z"]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was last updated",
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["dataverse"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,230 @@
+aip_id: AIP-canonizer-2025-12-02-001
+context:
+  background: ''
+  constraints: []
+created: '2025-12-02T00:00:00+00:00'
+meta:
+  created_at: '2025-12-02T00:00:00+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - '`packages/canonizer-core/` Node package with TypeScript'
+  - TransformSpec loader (reads meta.yaml + .jsonata)
+  - JSON Schema validation with ajv (input + output)
+  - JSONata execution with extension function registration
+  - '`htmlToMarkdown` extension function (using turndown)'
+  - 'CLI: `canonizer-core run --transform <id> < input.json > output.json`'
+  - Unit tests for runtime, validation, and extensions
+  - Move Python package to `python/canonizer/`
+  - Python wrapper calls `canonizer-core` CLI (subprocess only)
+  - Remove ALL Python validation/transform logic
+  - 'Same public API signatures: `canonicalize()`, `validate_payload()`, `run_batch()`'
+  - Integration tests passing
+  - Remove Python JSONata dependency
+  - Remove Python jsonschema dependency
+  - Port all existing transforms to new structure
+  - Add `extensions[]` to meta.yaml format
+  - Update Dataverse transforms to use `htmlToMarkdown()`
+  - All transform tests passing
+  - Remove old Python modules (`jsonata_exec.py`, `validator.py`, etc.)
+  - Update documentation
+  - Update pyproject.toml dependencies
+  - CI/CD updates for Node build
+  goal: Refactor canonizer to use Node.js as the primary JSONata+extensions runtime, with Python as a
+    thin wrapper
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-12-02-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Initialize Node Package
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - packages/canonizer-core/package.json
+  - packages/canonizer-core/tsconfig.json
+  - packages/canonizer-core/.gitignore
+  - packages/canonizer-core/src/index.ts
+  prompt: Create the `packages/canonizer-core/` Node.js package with TypeScript configuration.
+  role: coding_agent
+  step_id: step-001
+- description: Implement TransformSpec Loader
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - packages/canonizer-core/src/loader.ts
+  - packages/canonizer-core/src/types.ts
+  - packages/canonizer-core/tests/loader.test.ts
+  prompt: "Implement the TransformSpec loader that reads meta.yaml and .jsonata files.\n```typescript\n\
+    interface ExtensionRef {\n  name: string;\n  impl: string;  // e.g., \"canonizer.extensions.html_to_markdown@1.0.0\"\
+    \n}\ninterface TransformSpec {\n  id: string;\n  version: string;\n  sourceSchema: string;\n  targetSchema:\
+    \ string;\n  extensions: ExtensionRef[];\n  body: string;\n  checksum?: string;\n}\nfunction loadTransformSpec(transformId:\
+    \ string, registryRoot: string): TransformSpec\nfunction loadSchema(schemaUri: string, registryRoot:\
+    \ string): object\n```"
+  role: coding_agent
+  step_id: step-002
+- description: Implement JSON Schema Validation
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - packages/canonizer-core/src/validator.ts
+  - packages/canonizer-core/tests/validator.test.ts
+  prompt: "Implement JSON Schema validation using ajv. This is the ONLY place validation happens - not\
+    \ Python.\n```typescript\nimport Ajv from 'ajv';\nimport addFormats from 'ajv-formats';\nfunction\
+    \ validateAgainstSchema(\n  data: unknown,\n  schema: object,\n  context: 'input' | 'output'\n): void\
+    \  // throws ValidationError\n```"
+  role: coding_agent
+  step_id: step-003
+- description: Implement Extension Registry
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - packages/canonizer-core/src/extensions/index.ts
+  - packages/canonizer-core/src/extensions/htmlToMarkdown.ts
+  - packages/canonizer-core/tests/extensions.test.ts
+  prompt: "Implement the extension function registry and `htmlToMarkdown` extension.\n```typescript\n\
+    // Extension registry - versioned implementations\nconst extensions: Record<string, Function> = {\n\
+    \  'canonizer.extensions.html_to_markdown@1.0.0': htmlToMarkdownV1,\n};\nfunction registerExtensions(expr:\
+    \ jsonata.Expression, extensionRefs: ExtensionRef[]): void\n```"
+  role: coding_agent
+  step_id: step-004
+- description: Implement Runtime
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - packages/canonizer-core/src/runtime.ts
+  - packages/canonizer-core/tests/runtime.test.ts
+  prompt: "Implement the transform runtime that ties together loader, validation, extensions, and JSONata.\n\
+    ```typescript\ninterface RunOptions {\n  validateInput?: boolean;   // default: true\n  validateOutput?:\
+    \ boolean;  // default: true\n  registryRoot?: string;\n}\nasync function runTransform(\n  transformId:\
+    \ string,\n  input: unknown,\n  options?: RunOptions\n): Promise<unknown>\n```"
+  role: coding_agent
+  step_id: step-005
+- description: Implement CLI
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - packages/canonizer-core/src/cli.ts
+  - packages/canonizer-core/bin/canonizer-core
+  - packages/canonizer-core/tests/cli.test.ts
+  prompt: 'Implement CLI with three commands:
+
+    ```bash
+
+    # Transform stdin to stdout
+
+    canonizer-core run --transform <id>@<version> [--registry path] [--no-validate]
+
+    # Validate stdin against schema (no transform)
+
+    canonizer-core validate --schema <iglu-uri> [--registry path]
+
+    # Version info
+
+    canonizer-core version
+
+    ```
+
+    I/O contract:
+
+    - Input: JSON from stdin
+
+    - Output: JSON to stdout (success) or error message to stderr (failure)
+
+    - Exit code: 0 = success, non-zero = failure
+
+    For `validate`:
+
+    - Exit 0 + empty stdout = valid
+
+    - Exit non-zero + error lines on stderr = invalid'
+  role: coding_agent
+  step_id: step-006
+- description: Refactor Python Package Structure
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - python/canonizer/api.py
+  - python/tests/integration/test_node_bridge.py
+  prompt: 'Move Python package to `python/canonizer/` and strip ALL logic. Python becomes a pure subprocess
+    wrapper.
+
+    ```python
+
+    # python/canonizer/api.py
+
+    # ONLY: json.dumps, subprocess.run, json.loads, raise errors
+
+    # NO: schema loading, validation, yaml parsing, jsonata
+
+    ```
+
+    Remove these Python modules entirely:
+
+    - `canonizer/core/validator.py`
+
+    - `canonizer/core/jsonata_exec.py`
+
+    - `canonizer/core/runtime.py`
+
+    Keep only:
+
+    - `python/canonizer/api.py` (thin wrapper)
+
+    - `python/canonizer/cli/` (if still needed for Python CLI)'
+  role: coding_agent
+  step_id: step-007
+- description: Update Transform Meta Format
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  prompt: 'Update spec.meta.yaml format to include `extensions[]` field with name+impl structure.
+
+    Update existing transforms.'
+  role: coding_agent
+  step_id: step-008
+- description: Migrate Dataverse Transforms
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  prompt: 'Create/update Dataverse transforms with `htmlToMarkdown` usage:
+
+    - contact (no HTML fields)
+
+    - clinical_session (no HTML fields)
+
+    - clinical_document (HTML→Markdown in content.text)
+
+    - session_transcript (HTML→Markdown in content.text)'
+  role: coding_agent
+  step_id: step-009
+- description: Cleanup and Documentation
+  gate_ref: 'G3: Release Ready'
+  kind: code
+  prompt: Final cleanup, update documentation, CI/CD.
+  role: coding_agent
+  step_id: step-010
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/node-refactor
+spec_version: 0.1.0
+tier: B
+title: Node Canonizer Core Refactor
+updated: '2025-12-02T00:00:00+00:00'
+version: '0.1'
+

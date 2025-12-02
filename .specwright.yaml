@@ -8,5 +8,5 @@ user:
   default_owner: benthepsychologist
   default_tier: C
 current:
-  spec: .specwright/specs/bulk-import-command.md
-  aip: .specwright/aips/bulk-import-command.yaml
+  spec: .specwright/specs/node-refactor.md
+  aip: /workspace/canonizer/.specwright/aips/node-refactor.yaml

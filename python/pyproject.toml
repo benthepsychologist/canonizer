@@ -1,0 +1,41 @@
+[project]
+name = "canonizer"
+version = "0.5.0"
+description = "Pure JSON transformation library - Python wrapper for Node.js canonizer-core"
+authors = [{name = "Ben Machina", email = "ben@therapyai.com"}]
+readme = "../README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["json", "transform", "jsonata", "schema-registry", "canonicalization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# Minimal dependencies - NO jsonata, NO jsonschema
+# All heavy lifting is done by Node.js
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["canonizer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"

@@ -1,0 +1,29 @@
+id: clinical_document/dataverse_to_canonical
+version: 1-0-0
+engine: jsonata
+runtime: node
+extensions:
+  - name: htmlToMarkdown
+    impl: canonizer.extensions.html_to_markdown@1.0.0
+
+from_schema: iglu:com.microsoft/dataverse_report/jsonschema/1-0-0
+to_schema: iglu:org.canonical/clinical_document/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: ""
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-12-02T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Dataverse Report/Annotation to canonical clinical_document format.
+  Converts HTML content to Markdown using htmlToMarkdown extension.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

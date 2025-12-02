@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Clinical Report",
+  "description": "Canonical clinical report/document schema with FHIR DocumentReference-inspired naming. Represents a clinical document or note. Use for: clinical notes, progress reports, treatment summaries.",
+  "type": "object",
+  "required": ["id", "title", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the report",
+      "examples": ["report-def456"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "final", "amended", "archived"],
+      "description": "Document lifecycle status (FHIR DocumentReference.docStatus inspired)",
+      "examples": ["final"]
+    },
+    "type": {
+      "type": ["string", "null"],
+      "description": "Kind of document/report",
+      "examples": ["progress-note"]
+    },
+    "title": {
+      "type": ["string", "null"],
+      "description": "Human-readable title of the document",
+      "examples": ["Session Progress Note - January 2024"]
+    },
+    "subject": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the patient/contact (FHIR DocumentReference.subject)"
+    },
+    "encounter": {
+      "$ref": "#/definitions/reference",
+      "description": "Reference to the related session/encounter (FHIR DocumentReference.context.encounter)"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the report was clinically relevant (FHIR DocumentReference.date)",
+      "examples": ["2024-01-20T10:00:00Z"]
+    },
+    "content": {
+      "$ref": "#/definitions/content",
+      "description": "Document content"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "description": "Reference to another entity (FHIR Reference simplified)",
+      "properties": {
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Reference identifier (type/id format)",
+          "examples": ["contact/abc123"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type of the referenced resource",
+          "examples": ["Contact"]
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Document content container",
+      "properties": {
+        "text": {
+          "type": ["string", "null"],
+          "description": "Text content of the document",
+          "examples": ["Patient attended session and reported improvement in symptoms..."]
+        },
+        "attachment": {
+          "$ref": "#/definitions/attachment",
+          "description": "Binary attachment if document is a file"
+        }
+      }
+    },
+    "attachment": {
+      "type": "object",
+      "description": "Binary content attachment (FHIR Attachment simplified)",
+      "properties": {
+        "contentType": {
+          "type": ["string", "null"],
+          "description": "MIME type of the content",
+          "examples": ["application/pdf"]
+        },
+        "data": {
+          "type": ["string", "null"],
+          "description": "Base64-encoded content",
+          "examples": ["JVBERi0xLjQKJe..."]
+        },
+        "title": {
+          "type": ["string", "null"],
+          "description": "Filename or title of attachment",
+          "examples": ["progress_note_2024-01-20.pdf"]
+        },
+        "size": {
+          "type": ["integer", "null"],
+          "description": "Size in bytes",
+          "examples": [102400]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was last updated",
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["dataverse"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

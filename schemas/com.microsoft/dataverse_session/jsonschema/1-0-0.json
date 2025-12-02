@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dataverse Client Session Entity",
+  "description": "Mensio custom cre92_clientsession entity for therapy sessions. Based on actual production data structure.",
+  "type": "object",
+  "required": ["cre92_clientsessionid"],
+  "properties": {
+    "cre92_clientsessionid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier of the session"
+    },
+    "cre92_name": {
+      "type": ["string", "null"],
+      "description": "Session name/title (e.g., 'Benny T - 001')"
+    },
+    "_cre92_client_value": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Lookup to contact (client)"
+    },
+    "_cre92_client_value@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Client name display value"
+    },
+    "cre92_starttime": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Session start time"
+    },
+    "cre92_endtime": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Session end time"
+    },
+    "cre92_duration": {
+      "type": ["integer", "null"],
+      "description": "Session duration in minutes"
+    },
+    "cre92_sessionnumber": {
+      "type": ["integer", "null"],
+      "description": "Session number for this client"
+    },
+    "cre92_sessionstatus": {
+      "type": ["integer", "null"],
+      "description": "Session status option set (935000000=Scheduled, 935000001=Confirmed, 935000002=In Progress, 935000003=Completed, 935000004=Fulfilled, 935000005=Cancelled, 935000006=No Show)"
+    },
+    "cre92_sessionstatus@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Session status display value"
+    },
+    "cre92_sessiontype": {
+      "type": ["integer", "null"],
+      "description": "Session type option set (1=Therapy)"
+    },
+    "cre92_sessiontype@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Session type display value"
+    },
+    "cre92_fee": {
+      "type": ["number", "null"],
+      "description": "Session fee amount"
+    },
+    "cre92_paymentsource": {
+      "type": ["integer", "null"],
+      "description": "Payment source (1=Stripe Direct)"
+    },
+    "cre92_paymentsource@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Payment source display value"
+    },
+    "cre92_paymentstatus": {
+      "type": ["integer", "null"],
+      "description": "Payment status (1=Paid, 2=Pending, 3=Failed)"
+    },
+    "cre92_paymentstatus@OData.Community.Display.V1.FormattedValue": {
+      "type": ["string", "null"],
+      "description": "Payment status display value"
+    },
+    "cre92_clientsessionnote": {
+      "type": ["string", "null"],
+      "description": "SOAP clinical note (HTML content)"
+    },
+    "cre92_clientsessionsummary": {
+      "type": ["string", "null"],
+      "description": "Client-facing session summary (HTML content)"
+    },
+    "cre92_clientsessiontranscript": {
+      "type": ["string", "null"],
+      "description": "Session transcript (HTML content)"
+    },
+    "cre92_clientsessionscaffold": {
+      "type": ["string", "null"],
+      "description": "Structured session scaffold (HTML content)"
+    },
+    "cre92_notefinalized": {
+      "type": ["boolean", "null"],
+      "description": "Whether the clinical note is finalized"
+    },
+    "cre92_clientsummarysent": {
+      "type": ["boolean", "null"],
+      "description": "Whether the client summary has been sent"
+    },
+    "cre92_transcriptprocessed": {
+      "type": ["boolean", "null"],
+      "description": "Whether the transcript has been processed"
+    },
+    "cre92_notes": {
+      "type": ["string", "null"],
+      "description": "Additional session notes"
+    },
+    "statecode": {
+      "type": ["integer", "null"],
+      "description": "Record status (0=Active, 1=Inactive)"
+    },
+    "statuscode": {
+      "type": ["integer", "null"],
+      "description": "Status reason code"
+    },
+    "createdon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record creation timestamp"
+    },
+    "modifiedon": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record last modified timestamp"
+    },
+    "_ownerid_value": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Owner of the record"
+    }
+  },
+  "additionalProperties": true
+}

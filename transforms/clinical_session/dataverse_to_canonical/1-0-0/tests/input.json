@@ -1,0 +1,15 @@
+{
+  "appointmentid": "session-12345-67890",
+  "scheduledstart": "2024-03-15T09:00:00Z",
+  "scheduledend": "2024-03-15T10:00:00Z",
+  "actualstart": "2024-03-15T09:05:00Z",
+  "actualend": "2024-03-15T10:02:00Z",
+  "subject": "Weekly Therapy Session",
+  "description": "Regular weekly session to discuss progress and goals.",
+  "statuscode": 2,
+  "_ben_contactid_value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "_ben_sessiontype_value": "Individual Therapy",
+  "scheduleddurationminutes": 60,
+  "createdon": "2024-03-01T08:00:00Z",
+  "modifiedon": "2024-03-15T10:05:00Z"
+}

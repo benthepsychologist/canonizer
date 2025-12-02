@@ -1,0 +1,316 @@
+aip_id: AIP-canonizer-2025-12-02-001
+context:
+  background: 'The canonizer library is a pure JSON transformation engine. We have working transforms
+    for:
+
+    - Gmail → JMAP email (full, lite, minimal)
+
+    - Exchange → JMAP email (full, lite, minimal)
+
+    - Google Forms → canonical form_response
+
+
+    We need to add support for:
+
+    - **Dataverse**: CRM data from Microsoft Dynamics (contacts, clinical sessions, reports)
+
+    - **Stripe**: Billing data (customers, invoices, payments, refunds)
+
+
+    Bare `.jsonata` files exist for Dataverse but need proper versioning.
+
+    Nothing exists for Stripe yet.'
+  constraints:
+  - Transforms must be pure functions (no I/O)
+  - All transforms need input/output schema validation
+  - Checksums required in meta.yaml
+  - Tests required for each transform
+created: '2025-12-02T11:55:47.073839+00:00'
+meta:
+  created_at: '2025-12-02T11:55:47.073839+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - Dataverse source schemas created (contact, session, report)
+  - Dataverse canonical schemas created (contact, clinical_session, clinical_report)
+  - Dataverse transforms versioned with tests
+  - Stripe source schemas created (customer, invoice, payment_intent, refund)
+  - Stripe canonical schemas created (customer, invoice, payment, refund)
+  - Stripe transforms created with tests
+  - All transforms pass validation
+  - CI green (lint + unit)
+  goal: Add source schemas, canonical schemas, and transforms for Dataverse and Stripe data sources
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-12-02-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Research FHIR Standards
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - artifacts/phase1/fhir-mapping-research.md
+  prompt: 'Research FHIR R4 resources relevant to our Dataverse entities:
+
+    - FHIR Patient → contact
+
+    - FHIR Encounter → clinical_session
+
+    - FHIR DocumentReference → clinical_report
+
+    Document which FHIR fields map to our needs and which we''ll simplify.
+
+    We''re not implementing full FHIR - just borrowing sensible field names and structures.'
+  role: coding_agent
+  step_id: step-001
+- description: Create Dataverse Source Schemas
+  kind: code
+  outputs:
+  - schemas/com.microsoft/dataverse_contact/jsonschema/1-0-0.json
+  - schemas/com.microsoft/dataverse_session/jsonschema/1-0-0.json
+  - schemas/com.microsoft/dataverse_report/jsonschema/1-0-0.json
+  prompt: 'Create source schemas based on actual Dataverse API response structures.
+
+    Look at sample ingested data from lorchestra''s raw_objects table or Dataverse API docs.
+
+    Create:
+
+    - `schemas/com.microsoft/dataverse_contact/jsonschema/1-0-0.json`
+
+    - `schemas/com.microsoft/dataverse_session/jsonschema/1-0-0.json`
+
+    - `schemas/com.microsoft/dataverse_report/jsonschema/1-0-0.json`'
+  role: coding_agent
+  step_id: step-002
+- description: Create Dataverse Canonical Schemas
+  kind: code
+  outputs:
+  - schemas/org.canonical/contact/jsonschema/1-0-0.json
+  - schemas/org.canonical/clinical_session/jsonschema/1-0-0.json
+  - schemas/org.canonical/clinical_report/jsonschema/1-0-0.json
+  prompt: 'Create canonical output schemas. Use FHIR-inspired field names where sensible.
+
+    These define the fields OUR downstream systems depend on.
+
+    Create:
+
+    - `schemas/org.canonical/contact/jsonschema/1-0-0.json`
+
+    - `schemas/org.canonical/clinical_session/jsonschema/1-0-0.json`
+
+    - `schemas/org.canonical/clinical_report/jsonschema/1-0-0.json`'
+  role: coding_agent
+  step_id: step-003
+- description: Version Contact Transform
+  kind: code
+  outputs:
+  - transforms/contact/dataverse_to_canonical/1.0.0/spec.jsonata
+  - transforms/contact/dataverse_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/contact/dataverse_to_canonical/1.0.0/tests/input.json
+  - transforms/contact/dataverse_to_canonical/1.0.0/tests/expected.json
+  prompt: 'Convert existing `transforms/contact/dataverse_contact_to_canonical_v1.jsonata` to proper versioned
+    structure.
+
+    Create:
+
+    - `transforms/contact/dataverse_to_canonical/1.0.0/spec.jsonata`
+
+    - `transforms/contact/dataverse_to_canonical/1.0.0/spec.meta.yaml`
+
+    - `transforms/contact/dataverse_to_canonical/1.0.0/tests/input.json`
+
+    - `transforms/contact/dataverse_to_canonical/1.0.0/tests/expected.json`
+
+    Calculate SHA256 checksum for spec.jsonata and include in meta.yaml.'
+  role: coding_agent
+  step_id: step-004
+- description: Version Clinical Session Transform
+  kind: code
+  outputs:
+  - transforms/clinical_session/dataverse_to_canonical/1.0.0/spec.jsonata
+  - transforms/clinical_session/dataverse_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/clinical_session/dataverse_to_canonical/1.0.0/tests/input.json
+  - transforms/clinical_session/dataverse_to_canonical/1.0.0/tests/expected.json
+  prompt: Convert existing `transforms/clinical_session/dataverse_session_to_canonical_v1.jsonata` to
+    proper versioned structure.
+  role: coding_agent
+  step_id: step-005
+- description: Version Report Transform
+  kind: code
+  outputs:
+  - transforms/report/dataverse_to_canonical/1.0.0/spec.jsonata
+  - transforms/report/dataverse_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/report/dataverse_to_canonical/1.0.0/tests/input.json
+  - transforms/report/dataverse_to_canonical/1.0.0/tests/expected.json
+  prompt: Convert existing `transforms/report/dataverse_report_to_canonical_v1.jsonata` to proper versioned
+    structure.
+  role: coding_agent
+  step_id: step-006
+- description: Test Dataverse Transforms
+  kind: code
+  outputs:
+  - artifacts/phase1/dataverse-transform-tests.md
+  prompt: Run transform validation and tests for all Dataverse transforms.
+  role: coding_agent
+  step_id: step-007
+- description: Research Financial Standards
+  kind: code
+  outputs:
+  - artifacts/phase2/financial-standards-research.md
+  prompt: 'Research standards for financial/billing data:
+
+    - ISO 20022 payment concepts
+
+    - OpenFinance/Open Banking patterns
+
+    - Common invoice schema patterns
+
+    Document which concepts apply to our Stripe data and which fields we need.'
+  role: coding_agent
+  step_id: step-008
+- description: Create Stripe Source Schemas
+  kind: code
+  outputs:
+  - schemas/com.stripe/customer/jsonschema/1-0-0.json
+  - schemas/com.stripe/invoice/jsonschema/1-0-0.json
+  - schemas/com.stripe/payment_intent/jsonschema/1-0-0.json
+  - schemas/com.stripe/refund/jsonschema/1-0-0.json
+  prompt: 'Create source schemas based on Stripe API response structures.
+
+    Reference: https://stripe.com/docs/api
+
+    Create:
+
+    - `schemas/com.stripe/customer/jsonschema/1-0-0.json`
+
+    - `schemas/com.stripe/invoice/jsonschema/1-0-0.json`
+
+    - `schemas/com.stripe/payment_intent/jsonschema/1-0-0.json`
+
+    - `schemas/com.stripe/refund/jsonschema/1-0-0.json`'
+  role: coding_agent
+  step_id: step-009
+- description: Create Stripe Canonical Schemas
+  kind: code
+  outputs:
+  - schemas/org.canonical/customer/jsonschema/1-0-0.json
+  - schemas/org.canonical/invoice/jsonschema/1-0-0.json
+  - schemas/org.canonical/payment/jsonschema/1-0-0.json
+  - schemas/org.canonical/refund/jsonschema/1-0-0.json
+  prompt: 'Create canonical output schemas for billing data.
+
+    These define the fields OUR downstream systems depend on.
+
+    Create:
+
+    - `schemas/org.canonical/customer/jsonschema/1-0-0.json`
+
+    - `schemas/org.canonical/invoice/jsonschema/1-0-0.json`
+
+    - `schemas/org.canonical/payment/jsonschema/1-0-0.json`
+
+    - `schemas/org.canonical/refund/jsonschema/1-0-0.json`'
+  role: coding_agent
+  step_id: step-010
+- description: Create Customer Transform
+  kind: code
+  outputs:
+  - transforms/customer/stripe_to_canonical/1.0.0/spec.jsonata
+  - transforms/customer/stripe_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/customer/stripe_to_canonical/1.0.0/tests/input.json
+  - transforms/customer/stripe_to_canonical/1.0.0/tests/expected.json
+  prompt: Create Stripe customer to canonical customer transform.
+  role: coding_agent
+  step_id: step-011
+- description: Create Invoice Transform
+  kind: code
+  outputs:
+  - transforms/invoice/stripe_to_canonical/1.0.0/spec.jsonata
+  - transforms/invoice/stripe_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/invoice/stripe_to_canonical/1.0.0/tests/input.json
+  - transforms/invoice/stripe_to_canonical/1.0.0/tests/expected.json
+  prompt: Create Stripe invoice to canonical invoice transform.
+  role: coding_agent
+  step_id: step-012
+- description: Create Payment Transform
+  kind: code
+  outputs:
+  - transforms/payment/stripe_to_canonical/1.0.0/spec.jsonata
+  - transforms/payment/stripe_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/payment/stripe_to_canonical/1.0.0/tests/input.json
+  - transforms/payment/stripe_to_canonical/1.0.0/tests/expected.json
+  prompt: Create Stripe payment_intent to canonical payment transform.
+  role: coding_agent
+  step_id: step-013
+- description: Create Refund Transform
+  kind: code
+  outputs:
+  - transforms/refund/stripe_to_canonical/1.0.0/spec.jsonata
+  - transforms/refund/stripe_to_canonical/1.0.0/spec.meta.yaml
+  - transforms/refund/stripe_to_canonical/1.0.0/tests/input.json
+  - transforms/refund/stripe_to_canonical/1.0.0/tests/expected.json
+  prompt: Create Stripe refund to canonical refund transform.
+  role: coding_agent
+  step_id: step-014
+- description: Test Stripe Transforms
+  kind: code
+  outputs:
+  - artifacts/phase2/stripe-transform-tests.md
+  prompt: Run transform validation and tests for all Stripe transforms.
+  role: coding_agent
+  step_id: step-015
+- description: Run Full Test Suite
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - artifacts/phase3/test-results.md
+  prompt: Run the complete test suite to verify all transforms work correctly.
+  role: coding_agent
+  step_id: step-016
+- description: Clean Up Old Files
+  kind: code
+  outputs:
+  - artifacts/phase3/cleanup-complete.md
+  prompt: 'Remove the old unversioned .jsonata files that have been replaced:
+
+    - `transforms/contact/dataverse_contact_to_canonical_v1.jsonata`
+
+    - `transforms/clinical_session/dataverse_session_to_canonical_v1.jsonata`
+
+    - `transforms/report/dataverse_report_to_canonical_v1.jsonata`'
+  role: coding_agent
+  step_id: step-017
+- description: Final Validation
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  outputs:
+  - artifacts/phase3/final-validation.md
+  prompt: Final validation and documentation.
+  role: coding_agent
+  step_id: step-018
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/dataverse-and-stripe-schemas
+spec_version: 1.0.0
+tier: C
+title: Dataverse and Stripe Schemas
+updated: '2025-12-02T11:55:47.073839+00:00'
+version: '0.1'
+

@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Contact",
+  "description": "Canonical contact/patient schema with FHIR Patient-inspired naming. Represents an individual receiving services. Use for: CRM integrations, patient management, contact directories.",
+  "type": "object",
+  "required": ["id", "name", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the contact",
+      "examples": ["contact-abc123"]
+    },
+    "identifier": {
+      "type": ["string", "null"],
+      "description": "External/business identifier (e.g., CON-113J6H7J2114)",
+      "examples": ["CON-113J6H7J2114"]
+    },
+    "name": {
+      "$ref": "#/definitions/humanName",
+      "description": "Name of the contact (FHIR HumanName inspired)"
+    },
+    "telecom": {
+      "$ref": "#/definitions/telecom",
+      "description": "Contact details (email, phone, mobile)"
+    },
+    "birthDate": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date of birth (FHIR Patient.birthDate)",
+      "examples": ["1985-03-15"]
+    },
+    "address": {
+      "$ref": "#/definitions/address",
+      "description": "Primary address (FHIR Address simplified)"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether this contact record is in active use",
+      "default": true,
+      "examples": [true]
+    },
+    "lifecycleStage": {
+      "type": ["string", "null"],
+      "enum": ["prospect", "onboarding", "active", "paused", "terminated", null],
+      "description": "Client lifecycle stage in the practice",
+      "examples": ["active"]
+    },
+    "clientType": {
+      "type": ["string", "null"],
+      "description": "Type of client (e.g., therapy)",
+      "examples": ["therapy"]
+    },
+    "region": {
+      "type": ["string", "null"],
+      "description": "Geographic region for the client",
+      "examples": ["Northeast"]
+    },
+    "billing": {
+      "$ref": "#/definitions/billing",
+      "description": "Billing-related information"
+    },
+    "links": {
+      "$ref": "#/definitions/links",
+      "description": "External links and resources"
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Metadata about this record"
+    }
+  },
+  "definitions": {
+    "humanName": {
+      "type": "object",
+      "description": "A human's name with given and family parts (FHIR HumanName simplified)",
+      "properties": {
+        "given": {
+          "type": ["string", "null"],
+          "description": "Given name (first name)",
+          "examples": ["John"]
+        },
+        "family": {
+          "type": ["string", "null"],
+          "description": "Family name (last name)",
+          "examples": ["Smith"]
+        },
+        "text": {
+          "type": ["string", "null"],
+          "description": "Full name as a single string",
+          "examples": ["John Smith"]
+        }
+      }
+    },
+    "telecom": {
+      "type": "object",
+      "description": "Contact details for communication",
+      "properties": {
+        "email": {
+          "type": ["string", "null"],
+          "format": "email",
+          "description": "Primary email address",
+          "examples": ["john.smith@example.com"]
+        },
+        "emailSecondary": {
+          "type": ["string", "null"],
+          "format": "email",
+          "description": "Secondary email address",
+          "examples": ["john.smith.work@example.com"]
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "description": "Primary phone number",
+          "examples": ["+1-555-123-4567"]
+        },
+        "mobile": {
+          "type": ["string", "null"],
+          "description": "Mobile phone number",
+          "examples": ["+1-555-987-6543"]
+        }
+      }
+    },
+    "address": {
+      "type": "object",
+      "description": "Physical address (FHIR Address simplified)",
+      "properties": {
+        "line": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Street address lines",
+          "examples": [["123 Main Street", "Apt 4B"]]
+        },
+        "city": {
+          "type": ["string", "null"],
+          "description": "City/town",
+          "examples": ["Springfield"]
+        },
+        "state": {
+          "type": ["string", "null"],
+          "description": "State/province/region",
+          "examples": ["IL"]
+        },
+        "postalCode": {
+          "type": ["string", "null"],
+          "description": "Postal/ZIP code",
+          "examples": ["62701"]
+        },
+        "country": {
+          "type": ["string", "null"],
+          "description": "Country",
+          "examples": ["USA"]
+        }
+      }
+    },
+    "billing": {
+      "type": "object",
+      "description": "Billing-related information for the contact",
+      "properties": {
+        "currentFee": {
+          "type": ["number", "null"],
+          "description": "Current session fee",
+          "examples": [150.00]
+        },
+        "paymentSource": {
+          "type": ["string", "null"],
+          "description": "Primary payment source",
+          "examples": ["stripe"]
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "description": "External links and resources",
+      "properties": {
+        "sharedFolder": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL to shared folder (e.g., SharePoint)",
+          "examples": ["https://sharepoint.com/sites/client-docs/John-Smith"]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Record metadata for audit and provenance",
+      "properties": {
+        "createdAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was created",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the record was last updated",
+          "examples": ["2024-01-15T14:22:00Z"]
+        },
+        "source": {
+          "type": "object",
+          "description": "Data provenance",
+          "properties": {
+            "system": {
+              "type": "string",
+              "description": "Source system identifier",
+              "examples": ["dataverse"]
+            },
+            "version": {
+              "type": "string",
+              "description": "Transform version used",
+              "examples": ["1.0.0"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
