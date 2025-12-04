@@ -1,0 +1,21 @@
+{
+  "source_id": "session-12345-67890",
+  "source_entity": "cre92_clientsession",
+  "session_id": "session-12345-67890",
+  "scheduled_start": "2024-03-15T09:00:00Z",
+  "scheduled_end": "2024-03-15T10:00:00Z",
+  "actual_start": "2024-03-15T09:05:00Z",
+  "actual_end": "2024-03-15T10:02:00Z",
+  "subject": "Weekly Therapy Session",
+  "description": "Regular weekly session to discuss progress and goals.",
+  "status": "completed",
+  "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "session_type": "Individual Therapy",
+  "duration_minutes": 60,
+  "created_at": "2024-03-01T08:00:00Z",
+  "updated_at": "2024-03-15T10:05:00Z",
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v2"
+  }
+}

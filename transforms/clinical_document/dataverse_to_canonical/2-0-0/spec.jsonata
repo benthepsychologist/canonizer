@@ -4,6 +4,9 @@
   $contentText := $rawContent != null ? $htmlToMarkdown($rawContent) : null;
 
   {
+    "source_id": cre92_clientreportid ? cre92_clientreportid : annotationid,
+    "source_entity": cre92_clientreportid ? "cre92_clientreport" : "annotation",
+    "session_source_id": `_cre92_session_value`,
     "document_id": $string(
       cre92_clientreportid ? cre92_clientreportid : (reportid ? reportid : annotationid)
     ),
@@ -30,7 +33,7 @@
     "updated_at": modifiedon,
     "source": {
       "platform": "dataverse",
-      "platform_version": "v1"
+      "platform_version": "v2"
     }
   }
 )

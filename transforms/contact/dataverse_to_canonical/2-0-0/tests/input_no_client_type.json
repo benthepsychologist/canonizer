@@ -1,0 +1,20 @@
+{
+  "contactid": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "fullname": "Jane Smith",
+  "emailaddress1": "jane.smith@example.com",
+  "telephone1": "+1-555-222-3333",
+  "mobilephone": null,
+  "birthdate": "1990-07-22",
+  "address1_line1": "456 Oak Avenue",
+  "address1_line2": null,
+  "address1_city": "Portland",
+  "address1_stateorprovince": "OR",
+  "address1_postalcode": "97201",
+  "address1_country": "USA",
+  "statecode": 0,
+  "statuscode": 1,
+  "createdon": "2024-02-10T09:00:00Z",
+  "modifiedon": "2024-02-10T09:00:00Z"
+}

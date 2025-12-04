@@ -1,0 +1,32 @@
+id: session_transcript/dataverse_to_canonical
+version: 2-0-0
+engine: jsonata
+runtime: node
+extensions:
+  - name: htmlToMarkdown
+    impl: canonizer.extensions.html_to_markdown@1.0.0
+
+from_schema: iglu:com.microsoft/dataverse_session/jsonschema/1-0-0
+to_schema: iglu:org.canonical/session_transcript/jsonschema/2-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: ""
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2025-12-04T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform Dataverse Session entity to canonical session_transcript format (v2).
+  Extracts transcript from cre92_clientsessiontranscript and converts HTML to Markdown.
+  Only produces output if transcript content exists.
+  Adds source_id (synthetic: {session_source_id}#transcript-v1), source_entity ("synthetic:transcript"),
+  and session_source_id for linking back to clinical_session.source_id.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

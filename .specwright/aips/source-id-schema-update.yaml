@@ -1,0 +1,197 @@
+aip_id: AIP-canonizer-2025-12-04-001
+context:
+  background: 'We need writeback capability from local projections back to Dataverse. The canonical layer
+    currently strips the source system IDs during transformation, making it impossible to update the original
+    records.
+
+
+    Additionally, we need `client_type` on contacts to filter therapy clients from other contact types
+    (supervisors, vendors, etc.). This filtering is a **projection concern**, not a canonical concern—canonical
+    stores both the raw code and label, and projections decide what to surface.'
+  constraints: []
+created: '2025-12-04T15:00:00+00:00'
+meta:
+  created_at: '2025-12-04T15:00:00+00:00'
+  created_by: benthepsychologist
+objective:
+  acceptance_criteria:
+  - '`contact` schema 2-0-0 includes `source_id`, `source_entity`, `client_type_code`, and `client_type_label`'
+  - '`clinical_session` schema 2-0-0 includes `source_id` and `source_entity`'
+  - '`clinical_document` schema 2-0-0 includes `source_id`, `source_entity`, and `session_source_id`'
+  - '`session_transcript` schema 2-0-0 includes `source_id`, `source_entity`, and `session_source_id`'
+  - All transforms updated to 2-0-0 and populate new fields
+  - Lorchestra job definitions updated to use 2-0-0 schemas
+  - All affected records re-canonized
+  - CI green (ruff + pytest)
+  goal: Add source_id and client_type to canonical schemas for writeback support
+orchestrator_contract:
+  artifacts_dir: .aip_artifacts/AIP-canonizer-2025-12-04-001
+  logging: jsonl
+  state_machine:
+    events:
+    - run_step
+    - await_gate
+    - approve
+    - reject
+    - retry
+    - escalate
+    - complete
+    states:
+    - pending
+    - running
+    - awaiting_human
+    - failed
+    - succeeded
+    - rolled_back
+plan:
+- description: Update Contact Schema and Transform
+  gate_ref: 'G0: Plan Approval'
+  kind: code
+  outputs:
+  - schemas/org.canonical/contact/jsonschema/2-0-0.json
+  - transforms/contact/dataverse_to_canonical/2-0-0/spec.jsonata
+  - transforms/contact/dataverse_to_canonical/2-0-0/spec.meta.yaml
+  - transforms/contact/dataverse_to_canonical/2-0-0/tests/input.json
+  - transforms/contact/dataverse_to_canonical/2-0-0/tests/expected.json
+  prompt: "Create `schemas/org.canonical/contact/jsonschema/2-0-0.json`:\n- Copy from 1-0-0\n- Add `source_id`\
+    \ (string, required) - the Dataverse `contactid`\n- Add `source_entity` (string, required) - always\
+    \ `\"contact\"` for this schema\n- Add `client_type_code` (string, nullable) - raw value from `cre92_clienttype`\n\
+    - Add `client_type_label` (string, nullable) - from `cre92_clienttype@OData.Community.Display.V1.FormattedValue`\n\
+    Create `transforms/contact/dataverse_to_canonical/2-0-0/`:\n- Copy from 1-0-0\n- Update `spec.jsonata`\
+    \ to include:\n  ```jsonata\n  \"source_id\": contactid,\n  \"source_entity\": \"contact\",\n  \"\
+    client_type_code\": $string(cre92_clienttype),\n  \"client_type_label\": `cre92_clienttype@OData.Community.Display.V1.FormattedValue`\n\
+    \  ```\n- Update `spec.meta.yaml` with new version and to_schema\n- Ensure tests cover the \"no client\
+    \ type set\" scenario (both fields should be null)"
+  role: coding_agent
+  step_id: step-001
+- description: Update Clinical Session Schema and Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - schemas/org.canonical/clinical_session/jsonschema/2-0-0.json
+  - transforms/clinical_session/dataverse_to_canonical/2-0-0/spec.jsonata
+  - transforms/clinical_session/dataverse_to_canonical/2-0-0/spec.meta.yaml
+  - transforms/clinical_session/dataverse_to_canonical/2-0-0/tests/
+  prompt: "Create `schemas/org.canonical/clinical_session/jsonschema/2-0-0.json`:\n- Copy from 1-0-0\n\
+    - Add `source_id` (string, required) - the Dataverse `cre92_clientsessionid`\n- Add `source_entity`\
+    \ (string, required) - always `\"cre92_clientsession\"` for this schema\nCreate `transforms/clinical_session/dataverse_to_canonical/2-0-0/`:\n\
+    - Copy from 1-0-0\n- Update `spec.jsonata`:\n  ```jsonata\n  \"source_id\": cre92_clientsessionid,\n\
+    \  \"source_entity\": \"cre92_clientsession\",\n  \"session_id\": cre92_clientsessionid\n  ```\n-\
+    \ Update `spec.meta.yaml`\n**Note on session_id vs source_id:** Both fields hold the same value (`cre92_clientsessionid`)\
+    \ for Dataverse-derived sessions. `session_id` is the canonical session identifier; `source_id` is\
+    \ the upstream primary key. For this source system, they are identical. For a future EHR source, `session_id`\
+    \ might equal `source_id`, but `source_entity` would differ."
+  role: coding_agent
+  step_id: step-002
+- description: Update Clinical Document Schema and Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - schemas/org.canonical/clinical_document/jsonschema/2-0-0.json
+  - transforms/clinical_document/dataverse_to_canonical/2-0-0/spec.jsonata
+  - transforms/clinical_document/dataverse_to_canonical/2-0-0/spec.meta.yaml
+  - transforms/clinical_document/dataverse_to_canonical/2-0-0/tests/
+  prompt: "Create `schemas/org.canonical/clinical_document/jsonschema/2-0-0.json`:\n- Copy from 1-0-0\n\
+    - Add `source_id` (string, required) - the Dataverse report/annotation ID\n- Add `source_entity` (string,\
+    \ required) - `\"cre92_clientreport\"` or `\"annotation\"`\n- Add `session_source_id` (string, required)\
+    \ - the parent session's `cre92_clientsessionid`\nCreate `transforms/clinical_document/dataverse_to_canonical/2-0-0/`:\n\
+    - Update `spec.jsonata`:\n  ```jsonata\n  \"source_id\": cre92_clientreportid ? cre92_clientreportid\
+    \ : annotationid,\n  \"source_entity\": cre92_clientreportid ? \"cre92_clientreport\" : \"annotation\"\
+    ,\n  \"session_source_id\": `_cre92_session_value`\n  ```\n**source_entity enables writeback:** With\
+    \ `source_entity`, you know which upstream table to target. Without it, you'd have to infer entity\
+    \ type from shape or feed—fragile.\n**session_source_id is required:** If every document you care\
+    \ about is session-attached, make this required and let upstream validation fail loudly on data quality\
+    \ issues.\n**Join pattern:** `clinical_document.session_source_id` → `clinical_session.source_id`"
+  role: coding_agent
+  step_id: step-003
+- description: Update Session Transcript Schema and Transform
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  outputs:
+  - schemas/org.canonical/session_transcript/jsonschema/2-0-0.json
+  - transforms/session_transcript/dataverse_to_canonical/2-0-0/
+  prompt: "Create `schemas/org.canonical/session_transcript/jsonschema/2-0-0.json`:\n- Copy from 1-0-0\n\
+    - Add `source_id` (string, required) - synthetic, stable key in the transcript namespace\n- Add `source_entity`\
+    \ (string, required) - always `\"synthetic:transcript\"` for this schema\n- Add `session_source_id`\
+    \ (string, required) - the parent session's `cre92_clientsessionid`\n**source_id semantics:** Transcripts\
+    \ are not real upstream Dataverse records—they are synthesized (one transcript per session). The `source_id`\
+    \ is a **synthetic, stable key**: `{session_source_id}#transcript-v1`. The `source_entity` of `\"\
+    synthetic:transcript\"` makes it explicit this is not a real Dataverse record.\nCreate `transforms/session_transcript/dataverse_to_canonical/2-0-0/`\
+    \ if it doesn't exist, or update existing:\n  ```jsonata\n  (\n    $sid := cre92_clientsessionid;\n\
+    \    {\n      \"session_source_id\": $sid,\n      \"source_id\": $sid & \"#transcript-v1\",\n    \
+    \  \"source_entity\": \"synthetic:transcript\"\n    }\n  )\n  ```\n**Join pattern:** `session_transcript.session_source_id`\
+    \ → `clinical_session.source_id`"
+  role: coding_agent
+  step_id: step-004
+- description: Update Lorchestra Job Definitions
+  gate_ref: 'G1: Code Readiness'
+  kind: code
+  prompt: 'Update job definitions in `/workspace/lorchestra/lorchestra/jobs/definitions/` to use 2-0-0
+    schemas:
+
+    - `canonize_dataverse_contacts.json`: schema_out → `iglu:org.canonical/contact/jsonschema/2-0-0`
+
+    - `canonize_dataverse_sessions.json`: schema_out → `iglu:org.canonical/clinical_session/jsonschema/2-0-0`
+
+    - `canonize_dataverse_reports.json`: schema_out → `iglu:org.canonical/clinical_document/jsonschema/2-0-0`
+
+    - Any transcript jobs: schema_out → `iglu:org.canonical/session_transcript/jsonschema/2-0-0`
+
+    Also update transform_ref to point to 2-0-0 transforms.'
+  role: coding_agent
+  step_id: step-005
+- description: Run Tests and Lint Checks
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  prompt: 'Run canonizer tests to verify transforms work:
+
+    ```bash
+
+    cd /workspace/canonizer
+
+    pytest tests/ -v
+
+    ```
+
+    Verify each 2-0-0 transform produces expected output with source_id fields.'
+  role: coding_agent
+  step_id: step-006
+- description: Re-canonize All Records
+  gate_ref: 'G2: Pre-Release'
+  kind: code
+  prompt: 'Run re-canonization jobs in lorchestra for all affected record types:
+
+    ```bash
+
+    # Contacts
+
+    lorchestra run canonize_dataverse_contacts
+
+    # Sessions
+
+    lorchestra run canonize_dataverse_sessions
+
+    # Documents/Reports
+
+    lorchestra run canonize_dataverse_reports
+
+    # Transcripts (if separate job exists)
+
+    lorchestra run canonize_dataverse_transcripts
+
+    ```
+
+    Verify records in BQ now have `source_id` populated in payload.'
+  role: coding_agent
+  step_id: step-007
+project_slug: canonizer
+repo:
+  default_branch: main
+  url: git@github.com:benthepsychologist/canonizer.git
+  working_branch: feat/source-id-2-0-0
+spec_version: 1.1.0
+tier: C
+title: Source ID Schema Update (2-0-0)
+updated: '2025-12-04T16:00:00+00:00'
+version: '0.1'
+

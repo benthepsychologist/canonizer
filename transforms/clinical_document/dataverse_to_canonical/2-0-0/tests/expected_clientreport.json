@@ -1,0 +1,22 @@
+{
+  "source_id": "report-abc-123",
+  "source_entity": "cre92_clientreport",
+  "session_source_id": "session-qpr-789",
+  "document_id": "report-abc-123",
+  "title": "Quarterly Progress Report",
+  "document_type": "Progress Report",
+  "document_date": "2024-06-01T00:00:00Z",
+  "content": {
+    "text": "# Progress Report\n\nClient has made significant progress over the quarter.",
+    "format": "markdown"
+  },
+  "contact_id": "client-xyz-456",
+  "session_id": "session-qpr-789",
+  "status": "final",
+  "created_at": "2024-06-01T14:00:00Z",
+  "updated_at": "2024-06-01T15:30:00Z",
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v2"
+  }
+}

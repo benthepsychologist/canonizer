@@ -104,7 +104,7 @@
     },
     "cancellation_reason": {
       "type": ["string", "null"],
-      "enum": ["duplicate", "fraudulent", "requested_by_customer", "abandoned", null],
+      "enum": ["duplicate", "fraudulent", "requested_by_customer", "abandoned", "automatic", "void_invoice", null],
       "description": "Reason for cancellation"
     },
     "last_payment_error": {

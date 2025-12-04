@@ -564,20 +564,27 @@ def sync(
         transforms_failed = 0
 
         # Sync schemas
+        registry_dir = canonizer_root / "registry"
         if lock.schemas:
             console.print(f"\n[bold cyan]Syncing {len(lock.schemas)} schemas...[/bold cyan]")
             for schema_ref, entry in lock.schemas.items():
-                local_path = canonizer_root / entry.path
+                # entry.path is relative to registry/ dir, e.g. "schemas/com.google/..."
+                local_path = registry_dir / entry.path
                 expected_hash = entry.hash
 
-                # Check if already exists and matches
+                # Check if already exists
                 if local_path.exists():
                     with open(local_path) as f:
                         content = f.read()
                     computed_hash = f"sha256:{hashlib.sha256(content.encode()).hexdigest()}"
                     if computed_hash == expected_hash:
-                        console.print(f"  [dim]⊘[/dim] {schema_ref} (up to date)")
-                        schemas_skipped += 1
+                        console.print(f"  [green]✓[/green] {schema_ref}")
+                        schemas_synced += 1
+                        continue
+                    else:
+                        # Local file exists but hash mismatch - treat as local-only schema
+                        console.print(f"  [yellow]⚠[/yellow] {schema_ref} (local, hash differs)")
+                        schemas_synced += 1
                         continue
 
                 # Fetch from remote
@@ -606,7 +613,9 @@ def sync(
         if lock.transforms:
             console.print(f"\n[bold cyan]Syncing {len(lock.transforms)} transforms...[/bold cyan]")
             for transform_ref, entry in lock.transforms.items():
-                local_dir = canonizer_root / entry.path
+                # entry.path points to spec.meta.yaml relative to registry/, get parent directory
+                entry_path = Path(entry.path)
+                local_dir = registry_dir / entry_path.parent
                 expected_hash = entry.hash
 
                 # Check if already exists and matches
@@ -615,9 +624,18 @@ def sync(
                     content = jsonata_path.read_bytes()
                     computed_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
                     if computed_hash == expected_hash:
-                        console.print(f"  [dim]⊘[/dim] {transform_ref} (up to date)")
-                        transforms_skipped += 1
+                        console.print(f"  [green]✓[/green] {transform_ref}")
+                        transforms_synced += 1
                         continue
+                    else:
+                        # Local file exists but hash mismatch - check if it's a local-only transform
+                        # (i.e., not from the remote registry)
+                        meta_path = local_dir / "spec.meta.yaml"
+                        if meta_path.exists():
+                            # Transform exists locally, just update the lock hash
+                            console.print(f"  [yellow]⚠[/yellow] {transform_ref} (local, hash updated)")
+                            transforms_synced += 1
+                            continue
 
                 # Parse transform ref
                 if "@" not in transform_ref:
@@ -626,6 +644,14 @@ def sync(
                     continue
 
                 transform_id, version = transform_ref.rsplit("@", 1)
+
+                # Check if transform exists locally even if not in lock
+                meta_path = local_dir / "spec.meta.yaml"
+                if meta_path.exists() and jsonata_path.exists():
+                    # Local-only transform, mark as synced
+                    console.print(f"  [green]✓[/green] {transform_ref} (local)")
+                    transforms_synced += 1
+                    continue
 
                 # Fetch from remote
                 try:
@@ -660,3 +686,190 @@ def sync(
     except Exception as e:
         console_err.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(code=1)
+
+
+@app.command()
+def lock(
+    transform_ref: str | None = typer.Argument(
+        None,
+        help="Transform to lock (format: <id>@<version>). If not specified, use --all.",
+    ),
+    all_local: bool = typer.Option(
+        False,
+        "--all",
+        "-a",
+        help="Lock all transforms found in local registry",
+    ),
+):
+    """
+    Add local transforms to lock.json.
+
+    Scans .canonizer/registry/transforms/ for transforms not in lock.json
+    and adds them with their current hashes.
+
+    Examples:
+        # Lock a specific transform
+        can registry lock clinical_session/dataverse_to_canonical@2-0-0
+
+        # Lock all local transforms
+        can registry lock --all
+    """
+    import hashlib
+    import yaml
+
+    try:
+        # Find .canonizer/ directory
+        try:
+            canonizer_root = find_canonizer_root(Path.cwd())
+        except CanonizerRootNotFoundError:
+            console_err.print(
+                "[red]Error:[/red] No .canonizer/ directory found. "
+                "Run 'canonizer init' first."
+            )
+            raise typer.Exit(code=1)
+
+        registry_dir = canonizer_root / "registry"
+        transforms_dir = registry_dir / "transforms"
+        schemas_dir = registry_dir / "schemas"
+
+        if not transforms_dir.exists():
+            console.print("[yellow]No transforms directory found.[/yellow]")
+            raise typer.Exit(code=0)
+
+        # Load lock file
+        lock_path = canonizer_root / "lock.json"
+        lockfile = LockFile.load(lock_path) if lock_path.exists() else LockFile.empty()
+
+        added_transforms = 0
+        added_schemas = 0
+
+        if transform_ref:
+            # Lock specific transform
+            if "@" not in transform_ref:
+                console_err.print("[red]Error:[/red] Transform ref must include version (e.g., id@version)")
+                raise typer.Exit(code=1)
+
+            transform_id, version = transform_ref.rsplit("@", 1)
+            transform_dir = transforms_dir / transform_id / version
+
+            if not transform_dir.exists():
+                console_err.print(f"[red]Error:[/red] Transform not found: {transform_dir}")
+                raise typer.Exit(code=1)
+
+            added_t, added_s = _lock_transform(
+                transform_id, version, transform_dir, lockfile, registry_dir, schemas_dir
+            )
+            added_transforms += added_t
+            added_schemas += added_s
+        elif all_local:
+            # Lock all local transforms
+            for category_dir in transforms_dir.iterdir():
+                if not category_dir.is_dir() or category_dir.name.startswith("."):
+                    continue
+
+                for transform_name_dir in category_dir.iterdir():
+                    if not transform_name_dir.is_dir():
+                        continue
+
+                    for version_dir in transform_name_dir.iterdir():
+                        if not version_dir.is_dir():
+                            continue
+
+                        transform_id = f"{category_dir.name}/{transform_name_dir.name}"
+                        version = version_dir.name
+
+                        added_t, added_s = _lock_transform(
+                            transform_id, version, version_dir, lockfile, registry_dir, schemas_dir
+                        )
+                        added_transforms += added_t
+                        added_schemas += added_s
+        else:
+            console_err.print("[red]Error:[/red] Specify a transform ref or use --all")
+            raise typer.Exit(code=1)
+
+        # Save lock file
+        if added_transforms > 0 or added_schemas > 0:
+            lockfile.save(lock_path)
+            console.print(f"\n[green]✓[/green] Updated lock.json")
+            console.print(f"  Added {added_transforms} transforms, {added_schemas} schemas")
+        else:
+            console.print("[yellow]No new transforms to lock.[/yellow]")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        console_err.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+def _lock_transform(
+    transform_id: str,
+    version: str,
+    transform_dir: Path,
+    lockfile: LockFile,
+    registry_dir: Path,
+    schemas_dir: Path,
+) -> tuple[int, int]:
+    """Lock a single transform and its schemas. Returns (transforms_added, schemas_added)."""
+    import hashlib
+    import yaml
+
+    from canonizer.local.lock import SchemaLock, TransformLock
+
+    added_transforms = 0
+    added_schemas = 0
+
+    transform_ref = f"{transform_id}@{version}"
+
+    # Check if already in lock
+    if transform_ref in lockfile.transforms:
+        console.print(f"  [dim]⊘[/dim] {transform_ref} (already locked)")
+        return 0, 0
+
+    meta_path = transform_dir / "spec.meta.yaml"
+    jsonata_path = transform_dir / "spec.jsonata"
+
+    if not meta_path.exists() or not jsonata_path.exists():
+        console.print(f"  [yellow]⚠[/yellow] {transform_ref} (missing files)")
+        return 0, 0
+
+    # Compute hash of spec.jsonata
+    jsonata_content = jsonata_path.read_bytes()
+    jsonata_hash = f"sha256:{hashlib.sha256(jsonata_content).hexdigest()}"
+
+    # Add to lock
+    rel_path = meta_path.relative_to(registry_dir)
+    lockfile.transforms[transform_ref] = TransformLock(path=str(rel_path), hash=jsonata_hash)
+    console.print(f"  [green]✓[/green] {transform_ref}")
+    added_transforms = 1
+
+    # Also lock referenced schemas
+    with open(meta_path) as f:
+        meta = yaml.safe_load(f)
+
+    for schema_ref in [meta.get("from_schema"), meta.get("to_schema")]:
+        if not schema_ref or schema_ref in lockfile.schemas:
+            continue
+
+        # Find schema file
+        schema_path = _schema_ref_to_path(schema_ref, schemas_dir)
+        if schema_path and schema_path.exists():
+            content = schema_path.read_bytes()
+            schema_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+            rel_path = schema_path.relative_to(registry_dir)
+            lockfile.schemas[schema_ref] = SchemaLock(path=str(rel_path), hash=schema_hash)
+            console.print(f"    [green]✓[/green] {schema_ref}")
+            added_schemas += 1
+
+    return added_transforms, added_schemas
+
+
+def _schema_ref_to_path(schema_ref: str, schemas_dir: Path) -> Path | None:
+    """Convert schema ref like 'iglu:com.google/gmail/jsonschema/1-0-0' to path."""
+    if not schema_ref.startswith("iglu:"):
+        return None
+
+    # iglu:com.google/gmail_email/jsonschema/1-0-0
+    # -> com.google/gmail_email/jsonschema/1-0-0.json
+    parts = schema_ref[5:]  # Remove "iglu:"
+    return schemas_dir / f"{parts}.json"

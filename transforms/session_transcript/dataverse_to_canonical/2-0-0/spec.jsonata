@@ -1,0 +1,42 @@
+(
+  /* Extract and convert transcript content from Dataverse session */
+  $transcriptHtml := cre92_clientsessiontranscript;
+  $transcriptMd := $transcriptHtml != null ? $htmlToMarkdown($transcriptHtml) : null;
+  $sid := $string(cre92_clientsessionid);
+
+  /* Only produce output if there's transcript content */
+  $transcriptMd != null ? {
+    "source_id": $sid & "#transcript-v1",
+    "source_entity": "synthetic:transcript",
+    "session_source_id": $sid,
+    "id": $sid & "-transcript",
+    "session": {
+      "reference": "clinical_session/" & $sid,
+      "type": "ClinicalSession"
+    },
+    "subject": {
+      "reference": "contact/" & $string(`_cre92_client_value`),
+      "type": "Contact"
+    },
+    "date": cre92_starttime,
+    "duration": cre92_duration ? cre92_duration * 60 : null,
+    "language": "en",
+    "content": {
+      "format": "markdown",
+      "text": $transcriptMd
+    },
+    "processing": {
+      "engine": "dataverse",
+      "processedAt": modifiedon,
+      "status": cre92_transcriptprocessed = true ? "completed" : "pending"
+    },
+    "meta": {
+      "createdAt": createdon,
+      "updatedAt": modifiedon,
+      "source": {
+        "system": "dataverse",
+        "version": "2.0.0"
+      }
+    }
+  } : null
+)

@@ -1,0 +1,22 @@
+{
+  "source_id": "doc-12345-67890",
+  "source_entity": "annotation",
+  "session_source_id": "session-12345-67890",
+  "document_id": "doc-12345-67890",
+  "title": "Session Progress Note",
+  "document_type": "Progress Note",
+  "document_date": "2024-03-15T10:15:00Z",
+  "content": {
+    "text": "## Session Summary\n\nClient presented with **improved mood** today. We discussed:\n\n-   Progress on weekly goals\n-   Coping strategies\n-   Next steps for treatment\n\nOverall, good progress this week.",
+    "format": "markdown"
+  },
+  "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "session_id": "session-12345-67890",
+  "status": "final",
+  "created_at": "2024-03-15T10:15:00Z",
+  "updated_at": "2024-03-15T10:30:00Z",
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v2"
+  }
+}

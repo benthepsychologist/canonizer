@@ -1,0 +1,10 @@
+{
+  "cre92_clientsessionid": "session-12345-67890",
+  "cre92_clientsessiontranscript": "<p><strong>Therapist:</strong> How have you been feeling this week?</p><p><strong>Client:</strong> Much better than last week. I've been practicing the breathing exercises.</p>",
+  "_cre92_client_value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "cre92_starttime": "2024-03-15T09:00:00Z",
+  "cre92_duration": 57,
+  "cre92_transcriptprocessed": true,
+  "createdon": "2024-03-01T08:00:00Z",
+  "modifiedon": "2024-03-15T10:15:00Z"
+}

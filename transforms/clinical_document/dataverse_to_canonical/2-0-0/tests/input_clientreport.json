@@ -1,0 +1,13 @@
+{
+  "cre92_clientreportid": "report-abc-123",
+  "cre92_name": "Quarterly Progress Report",
+  "_ben_reporttype_value": "Progress Report",
+  "cre92_reportdate": "2024-06-01T00:00:00Z",
+  "createdon": "2024-06-01T14:00:00Z",
+  "cre92_summary": "<h1>Progress Report</h1><p>Client has made significant progress over the quarter.</p>",
+  "_cre92_client_value": "client-xyz-456",
+  "_ben_sessionid_value": "session-qpr-789",
+  "_cre92_session_value": "session-qpr-789",
+  "statuscode": 2,
+  "modifiedon": "2024-06-01T15:30:00Z"
+}

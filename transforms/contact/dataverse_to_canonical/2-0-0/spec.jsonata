@@ -1,0 +1,27 @@
+{
+  "source_id": contactid,
+  "source_entity": "contact",
+  "contact_id": contactid,
+  "first_name": firstname,
+  "last_name": lastname,
+  "email": emailaddress1,
+  "phone": telephone1,
+  "mobile": mobilephone,
+  "birth_date": birthdate,
+  "client_type_code": cre92_clienttype ? $string(cre92_clienttype) : null,
+  "client_type_label": `cre92_clienttype@OData.Community.Display.V1.FormattedValue`,
+  "address": (address1_line1 or address1_line2 or address1_city or address1_stateorprovince or address1_postalcode or address1_country) ? {
+    "line1": address1_line1,
+    "line2": address1_line2,
+    "city": address1_city,
+    "state": address1_stateorprovince,
+    "postal_code": address1_postalcode,
+    "country": address1_country
+  },
+  "created_at": createdon,
+  "updated_at": modifiedon,
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v2"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "contactid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "firstname": "John",
+  "lastname": "Doe",
+  "fullname": "John Doe",
+  "emailaddress1": "john.doe@example.com",
+  "telephone1": "+1-555-123-4567",
+  "mobilephone": "+1-555-987-6543",
+  "birthdate": "1985-03-15",
+  "cre92_clienttype": 100000000,
+  "cre92_clienttype@OData.Community.Display.V1.FormattedValue": "Therapy",
+  "address1_line1": "123 Main Street",
+  "address1_line2": "Apt 4B",
+  "address1_city": "San Francisco",
+  "address1_stateorprovince": "CA",
+  "address1_postalcode": "94102",
+  "address1_country": "USA",
+  "statecode": 0,
+  "statuscode": 1,
+  "createdon": "2024-01-15T10:30:00Z",
+  "modifiedon": "2024-06-20T14:45:00Z"
+}

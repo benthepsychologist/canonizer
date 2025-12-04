@@ -1,0 +1,34 @@
+{
+  "source_id": "session-12345-67890#transcript-v1",
+  "source_entity": "synthetic:transcript",
+  "session_source_id": "session-12345-67890",
+  "id": "session-12345-67890-transcript",
+  "session": {
+    "reference": "clinical_session/session-12345-67890",
+    "type": "ClinicalSession"
+  },
+  "subject": {
+    "reference": "contact/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "type": "Contact"
+  },
+  "date": "2024-03-15T09:00:00Z",
+  "duration": 3420,
+  "language": "en",
+  "content": {
+    "format": "markdown",
+    "text": "**Therapist:** How have you been feeling this week?\n\n**Client:** Much better than last week. I've been practicing the breathing exercises."
+  },
+  "processing": {
+    "engine": "dataverse",
+    "processedAt": "2024-03-15T10:15:00Z",
+    "status": "completed"
+  },
+  "meta": {
+    "createdAt": "2024-03-01T08:00:00Z",
+    "updatedAt": "2024-03-15T10:15:00Z",
+    "source": {
+      "system": "dataverse",
+      "version": "2.0.0"
+    }
+  }
+}

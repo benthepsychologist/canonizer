@@ -1,0 +1,27 @@
+{
+  "source_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "source_entity": "contact",
+  "contact_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "email": "jane.smith@example.com",
+  "phone": "+1-555-222-3333",
+  "mobile": null,
+  "birth_date": "1990-07-22",
+  "client_type_code": null,
+  "client_type_label": null,
+  "address": {
+    "line1": "456 Oak Avenue",
+    "line2": null,
+    "city": "Portland",
+    "state": "OR",
+    "postal_code": "97201",
+    "country": "USA"
+  },
+  "created_at": "2024-02-10T09:00:00Z",
+  "updated_at": "2024-02-10T09:00:00Z",
+  "source": {
+    "platform": "dataverse",
+    "platform_version": "v2"
+  }
+}
