@@ -19,6 +19,7 @@ from canonizer.local.config import (
     CONFIG_FILENAME,
     CanonizerConfig,
 )
+from canonizer.config import get_canonizer_home, load_global_config
 
 
 class ResolutionError(Exception):
@@ -94,8 +95,14 @@ def find_canonizer_root(start_path: Path | None = None) -> Path:
     if canonizer_dir.is_dir() and (canonizer_dir / CONFIG_FILENAME).exists():
         return canonizer_dir
 
+    # Check global config
+    global_home = get_canonizer_home()
+    if global_home.is_dir() and (global_home / CONFIG_FILENAME).exists():
+        return global_home
+
     raise CanonizerRootNotFoundError(
-        f"No .canonizer/ directory found in {start_path} or any parent directory. "
+        f"No .canonizer/ directory found in {start_path} or any parent directory, "
+        f"and no global config found at {global_home}. "
         f"Run 'canonizer init' to create one."
     )
 

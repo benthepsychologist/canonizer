@@ -15,6 +15,7 @@ from canonizer.local.config import (
     CanonizerConfig,
 )
 from canonizer.local.lock import LockFile
+from canonizer.config import get_canonizer_home
 
 console = Console()
 
@@ -30,12 +31,18 @@ def init(
         "-f",
         help="Overwrite existing .canonizer/ directory",
     ),
+    is_global: bool = typer.Option(
+        False,
+        "--global",
+        "-g",
+        help="Initialize in global config directory (~/.config/canonizer)",
+    ),
 ) -> None:
-    """Initialize a local .canonizer/ directory for schema and transform resolution.
+    """Initialize a .canonizer/ directory for schema and transform resolution.
 
     Creates the following structure:
 
-        .canonizer/
+        .canonizer/ (or ~/.config/canonizer/)
         ├── config.yaml       # Registry configuration
         ├── lock.json         # Pinned refs + hashes
         └── registry/         # Local copies of schemas and transforms
@@ -44,25 +51,48 @@ def init(
 
     Example usage:
         canonizer init
+        canonizer init --global
         canonizer init ./my-project
         canonizer init --force
     """
     # Determine target directory
-    target_dir = (path or Path.cwd()).resolve()
-
-    if not target_dir.exists():
-        console.print(f"[red]Error:[/red] Directory does not exist: {target_dir}")
-        raise typer.Exit(code=1)
-
-    canonizer_dir = target_dir / CANONIZER_DIR
+    if is_global:
+        if path:
+            console.print("[red]Error:[/red] Cannot specify path with --global")
+            raise typer.Exit(code=1)
+        # For global, we initialize directly into the home dir, NOT inside a .canonizer subdir
+        # Wait, existing logic expects .canonizer/config.yaml.
+        # But global usually is ~/.config/canonizer/config.yaml.
+        # Let's see how resolver looks for it:
+        # if (global_home / CONFIG_FILENAME).exists():
+        # global_home is get_canonizer_home() -> ~/.config/canonizer
+        # So we should write to ~/.config/canonizer directly, not ~/.config/canonizer/.canonizer
+        canonizer_dir = get_canonizer_home()
+        # Ensure parent exists
+        canonizer_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        target_dir = (path or Path.cwd()).resolve()
+        if not target_dir.exists():
+            console.print(f"[red]Error:[/red] Directory does not exist: {target_dir}")
+            raise typer.Exit(code=1)
+        canonizer_dir = target_dir / CANONIZER_DIR
 
     # Check for existing directory
     if canonizer_dir.exists() and not force:
-        console.print(
-            f"[yellow]Warning:[/yellow] {canonizer_dir} already exists. "
-            "Use --force to overwrite."
-        )
-        raise typer.Exit(code=1)
+        # If global and dir exists, check if config exists
+        if is_global:
+             if (canonizer_dir / CONFIG_FILENAME).exists():
+                console.print(
+                    f"[yellow]Warning:[/yellow] {canonizer_dir} already initialized. "
+                    "Use --force to overwrite."
+                )
+                raise typer.Exit(code=1)
+        else:
+            console.print(
+                f"[yellow]Warning:[/yellow] {canonizer_dir} already exists. "
+                "Use --force to overwrite."
+            )
+            raise typer.Exit(code=1)
 
     try:
         # Create directory structure
@@ -102,7 +132,10 @@ __pycache__/
 
         # Summary
         console.print()
-        console.print("[green]✓ Initialized[/green] local canonizer registry")
+        if is_global:
+            console.print("[green]✓ Initialized[/green] global canonizer registry")
+        else:
+            console.print("[green]✓ Initialized[/green] local canonizer registry")
         console.print()
         console.print("[dim]Next steps:[/dim]")
         console.print("  1. Import schemas/transforms from a registry repo:")
