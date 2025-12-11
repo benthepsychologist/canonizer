@@ -29,7 +29,7 @@ dependencies = [
 [project.optional-dependencies]
 # CLI dependencies (optional)
 cli = [
-    "typer>=0.9.0",
+    "typer>=0.18.0",
     "rich>=13.7.0",
 ]
 
