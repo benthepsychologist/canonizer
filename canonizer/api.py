@@ -7,6 +7,7 @@ This module provides a clean, programmatic interface for:
 Core principles:
 - validate_payload(payload, schema_iglu) → (is_valid, errors)
 - canonicalize(payload, transform_id) → canonical_dict
+- execute(params) → dict (CallableResult for lorchestra integration)
 
 NO orchestration logic - no events, no BigQuery, no job patterns.
 """
@@ -15,6 +16,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from canonizer.callable.result import CallableResult
 from canonizer.core.runtime import TransformRuntime
 from canonizer.core.validator import SchemaValidator, ValidationError, load_schema_from_iglu_uri
 from canonizer.local.config import CONFIG_FILENAME, CanonizerConfig
@@ -259,6 +261,145 @@ def run_batch(
         )
         for doc in documents
     ]
+
+
+# ============================================================================
+# Callable Protocol (lorchestra integration)
+# ============================================================================
+
+
+def execute(params: dict) -> dict:
+    """Execute canonization and return CallableResult.
+
+    This is the in-process interface for lorchestra integration.
+    lorchestra calls `canonizer.execute(params)` directly (no JSON-RPC wrapper)
+    and receives a dict matching the CallableResult schema.
+
+    Args:
+        params: Execution parameters with the following keys:
+            - source_type (str): Type of source data (e.g., "email", "form")
+            - items (list[dict]): List of raw documents to canonize
+            - config (dict, optional): Configuration options:
+                - transform_id (str, optional): Explicit transform ID to use
+                - validate_input (bool, default True): Validate input schema
+                - validate_output (bool, default True): Validate output schema
+                - schemas_dir (str, optional): Schema directory path
+
+    Returns:
+        dict: CallableResult matching the schema:
+            {
+                "schema_version": "1.0",
+                "items": [...],  # Canonized documents
+                "stats": {"input": N, "output": M, "skipped": S, "errors": E}
+            }
+
+    Raises:
+        ValueError: If required parameters are missing or invalid
+        FileNotFoundError: If transform or schema files not found
+        ValidationError: If input/output validation fails
+        Exception: Other errors during transformation
+
+    Note:
+        v0 implementation always returns `items` inline.
+        `items_ref` (artifact store reference) is reserved for future use.
+
+    Example:
+        >>> from canonizer import execute
+        >>> result = execute({
+        ...     "source_type": "email",
+        ...     "items": [raw_gmail_message],
+        ...     "config": {"transform_id": "email/gmail_to_jmap_lite@1.0.0"}
+        ... })
+        >>> print(result["items"])
+        [{'id': '...', 'subject': '...'}]
+    """
+    # Extract parameters
+    source_type = params.get("source_type")
+    items = params.get("items", [])
+    config = params.get("config", {})
+
+    # Validate required parameters
+    if source_type is None:
+        raise ValueError("Missing required parameter: 'source_type'")
+
+    if not isinstance(items, list):
+        raise ValueError("Parameter 'items' must be a list")
+
+    # Extract config options
+    transform_id = config.get("transform_id")
+    validate_input = config.get("validate_input", True)
+    validate_output = config.get("validate_output", True)
+    schemas_dir = config.get("schemas_dir")
+
+    # Determine transform_id from source_type if not explicitly provided
+    if transform_id is None:
+        transform_id = _get_default_transform_id(source_type)
+
+    # Track statistics
+    input_count = len(items)
+    output_items: list[dict] = []
+    error_count = 0
+    skipped_count = 0
+
+    # Process each item
+    for item in items:
+        try:
+            canonized = canonicalize(
+                item,
+                transform_id=transform_id,
+                schemas_dir=schemas_dir,
+                validate_input=validate_input,
+                validate_output=validate_output,
+            )
+            output_items.append(canonized)
+        except Exception:
+            # Re-raise on error - lorchestra classifies at the boundary
+            # For v0, we fail fast on any error rather than collecting partial results
+            raise
+
+    # Build result
+    result = CallableResult(
+        items=output_items,
+        stats={
+            "input": input_count,
+            "output": len(output_items),
+            "skipped": skipped_count,
+            "errors": error_count,
+        },
+    )
+
+    return result.to_dict()
+
+
+def _get_default_transform_id(source_type: str) -> str:
+    """Get default transform ID for a source type.
+
+    Args:
+        source_type: Type of source data
+
+    Returns:
+        Default transform ID for the source type
+
+    Raises:
+        ValueError: If source type is unknown
+    """
+    # Map source types to default transforms
+    default_transforms = {
+        "email": "email/gmail_to_jmap_lite@1.0.0",
+        "gmail": "email/gmail_to_jmap_lite@1.0.0",
+        "exchange": "email/exchange_to_jmap_lite@1.0.0",
+        "form": "forms/google_forms_to_canonical@1.0.0",
+        "google_forms": "forms/google_forms_to_canonical@1.0.0",
+    }
+
+    if source_type not in default_transforms:
+        raise ValueError(
+            f"Unknown source_type: {source_type}. "
+            f"Provide explicit 'transform_id' in config or use one of: "
+            f"{', '.join(sorted(default_transforms.keys()))}"
+        )
+
+    return default_transforms[source_type]
 
 
 # ============================================================================
