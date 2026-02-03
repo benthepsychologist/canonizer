@@ -49,6 +49,13 @@ class Checksum(BaseModel):
     )
 
 
+class Extension(BaseModel):
+    """JSONata extension function reference."""
+
+    name: str = Field(..., description="Function name (e.g., 'htmlToMarkdown')")
+    impl: str = Field(..., description="Implementation reference (e.g., 'canonizer.extensions.html_to_markdown@1.0.0')")
+
+
 class TransformMeta(BaseModel):
     """
     Transform metadata sidecar (.meta.yaml).
@@ -73,6 +80,10 @@ class TransformMeta(BaseModel):
     runtime: Literal["node", "python"] = Field(
         default="node",
         description="Runtime to use (node.js via canonizer-core)",
+    )
+    extensions: list[Extension | dict] = Field(
+        default_factory=list,
+        description="JSONata extension functions required by this transform",
     )
     from_schema: str = Field(
         ...,

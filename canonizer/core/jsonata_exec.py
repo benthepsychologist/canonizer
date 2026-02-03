@@ -1,7 +1,9 @@
 """JSONata execution via Node.js canonizer-core CLI."""
 
 import json
+import os
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Literal
@@ -60,28 +62,50 @@ class JSONataExecutor:
 
         start = time.time()
 
+        # Use temp files for stdin/stdout to avoid pipe buffer truncation.
+        # Python's subprocess PIPE has issues with outputs > 64KB on some systems
+        # (seen in Python 3.14 on Linux ARM64). Using temp files is more reliable.
+        input_file = None
+        output_file = None
         try:
-            # Use canonizer-core jsonata command
-            result = subprocess.run(
-                [bin_path, "jsonata", "--expr", jsonata_expr],
-                input=json.dumps(input_data),
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
+            # Write input to temp file
+            with tempfile.NamedTemporaryFile(
+                mode="wb", suffix=".json", delete=False
+            ) as f:
+                f.write(json.dumps(input_data).encode("utf-8"))
+                input_file = f.name
+
+            # Create output temp file
+            output_fd, output_file = tempfile.mkstemp(suffix=".json")
+            os.close(output_fd)
+
+            with open(input_file, "rb") as stdin_fh, open(output_file, "wb") as stdout_fh:
+                proc = subprocess.Popen(
+                    [bin_path, "jsonata", "--expr", jsonata_expr],
+                    stdin=stdin_fh,
+                    stdout=stdout_fh,
+                    stderr=subprocess.PIPE,
+                )
+                _, stderr_bytes = proc.communicate(timeout=30)
 
             execution_time_ms = (time.time() - start) * 1000
 
-            if result.returncode != 0:
+            if proc.returncode != 0:
+                stderr = stderr_bytes.decode("utf-8") if stderr_bytes else ""
                 raise JSONataExecutionError(
-                    f"JSONata execution failed: {result.stderr.strip()}"
+                    f"JSONata execution failed: {stderr.strip()}"
                 )
 
+            # Read output
+            with open(output_file, "rb") as f:
+                stdout_bytes = f.read()
+
+            stdout = stdout_bytes.decode("utf-8")
             try:
-                output = json.loads(result.stdout)
+                output = json.loads(stdout)
             except json.JSONDecodeError:
                 # Output might be a primitive (string, number, etc.)
-                output = result.stdout.strip()
+                output = stdout.strip()
 
             return JSONataResult(
                 output=output,
@@ -90,11 +114,19 @@ class JSONataExecutor:
             )
 
         except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()  # Clean up
             raise JSONataExecutionError("JSONata execution timed out (30s)")
         except FileNotFoundError:
             raise JSONataExecutionError(
                 "canonizer-core not found. Run 'npm install && npm run build' in packages/canonizer-core/"
             )
+        finally:
+            # Clean up temp files
+            if input_file and os.path.exists(input_file):
+                os.unlink(input_file)
+            if output_file and os.path.exists(output_file):
+                os.unlink(output_file)
 
 
 def execute_jsonata_file(

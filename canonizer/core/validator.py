@@ -1,7 +1,9 @@
 """JSON Schema validation via Node.js canonizer-core."""
 
 import json
+import os
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -64,28 +66,41 @@ class SchemaValidator:
             for _ in range(5):  # Go up 5 levels from version.json
                 registry_root = registry_root.parent
 
-            result = subprocess.run(
-                [bin_path, "validate", "--schema", schema_uri, "--registry", str(registry_root)],
-                input=json.dumps(data),
-                capture_output=True,
-                text=True,
-            )
+            cmd = [bin_path, "validate", "--schema", schema_uri, "--registry", str(registry_root)]
         else:
             # Use direct file path validation
-            result = subprocess.run(
-                [bin_path, "validate-file", "--file", str(self.schema_path)],
-                input=json.dumps(data),
-                capture_output=True,
-                text=True,
-            )
+            cmd = [bin_path, "validate-file", "--file", str(self.schema_path)]
 
-        if result.returncode != 0:
-            # Parse error messages from stderr
-            errors = [line for line in result.stderr.strip().split("\n") if line]
-            raise ValidationError(
-                f"Validation failed with {len(errors)} error(s)",
-                errors
-            )
+        # Use temp file for stdin to avoid pipe buffer truncation.
+        # Python's subprocess PIPE has issues with inputs > 64KB on some systems.
+        input_file = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="wb", suffix=".json", delete=False
+            ) as f:
+                f.write(json.dumps(data).encode("utf-8"))
+                input_file = f.name
+
+            with open(input_file, "rb") as stdin_fh:
+                proc = subprocess.Popen(
+                    cmd,
+                    stdin=stdin_fh,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                _, stderr_bytes = proc.communicate()
+
+            if proc.returncode != 0:
+                # Parse error messages from stderr
+                stderr = stderr_bytes.decode("utf-8") if stderr_bytes else ""
+                errors = [line for line in stderr.strip().split("\n") if line]
+                raise ValidationError(
+                    f"Validation failed with {len(errors)} error(s)",
+                    errors
+                )
+        finally:
+            if input_file and os.path.exists(input_file):
+                os.unlink(input_file)
 
     def is_valid(self, data: Any) -> bool:
         """

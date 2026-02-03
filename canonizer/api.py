@@ -344,14 +344,40 @@ def execute(params: dict) -> dict:
     # Process each item
     for item in items:
         try:
+            # V2 pipeline: storacle.query returns full BQ rows (idem_key,
+            # source_system, payload, etc.). Extract payload for transform,
+            # pass through non-payload fields untouched.
+            # Detect BQ rows by the presence of idem_key — raw documents
+            # never have this field. Some raw formats (e.g., Gmail API)
+            # have their own "payload" key, so we can't use that alone.
+            raw_doc = item
+            passthrough = None
+            is_bq_row = isinstance(item, dict) and "idem_key" in item and "payload" in item
+            if is_bq_row:
+                raw_doc = item["payload"]
+                if isinstance(raw_doc, str):
+                    import json as _json
+                    raw_doc = _json.loads(raw_doc)
+                passthrough = {k: v for k, v in item.items() if k != "payload"}
+
             canonized = canonicalize(
-                item,
+                raw_doc,
                 transform_id=transform_id,
                 schemas_dir=schemas_dir,
                 validate_input=validate_input,
                 validate_output=validate_output,
             )
-            output_items.append(canonized)
+
+            if canonized is None:
+                skipped_count += 1
+                continue
+
+            if passthrough is not None:
+                output_item = dict(passthrough)
+                output_item["payload"] = canonized
+                output_items.append(output_item)
+            else:
+                output_items.append(canonized)
         except Exception:
             # Re-raise on error - lorchestra classifies at the boundary
             # For v0, we fail fast on any error rather than collecting partial results
