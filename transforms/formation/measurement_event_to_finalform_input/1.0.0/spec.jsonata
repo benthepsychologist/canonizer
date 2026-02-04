@@ -1,0 +1,22 @@
+(
+  /* Transform measurement_event row to finalform callable input */
+
+  /* Map answers from metadata to items format expected by finalform */
+  $mapAnswers := function($answers) {
+    $map($answers, function($answer) {
+      {
+        "question_id": $answer.question_id,
+        "answer_value": $answer.answer_value
+      }
+    })
+  };
+
+  {
+    "form_id": $$.config.instrument,
+    "form_submission_id": measurement_event_id,
+    "subject_id": subject_id,
+    "timestamp": occurred_at,
+    "form_correlation_id": correlation_id,
+    "items": $mapAnswers(metadata.answers)
+  }
+)

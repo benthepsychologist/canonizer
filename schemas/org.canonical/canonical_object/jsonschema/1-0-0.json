@@ -1,0 +1,39 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Wrapper schema for canonical objects retrieved from storacle.query. Contains the canonical payload along with metadata like idem_key, connection_name, and correlation_id.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "canonical_object",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "idem_key": {
+      "type": "string",
+      "description": "Idempotency key for the canonical object"
+    },
+    "connection_name": {
+      "type": "string",
+      "description": "Name of the connection that produced this object",
+      "examples": ["google-forms-intake-01"]
+    },
+    "canonical_schema": {
+      "type": "string",
+      "description": "Iglu URI of the canonical schema",
+      "pattern": "^iglu:[a-z0-9._-]+/[a-z0-9._-]+/jsonschema/\\d+-\\d+-\\d+$",
+      "examples": ["iglu:org.canonical/form_response/jsonschema/1-0-0"]
+    },
+    "payload": {
+      "type": "object",
+      "description": "The canonical payload conforming to the referenced schema",
+      "additionalProperties": true
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Correlation ID for tracing"
+    }
+  },
+  "required": ["idem_key", "connection_name", "canonical_schema", "payload"],
+  "additionalProperties": true
+}

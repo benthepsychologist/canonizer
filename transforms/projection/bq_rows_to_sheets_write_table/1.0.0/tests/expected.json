@@ -1,0 +1,11 @@
+{
+  "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+  "sheet_name": "clients",
+  "strategy": "replace",
+  "account": "acct1",
+  "values": [
+    ["client_id", "name"],
+    ["123", "John Doe"],
+    ["456", "Jane Smith"]
+  ]
+}

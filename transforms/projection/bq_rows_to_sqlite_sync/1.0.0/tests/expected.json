@@ -1,0 +1,9 @@
+{
+  "sqlite_path": "~/clinical-vault/local.db",
+  "table": "clients",
+  "columns": ["client_id", "name", "projected_at"],
+  "rows": [
+    {"client_id": "123", "name": "John Doe", "projected_at": "2026-02-04T12:00:00Z"},
+    {"client_id": "456", "name": "Jane Smith", "projected_at": "2026-02-04T12:00:00Z"}
+  ]
+}

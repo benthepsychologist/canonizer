@@ -1,0 +1,43 @@
+(
+  /* Transform canonical_object (form_response payload) to measurement_event row */
+
+  /* Helper to get subject_id: prefer respondent.id, fallback to respondent.email */
+  $getSubjectId := function($respondent) {
+    $respondent.external_id ? $respondent.external_id :
+    $respondent.email ? $respondent.email :
+    $respondent.name ? $respondent.name :
+    "unknown"
+  };
+
+  /* Helper to generate deterministic ID from idem_key */
+  $deriveId := function($prefix, $key) {
+    $prefix & ":" & $key
+  };
+
+  /* Extract payload (form_response) from canonical_object wrapper */
+  $formResponse := payload;
+  $respondent := $formResponse.respondent;
+
+  /* Generate deterministic IDs */
+  $measurementEventId := $deriveId("me", idem_key);
+  $canonicalObjectId := $deriveId("co", idem_key);
+
+  {
+    "idem_key": idem_key,
+    "measurement_event_id": $measurementEventId,
+    "canonical_object_id": $canonicalObjectId,
+    "subject_id": $getSubjectId($respondent),
+    "event_type": "form",
+    "event_subtype": $$.config.binding_id,
+    "binding_id": $$.config.binding_id,
+    "source_system": $$.config.source_system,
+    "source_entity": $$.config.source_entity,
+    "form_id": $formResponse.form_id,
+    "occurred_at": $formResponse.submitted_at,
+    "correlation_id": correlation_id,
+    "metadata": {
+      "answers": $formResponse.answers,
+      "submitted_at": $formResponse.submitted_at
+    }
+  }
+)

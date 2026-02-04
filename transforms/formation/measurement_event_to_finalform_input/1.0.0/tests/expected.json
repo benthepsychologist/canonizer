@@ -1,0 +1,17 @@
+{
+  "form_id": "intake_01",
+  "form_submission_id": "me:gf:intake_01:resp_abc123",
+  "subject_id": "client_789",
+  "timestamp": "2026-01-15T10:30:00Z",
+  "form_correlation_id": "corr_xyz123",
+  "items": [
+    {
+      "question_id": "q1",
+      "answer_value": 1
+    },
+    {
+      "question_id": "q2",
+      "answer_value": 2
+    }
+  ]
+}

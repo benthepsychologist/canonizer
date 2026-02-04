@@ -1,0 +1,47 @@
+(
+  /* Transform BQ rows into sqlite.sync op params */
+  /* Input: object with "rows" array and "config" */
+  /* Output: single dict representing sqlite.sync op params */
+
+  /* Get all unique keys from rows for deterministic column ordering */
+  $getColumns := function($rows, $autoTimestampCols) {(
+    /* Collect all unique keys across all rows */
+    $baseKeys := $distinct($reduce($rows, function($acc, $row) {
+      $append($acc, $keys($row))
+    }, []));
+    /* Sort for deterministic ordering */
+    $sortedKeys := $sort($baseKeys);
+    /* Append auto timestamp columns */
+    $append($sortedKeys, $autoTimestampCols ? $autoTimestampCols : [])
+  )};
+
+  /* Add timestamp columns to each row using provided timestamp */
+  $addTimestamps := function($row, $autoTimestampCols, $timestamp) {
+    $autoTimestampCols and $count($autoTimestampCols) > 0 ? (
+      $reduce($autoTimestampCols, function($acc, $col) {
+        $merge([$acc, {$col: $timestamp}])
+      }, $row)
+    ) : $row
+  };
+
+  /* Get auto timestamp columns from config, default to empty array */
+  $autoTimestampCols := config.auto_timestamp_columns ? config.auto_timestamp_columns : [];
+
+  /* Get timestamp from config or use null */
+  $timestamp := config.timestamp ? config.timestamp : null;
+
+  /* Get the input rows */
+  $inputRows := rows ? rows : [];
+
+  /* Process rows with timestamp injection if configured */
+  $processedRows := $map($inputRows, function($row) {
+    $addTimestamps($row, $autoTimestampCols, $timestamp)
+  });
+
+  {
+    "sqlite_path": config.sqlite_path,
+    "table": config.table,
+    "columns": $getColumns($inputRows, $autoTimestampCols),
+    "rows": $processedRows
+  }
+)

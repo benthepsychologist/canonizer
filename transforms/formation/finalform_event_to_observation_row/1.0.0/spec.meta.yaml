@@ -1,0 +1,31 @@
+id: formation/finalform_event_to_observation_row
+version: 1.0.0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:org.canonical/finalform_output/jsonschema/1-0-0
+to_schema: iglu:org.canonical/observation/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "f9e9d8d1cdbff54e149b5feebbe189b8a8dae0c34133768a7f0c59a35254235f"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2026-02-04T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform finalform scoring output into one or more observation rows.
+  Output is 1:N per input - one observation row per measure in the finalform output.
+  Uses form_correlation_id to derive deterministic idem_key for idempotent upsert.
+  Used by formation pipeline Stage 3.
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json
+  - input: tests/input_multiple_measures.json
+    expect: tests/expected_multiple_measures.json

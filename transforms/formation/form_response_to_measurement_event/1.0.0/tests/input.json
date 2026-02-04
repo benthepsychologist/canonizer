@@ -1,0 +1,41 @@
+{
+  "idem_key": "gf:intake_01:resp_abc123",
+  "connection_name": "google-forms-intake-01",
+  "canonical_schema": "iglu:org.canonical/form_response/jsonschema/1-0-0",
+  "payload": {
+    "response_id": "resp_abc123",
+    "form_id": "1FAIpQLSe_intake01",
+    "form_name": "MBC Initial Assessment",
+    "submitted_at": "2026-01-15T10:30:00Z",
+    "source": {
+      "platform": "google_forms",
+      "platform_version": "v1"
+    },
+    "respondent": {
+      "external_id": "client_789",
+      "email": "client@example.com",
+      "name": "Jane Doe"
+    },
+    "answers": [
+      {
+        "question_id": "q1",
+        "question_text": "Little interest or pleasure in doing things",
+        "answer_value": 1,
+        "answer_type": "scale"
+      },
+      {
+        "question_id": "q2",
+        "question_text": "Feeling down, depressed, or hopeless",
+        "answer_value": 2,
+        "answer_type": "scale"
+      }
+    ],
+    "status": "submitted"
+  },
+  "correlation_id": "corr_xyz123",
+  "config": {
+    "binding_id": "intake_01",
+    "source_system": "google_forms",
+    "source_entity": "form_response"
+  }
+}

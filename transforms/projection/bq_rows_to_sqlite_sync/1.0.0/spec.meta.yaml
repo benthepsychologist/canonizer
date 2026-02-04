@@ -1,0 +1,47 @@
+id: projection/bq_rows_to_sqlite_sync
+version: 1.0.0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:org.canonical/bq_rows_with_config/jsonschema/1-0-0
+to_schema: iglu:org.canonical/sqlite_sync_params/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "38578352a5d4690b1135ab1a613c1b92f3c5e1f413631d22bfd4e4cba18253cd"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2026-02-04T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Package BQ rows into a single sqlite.sync op payload.
+  Adds timestamps (e.g., projected_at) and column list with deterministic ordering.
+  Output is a single dict representing op params (wrapped by plan.build later).
+  Used by projection pipeline.
+
+config_schema:
+  required:
+    - sqlite_path
+    - table
+  properties:
+    sqlite_path:
+      type: string
+      description: "Path to SQLite database file (e.g., ~/clinical-vault/local.db)"
+    table:
+      type: string
+      description: "Target table name"
+    auto_timestamp_columns:
+      type: array
+      items:
+        type: string
+      description: "Columns to auto-populate with current timestamp"
+      default: []
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

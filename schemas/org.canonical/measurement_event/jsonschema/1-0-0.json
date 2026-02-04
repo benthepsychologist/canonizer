@@ -1,0 +1,97 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Schema for measurement_events table rows. Represents a measurement event derived from a canonical object (e.g., form submission).",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "measurement_event",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "idem_key": {
+      "type": "string",
+      "description": "Idempotency key for upsert operations"
+    },
+    "measurement_event_id": {
+      "type": "string",
+      "description": "Unique identifier for this measurement event"
+    },
+    "canonical_object_id": {
+      "type": "string",
+      "description": "Reference to the source canonical object"
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Identifier of the subject (e.g., client/patient)"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of measurement event",
+      "examples": ["form", "device", "manual"]
+    },
+    "event_subtype": {
+      "type": "string",
+      "description": "Subtype of the event (e.g., form binding ID)",
+      "examples": ["intake_01", "phq9_weekly"]
+    },
+    "binding_id": {
+      "type": "string",
+      "description": "Binding identifier for the measurement"
+    },
+    "source_system": {
+      "type": "string",
+      "description": "Source system identifier",
+      "examples": ["google_forms", "typeform"]
+    },
+    "source_entity": {
+      "type": "string",
+      "description": "Source entity type",
+      "examples": ["form_response"]
+    },
+    "form_id": {
+      "type": ["string", "null"],
+      "description": "Form identifier (for form-type events)"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the measurement event occurred"
+    },
+    "correlation_id": {
+      "type": ["string", "null"],
+      "description": "Correlation ID for tracing"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata needed for downstream processing (e.g., answers for scoring)",
+      "properties": {
+        "answers": {
+          "type": "array",
+          "description": "Form answers for scoring",
+          "items": {
+            "type": "object"
+          }
+        },
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Original submission timestamp"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "idem_key",
+    "measurement_event_id",
+    "canonical_object_id",
+    "subject_id",
+    "event_type",
+    "binding_id",
+    "source_system",
+    "source_entity",
+    "occurred_at"
+  ],
+  "additionalProperties": false
+}

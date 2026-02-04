@@ -1,0 +1,40 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Schema for sqlite.sync operation parameters. Output of bq_rows_to_sqlite_sync transform.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "sqlite_sync_params",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "sqlite_path": {
+      "type": "string",
+      "description": "Path to the SQLite database file",
+      "examples": ["~/clinical-vault/local.db", "/data/app.db"]
+    },
+    "table": {
+      "type": "string",
+      "description": "Target table name",
+      "examples": ["clients", "observations"]
+    },
+    "columns": {
+      "type": "array",
+      "description": "Ordered list of column names",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rows": {
+      "type": "array",
+      "description": "Array of row objects to sync",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["sqlite_path", "table", "columns", "rows"],
+  "additionalProperties": false
+}

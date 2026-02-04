@@ -1,0 +1,46 @@
+id: formation/form_response_to_measurement_event
+version: 1.0.0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:org.canonical/canonical_object/jsonschema/1-0-0
+to_schema: iglu:org.canonical/measurement_event/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "0e337402c5f117ab412c5e8e2cbb72b1176804d025424862211f8d5bf32380db"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2026-02-04T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Transform canonical form_response objects (wrapped in canonical_object) into measurement_events rows.
+  Copies minimum scoring payload into metadata to avoid canonical re-reads during scoring.
+  Used by formation pipeline Stage 1.
+
+config_schema:
+  required:
+    - binding_id
+    - source_system
+    - source_entity
+  properties:
+    binding_id:
+      type: string
+      description: "Binding identifier (e.g., intake_01)"
+    source_system:
+      type: string
+      description: "Source system (e.g., google_forms)"
+    source_entity:
+      type: string
+      description: "Source entity type (e.g., form_response)"
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json
+  - input: tests/input_email_fallback.json
+    expect: tests/expected_email_fallback.json
