@@ -11,6 +11,7 @@ Reference formats:
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -95,15 +96,18 @@ def find_canonizer_root(start_path: Path | None = None) -> Path:
     if canonizer_dir.is_dir() and (canonizer_dir / CONFIG_FILENAME).exists():
         return canonizer_dir
 
-    # Check global config
-    global_home = get_canonizer_home()
-    if global_home.is_dir() and (global_home / CONFIG_FILENAME).exists():
-        return global_home
+    # Only fall back to global config when start_path was not explicitly provided.
+    # This keeps unit tests deterministic and ensures that callers can enforce
+    # "local project only" semantics by passing a start_path.
+    if start_path is None:
+        global_home = get_canonizer_home()
+        if global_home.is_dir() and (global_home / CONFIG_FILENAME).exists():
+            return global_home
 
     raise CanonizerRootNotFoundError(
         f"No .canonizer/ directory found in {start_path} or any parent directory, "
-        f"and no global config found at {global_home}. "
-        f"Run 'canonizer init' to create one."
+        f"and no global config found. "
+        f"Run 'can init' to create one."
     )
 
 
@@ -173,12 +177,16 @@ def resolve_schema(
         >>> resolve_schema("iglu:com.google/gmail_email/jsonschema/1-0-0")
         Path("/project/.canonizer/registry/schemas/com.google/gmail_email/jsonschema/1-0-0.json")
     """
-    if canonizer_root is None:
-        canonizer_root = find_canonizer_root()
+    registry_root_override = os.environ.get("CANONIZER_REGISTRY_ROOT")
+    if canonizer_root is None and registry_root_override:
+        registry_path = Path(registry_root_override).expanduser().resolve()
+    else:
+        if canonizer_root is None:
+            canonizer_root = find_canonizer_root()
 
-    # Load config to get registry root
-    config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
-    registry_path = config.get_registry_path(canonizer_root)
+        # Load config to get registry root
+        config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
+        registry_path = config.get_registry_path(canonizer_root)
 
     # Parse reference
     vendor, name, version = parse_iglu_ref(schema_ref)
@@ -220,12 +228,16 @@ def resolve_transform(
         >>> resolve_transform("email/gmail_to_jmap_lite@1.0.0")
         Path("/project/.canonizer/registry/transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml")
     """
-    if canonizer_root is None:
-        canonizer_root = find_canonizer_root()
+    registry_root_override = os.environ.get("CANONIZER_REGISTRY_ROOT")
+    if canonizer_root is None and registry_root_override:
+        registry_path = Path(registry_root_override).expanduser().resolve()
+    else:
+        if canonizer_root is None:
+            canonizer_root = find_canonizer_root()
 
-    # Load config to get registry root
-    config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
-    registry_path = config.get_registry_path(canonizer_root)
+        # Load config to get registry root
+        config = CanonizerConfig.load(canonizer_root / CONFIG_FILENAME)
+        registry_path = config.get_registry_path(canonizer_root)
 
     # Parse reference
     transform_id, version = parse_transform_ref(transform_ref)

@@ -6,8 +6,29 @@ Tests that the CLI still works after refactoring to use the pure API.
 import json
 import subprocess
 from pathlib import Path
+import sys
+import os
 
 import pytest
+
+
+def _cli_argv() -> list[str]:
+    """Return argv prefix for invoking the canonizer CLI in tests.
+
+    Prefer the console-script in the active environment, but fall back to
+    module execution to avoid PATH issues in CI/devcontainers.
+    """
+    env_bin = Path(sys.executable).resolve().parent
+
+    can_path = env_bin / "can"
+    if can_path.exists() and os.access(can_path, os.X_OK):
+        return [str(can_path)]
+
+    canonizer_path = env_bin / "canonizer"
+    if canonizer_path.exists() and os.access(canonizer_path, os.X_OK):
+        return [str(canonizer_path)]
+
+    return [sys.executable, "-m", "canonizer.cli.main"]
 
 
 class TestCLIBackwardCompatibility:
@@ -24,8 +45,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -60,8 +81,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command with stdin/stdout and --json to get clean JSON output
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -90,8 +111,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command with validation disabled
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -121,8 +142,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command with --json flag
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -150,8 +171,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command with invalid input
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -177,8 +198,8 @@ class TestCLIBackwardCompatibility:
 
         # Run CLI command with nonexistent transform
         result = subprocess.run(
-            [
-                "can",
+            _cli_argv()
+            + [
                 "transform",
                 "run",
                 "--meta",
@@ -197,7 +218,7 @@ class TestCLIBackwardCompatibility:
         """Test transform list command still works."""
         # Run CLI list command
         result = subprocess.run(
-            ["can", "transform", "list", "--dir", "transforms"],
+            _cli_argv() + ["transform", "list", "--dir", "transforms"],
             capture_output=True,
             text=True,
         )
