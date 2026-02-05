@@ -10,7 +10,7 @@ to_schema: iglu:org.canonical/finalform_input/jsonschema/1-0-0
 spec_path: spec.jsonata
 
 checksum:
-  jsonata_sha256: "9bf5ba0cf033b844573a9c9f3372aa54a60896cdb9c43a60ce0d65b6f023dee2"
+  jsonata_sha256: "bf2bf7634fee3e64280fba1f278b2b41bd02e714cc0410eca711971b456a6b48"
 
 provenance:
   author: "Ben Machina <ben@therapyai.com>"
@@ -24,8 +24,6 @@ description: >
   Used by formation pipeline Stage 2.
 
 config_schema:
-  required:
-    - instrument
   properties:
     instrument:
       type: string

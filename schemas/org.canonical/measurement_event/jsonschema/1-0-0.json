@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for measurement_events table rows. Represents a measurement event derived from a canonical object (e.g., form submission).",
   "self": {
     "vendor": "org.canonical",
@@ -28,12 +28,19 @@
     "event_type": {
       "type": "string",
       "description": "Type of measurement event",
-      "examples": ["form", "device", "manual"]
+      "examples": [
+        "form",
+        "device",
+        "manual"
+      ]
     },
     "event_subtype": {
       "type": "string",
       "description": "Subtype of the event (e.g., form binding ID)",
-      "examples": ["intake_01", "phq9_weekly"]
+      "examples": [
+        "intake_01",
+        "phq9_weekly"
+      ]
     },
     "binding_id": {
       "type": "string",
@@ -42,15 +49,23 @@
     "source_system": {
       "type": "string",
       "description": "Source system identifier",
-      "examples": ["google_forms", "typeform"]
+      "examples": [
+        "google_forms",
+        "typeform"
+      ]
     },
     "source_entity": {
       "type": "string",
       "description": "Source entity type",
-      "examples": ["form_response"]
+      "examples": [
+        "form_response"
+      ]
     },
     "form_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Form identifier (for form-type events)"
     },
     "occurred_at": {
@@ -59,7 +74,10 @@
       "description": "When the measurement event occurred"
     },
     "correlation_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Correlation ID for tracing"
     },
     "metadata": {

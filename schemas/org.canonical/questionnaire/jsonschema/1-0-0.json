@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Canonical schema for psychological/clinical questionnaire instruments. Defines the structure, items, scoring rules, and interpretation guidelines for assessment measures. Based on standardized instruments (PHQ-9, GAD-7, etc.) with extensible structure for custom measures.",
   "self": {
     "vendor": "org.canonical",
@@ -12,12 +12,20 @@
     "id": {
       "type": "string",
       "description": "Unique identifier for the questionnaire (e.g., 'phq_9', 'gad_7')",
-      "examples": ["phq_9", "gad_7", "msi", "fscrs"]
+      "examples": [
+        "phq_9",
+        "gad_7",
+        "msi",
+        "fscrs"
+      ]
     },
     "name": {
       "type": "string",
       "description": "Full name of the questionnaire",
-      "examples": ["Patient Health Questionnaire-9", "Generalized Anxiety Disorder-7"]
+      "examples": [
+        "Patient Health Questionnaire-9",
+        "Generalized Anxiety Disorder-7"
+      ]
     },
     "description": {
       "type": "string",
@@ -27,7 +35,10 @@
       "type": "string",
       "description": "Version of the questionnaire instrument",
       "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
-      "examples": ["1.0", "2.1.0"]
+      "examples": [
+        "1.0",
+        "2.1.0"
+      ]
     },
     "interpretation": {
       "type": "string",
@@ -36,12 +47,18 @@
     "instructions": {
       "type": "string",
       "description": "Instructions presented to respondent before questionnaire items",
-      "examples": ["Over the last 2 weeks, how often have you been bothered by the following problems?"]
+      "examples": [
+        "Over the last 2 weeks, how often have you been bothered by the following problems?"
+      ]
     },
     "item_prefix": {
       "type": "string",
       "description": "Prefix used for item identifiers in data storage (e.g., 'phq_9_' results in 'phq_9_1', 'phq_9_2', etc.)",
-      "examples": ["phq_9_", "gad_7_", "fscrs_"]
+      "examples": [
+        "phq_9_",
+        "gad_7_",
+        "fscrs_"
+      ]
     },
     "items": {
       "type": "array",
@@ -64,7 +81,10 @@
             "default": true
           }
         },
-        "required": ["item_number", "text"],
+        "required": [
+          "item_number",
+          "text"
+        ],
         "additionalProperties": false
       },
       "minItems": 1
@@ -100,7 +120,11 @@
           ]
         }
       },
-      "required": ["min", "max", "labels"],
+      "required": [
+        "min",
+        "max",
+        "labels"
+      ],
       "additionalProperties": false
     },
     "scores": {
@@ -139,13 +163,26 @@
                 "method": {
                   "type": "string",
                   "description": "Method for computing score from item responses",
-                  "enum": ["sum", "average", "sum_then_double", "sum_then_multiply", "custom"],
-                  "examples": ["sum", "average", "sum_then_double"]
+                  "enum": [
+                    "sum",
+                    "average",
+                    "sum_then_double",
+                    "sum_then_multiply",
+                    "custom"
+                  ],
+                  "examples": [
+                    "sum",
+                    "average",
+                    "sum_then_double"
+                  ]
                 },
                 "multiplier": {
                   "type": "number",
                   "description": "Multiplier applied after summing (for sum_then_multiply method)",
-                  "examples": [2, 0.5]
+                  "examples": [
+                    2,
+                    0.5
+                  ]
                 },
                 "min": {
                   "type": "number",
@@ -164,7 +201,12 @@
                   "description": "Additional notes about scoring computation"
                 }
               },
-              "required": ["method", "min", "max", "higher_is_better"],
+              "required": [
+                "method",
+                "min",
+                "max",
+                "higher_is_better"
+              ],
               "additionalProperties": false
             },
             "ranges": {
@@ -184,25 +226,47 @@
                   "label": {
                     "type": "string",
                     "description": "Short label for this range",
-                    "examples": ["Minimal", "Mild", "Moderate", "Severe"]
+                    "examples": [
+                      "Minimal",
+                      "Mild",
+                      "Moderate",
+                      "Severe"
+                    ]
                   },
                   "severity": {
                     "type": "string",
                     "description": "Severity classification",
-                    "examples": ["minimal", "mild", "moderate", "severe", "low", "high"]
+                    "examples": [
+                      "minimal",
+                      "mild",
+                      "moderate",
+                      "severe",
+                      "low",
+                      "high"
+                    ]
                   },
                   "description": {
                     "type": "string",
                     "description": "Detailed description of what this range means clinically"
                   }
                 },
-                "required": ["min", "max", "label", "severity", "description"],
+                "required": [
+                  "min",
+                  "max",
+                  "label",
+                  "severity",
+                  "description"
+                ],
                 "additionalProperties": false
               },
               "minItems": 1
             }
           },
-          "required": ["included_items", "scoring", "ranges"],
+          "required": [
+            "included_items",
+            "scoring",
+            "ranges"
+          ],
           "additionalProperties": false
         }
       },
@@ -235,12 +299,28 @@
           "items": {
             "type": "string"
           },
-          "examples": [["depression", "screening"], ["anxiety", "clinical"]]
+          "examples": [
+            [
+              "depression",
+              "screening"
+            ],
+            [
+              "anxiety",
+              "clinical"
+            ]
+          ]
         }
       },
       "additionalProperties": true
     }
   },
-  "required": ["id", "name", "description", "items", "anchors", "scores"],
+  "required": [
+    "id",
+    "name",
+    "description",
+    "items",
+    "anchors",
+    "scores"
+  ],
   "additionalProperties": false
 }

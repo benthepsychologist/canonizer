@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for observations table rows. Represents a scored observation derived from a finalform output.",
   "self": {
     "vendor": "org.canonical",
@@ -28,7 +28,11 @@
     "measure_code": {
       "type": "string",
       "description": "Code for the measure (e.g., phq9, gad7)",
-      "examples": ["phq9", "gad7", "pcl5"]
+      "examples": [
+        "phq9",
+        "gad7",
+        "pcl5"
+      ]
     },
     "occurred_at": {
       "type": "string",
@@ -48,22 +52,39 @@
           "value": {
             "description": "Component value",
             "oneOf": [
-              {"type": "string"},
-              {"type": "number"},
-              {"type": "boolean"},
-              {"type": "null"}
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "label": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Human-readable label"
           }
         },
-        "required": ["component_id", "value"]
+        "required": [
+          "component_id",
+          "value"
+        ]
       }
     },
     "correlation_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Correlation ID for tracing"
     }
   },

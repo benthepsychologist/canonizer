@@ -3,7 +3,7 @@
 
   /* Map answers from metadata to items format expected by finalform */
   $mapAnswers := function($answers) {
-    $map($answers, function($answer) {
+    $map($answers ? $answers : [], function($answer) {
       {
         "question_id": $answer.question_id,
         "answer_value": $answer.answer_value
@@ -12,7 +12,7 @@
   };
 
   {
-    "form_id": $$.config.instrument,
+    "form_id": ($$.config.instrument ? $$.config.instrument : binding_id),
     "form_submission_id": measurement_event_id,
     "subject_id": subject_id,
     "timestamp": occurred_at,

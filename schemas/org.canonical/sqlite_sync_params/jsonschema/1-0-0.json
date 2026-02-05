@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for sqlite.sync operation parameters. Output of bq_rows_to_sqlite_sync transform.",
   "self": {
     "vendor": "org.canonical",
@@ -12,12 +12,18 @@
     "sqlite_path": {
       "type": "string",
       "description": "Path to the SQLite database file",
-      "examples": ["~/clinical-vault/local.db", "/data/app.db"]
+      "examples": [
+        "~/clinical-vault/local.db",
+        "/data/app.db"
+      ]
     },
     "table": {
       "type": "string",
       "description": "Target table name",
-      "examples": ["clients", "observations"]
+      "examples": [
+        "clients",
+        "observations"
+      ]
     },
     "columns": {
       "type": "array",
@@ -35,6 +41,11 @@
       }
     }
   },
-  "required": ["sqlite_path", "table", "columns", "rows"],
+  "required": [
+    "sqlite_path",
+    "table",
+    "columns",
+    "rows"
+  ],
   "additionalProperties": false
 }

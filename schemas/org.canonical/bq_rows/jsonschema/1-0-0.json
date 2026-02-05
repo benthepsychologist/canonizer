@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for BigQuery rows input to projection transforms. Represents an array of row objects from BQ query results.",
   "self": {
     "vendor": "org.canonical",
@@ -14,8 +14,16 @@
   },
   "examples": [
     [
-      {"client_id": "123", "name": "John Doe", "email": "john@example.com"},
-      {"client_id": "456", "name": "Jane Smith", "email": "jane@example.com"}
+      {
+        "client_id": "123",
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      {
+        "client_id": "456",
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
     ]
   ]
 }

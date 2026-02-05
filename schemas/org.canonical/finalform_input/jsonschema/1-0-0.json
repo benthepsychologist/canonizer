@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for input to the finalform scoring callable. Contains the form submission data needed for instrument scoring.",
   "self": {
     "vendor": "org.canonical",
@@ -27,7 +27,10 @@
       "description": "When the measurement occurred"
     },
     "form_correlation_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Correlation ID for tracing back to source submission"
     },
     "items": {
@@ -43,18 +46,37 @@
           "answer_value": {
             "description": "The answer value",
             "oneOf": [
-              {"type": "string"},
-              {"type": "number"},
-              {"type": "boolean"},
-              {"type": "array"},
-              {"type": "null"}
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
             ]
           }
         },
-        "required": ["question_id", "answer_value"]
+        "required": [
+          "question_id",
+          "answer_value"
+        ]
       }
     }
   },
-  "required": ["form_id", "form_submission_id", "subject_id", "timestamp", "items"],
+  "required": [
+    "form_id",
+    "form_submission_id",
+    "subject_id",
+    "timestamp",
+    "items"
+  ],
   "additionalProperties": false
 }

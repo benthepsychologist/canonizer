@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Canonical schema for form responses across all platforms (Google Forms, Typeform, Microsoft Forms, etc.). Represents a normalized form submission with questions and answers, independent of the source platform. This is the target for schema transformation - questionnaire extraction and scoring happens downstream as data processing.",
   "self": {
     "vendor": "org.canonical",
@@ -12,23 +12,36 @@
     "response_id": {
       "type": "string",
       "description": "Unique identifier for this form response (may be platform-specific ID)",
-      "examples": ["ACYDBNj_xyz789", "resp_abc123"]
+      "examples": [
+        "ACYDBNj_xyz789",
+        "resp_abc123"
+      ]
     },
     "form_id": {
       "type": "string",
       "description": "Identifier of the form that was submitted",
-      "examples": ["1FAIpQLSe_abc123", "form_xyz", "initial-1"]
+      "examples": [
+        "1FAIpQLSe_abc123",
+        "form_xyz",
+        "initial-1"
+      ]
     },
     "form_name": {
       "type": "string",
       "description": "Human-readable name of the form",
-      "examples": ["MBC Initial Assessment", "Weekly Check-in", "Intake Questionnaire"]
+      "examples": [
+        "MBC Initial Assessment",
+        "Weekly Check-in",
+        "Intake Questionnaire"
+      ]
     },
     "submitted_at": {
       "type": "string",
       "format": "date-time",
       "description": "ISO 8601 timestamp when the form was first submitted",
-      "examples": ["2024-05-22T15:09:51Z"]
+      "examples": [
+        "2024-05-22T15:09:51Z"
+      ]
     },
     "last_updated_at": {
       "type": "string",
@@ -42,15 +55,26 @@
         "platform": {
           "type": "string",
           "description": "Source platform name",
-          "examples": ["google_forms", "typeform", "microsoft_forms", "qualtrics", "surveymonkey"]
+          "examples": [
+            "google_forms",
+            "typeform",
+            "microsoft_forms",
+            "qualtrics",
+            "surveymonkey"
+          ]
         },
         "platform_version": {
           "type": "string",
           "description": "API version or platform version",
-          "examples": ["v1", "2024.1"]
+          "examples": [
+            "v1",
+            "2024.1"
+          ]
         }
       },
-      "required": ["platform"],
+      "required": [
+        "platform"
+      ],
       "additionalProperties": true
     },
     "respondent": {
@@ -82,7 +106,11 @@
           "question_id": {
             "type": "string",
             "description": "Platform-specific identifier for this question",
-            "examples": ["1a2b3c4d", "q_12345", "field_abc"]
+            "examples": [
+              "1a2b3c4d",
+              "q_12345",
+              "field_abc"
+            ]
           },
           "question_text": {
             "type": "string",
@@ -91,18 +119,48 @@
           "answer_value": {
             "description": "The answer value - type varies by question type",
             "oneOf": [
-              {"type": "string"},
-              {"type": "number"},
-              {"type": "boolean"},
-              {"type": "array", "items": {"type": "string"}},
-              {"type": "null"}
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "answer_type": {
             "type": "string",
             "description": "Type of answer/question",
-            "enum": ["text", "choice", "multiple_choice", "number", "date", "time", "email", "url", "file", "scale", "grid", "boolean"],
-            "examples": ["choice", "text", "scale"]
+            "enum": [
+              "text",
+              "choice",
+              "multiple_choice",
+              "number",
+              "date",
+              "time",
+              "email",
+              "url",
+              "file",
+              "scale",
+              "grid",
+              "boolean"
+            ],
+            "examples": [
+              "choice",
+              "text",
+              "scale"
+            ]
           },
           "answer_text": {
             "type": "string",
@@ -115,21 +173,30 @@
               "file_ids": {
                 "type": "array",
                 "description": "File IDs for file upload questions",
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               },
               "grade": {
                 "type": "object",
                 "description": "Grading information if form has scoring",
                 "properties": {
-                  "score": {"type": "number"},
-                  "correct": {"type": "boolean"}
+                  "score": {
+                    "type": "number"
+                  },
+                  "correct": {
+                    "type": "boolean"
+                  }
                 }
               }
             },
             "additionalProperties": true
           }
         },
-        "required": ["question_id", "answer_value"],
+        "required": [
+          "question_id",
+          "answer_value"
+        ],
         "additionalProperties": false
       },
       "minItems": 1
@@ -137,7 +204,12 @@
     "status": {
       "type": "string",
       "description": "Submission status",
-      "enum": ["submitted", "in_progress", "partial", "edited"],
+      "enum": [
+        "submitted",
+        "in_progress",
+        "partial",
+        "edited"
+      ],
       "default": "submitted"
     },
     "metadata": {
@@ -164,7 +236,12 @@
       "additionalProperties": true
     }
   },
-  "required": ["response_id", "form_id", "submitted_at", "answers"],
+  "required": [
+    "response_id",
+    "form_id",
+    "submitted_at",
+    "answers"
+  ],
   "additionalProperties": false,
   "examples": [
     {

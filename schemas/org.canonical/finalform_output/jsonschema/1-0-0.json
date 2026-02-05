@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for output from the finalform scoring callable. Contains scored observations from a measurement event.",
   "self": {
     "vendor": "org.canonical",
@@ -31,7 +31,11 @@
           "measure_id": {
             "type": "string",
             "description": "Identifier for the measure (e.g., phq9, gad7)",
-            "examples": ["phq9", "gad7", "pcl5"]
+            "examples": [
+              "phq9",
+              "gad7",
+              "pcl5"
+            ]
           },
           "components": {
             "type": "array",
@@ -46,22 +50,39 @@
                 "value": {
                   "description": "Component value",
                   "oneOf": [
-                    {"type": "string"},
-                    {"type": "number"},
-                    {"type": "boolean"},
-                    {"type": "null"}
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
                   ]
                 },
                 "label": {
-                  "type": ["string", "null"],
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "description": "Human-readable label"
                 }
               },
-              "required": ["component_id", "value"]
+              "required": [
+                "component_id",
+                "value"
+              ]
             }
           }
         },
-        "required": ["measure_id", "components"]
+        "required": [
+          "measure_id",
+          "components"
+        ]
       }
     },
     "source": {
@@ -69,13 +90,21 @@
       "description": "Source tracking information",
       "properties": {
         "form_correlation_id": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Correlation ID for deriving observation keys"
         }
       },
       "additionalProperties": true
     }
   },
-  "required": ["measurement_event_id", "subject_id", "timestamp", "observations"],
+  "required": [
+    "measurement_event_id",
+    "subject_id",
+    "timestamp",
+    "observations"
+  ],
   "additionalProperties": true
 }

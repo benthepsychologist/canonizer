@@ -1,10 +1,14 @@
 {
   "version": "1",
-  "updated_at": "2025-11-26T22:50:05.731334+00:00",
+  "updated_at": "2026-02-05T02:12:02.663983+00:00",
   "schemas": {
     "iglu:com.google/gmail_email/jsonschema/1-0-0": {
       "path": "schemas/com.google/gmail_email/jsonschema/1-0-0.json",
       "hash": "sha256:4f0b31b77ca2c90dca66c071039f8310035a3bde36dc7a030797f5acd0d4e019"
+    },
+    "iglu:com.microsoft/exchange_email/jsonschema/1-0-0": {
+      "path": "schemas/com.microsoft/exchange_email/jsonschema/1-0-0.json",
+      "hash": "sha256:85d345fd21677cef890f9dfc637643b7ae5bf21e2189b5d6fe65e8919f2021e5"
     },
     "iglu:org.canonical/email_jmap_lite/jsonschema/1-0-0": {
       "path": "schemas/org.canonical/email_jmap_lite/jsonschema/1-0-0.json",
@@ -12,11 +16,127 @@
     },
     "iglu:com.google/forms_response/jsonschema/1-0-0": {
       "path": "schemas/com.google/forms_response/jsonschema/1-0-0.json",
-      "hash": "sha256:28d0017b32cc352583901471d5868653940690fe6f8bcf43f5dd297a55296239"
+      "hash": "sha256:c09ec064aaea91663ce5f4e3bcc171b54f7dc64013a582e5fb368b60a3e21583"
     },
     "iglu:org.canonical/form_response/jsonschema/1-0-0": {
       "path": "schemas/org.canonical/form_response/jsonschema/1-0-0.json",
-      "hash": "sha256:882f1dc9f1e32016b0d9b1ed19e153b34389de541ffbf91437d6f92f9f915a6c"
+      "hash": "sha256:76df03a3ad7680c0ce987da64c4af68bc79bb3bfe0217df788eee8458d88f65f"
+    },
+    "iglu:com.microsoft/dataverse_contact/jsonschema/1-0-0": {
+      "path": "schemas/com.microsoft/dataverse_contact/jsonschema/1-0-0.json",
+      "hash": "sha256:146d22e1c4cace4625b79b8232e693e9af9408d2559e41c33b2d217e16b9f4a3"
+    },
+    "iglu:com.microsoft/dataverse_session/jsonschema/1-0-0": {
+      "path": "schemas/com.microsoft/dataverse_session/jsonschema/1-0-0.json",
+      "hash": "sha256:cd7b6ce7c509c3d536f5f0a79b1fa1b58a641829d9c54d88a77216746630904d"
+    },
+    "iglu:com.microsoft/dataverse_report/jsonschema/1-0-0": {
+      "path": "schemas/com.microsoft/dataverse_report/jsonschema/1-0-0.json",
+      "hash": "sha256:71f43f849772a73f31a9fd8aa58c9d1491d8b064c739af06fac5300be724a9fa"
+    },
+    "iglu:org.canonical/contact/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/contact/jsonschema/1-0-0.json",
+      "hash": "sha256:3c9ec6325fcde1070ad772aca23f295f90f7fbb40d637826c9fb5142667788f8"
+    },
+    "iglu:org.canonical/clinical_session/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/clinical_session/jsonschema/1-0-0.json",
+      "hash": "sha256:41d42bd16c15bf4780ababfe4b0ef90a87d7512bc93a95090bf86a4ca297d291"
+    },
+    "iglu:org.canonical/clinical_document/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/clinical_document/jsonschema/1-0-0.json",
+      "hash": "sha256:c31063edf28f82bb475ec57055bd0e71a31a60797f0fd40732e5b85ad00f35bb"
+    },
+    "iglu:com.stripe/customer/jsonschema/1-0-0": {
+      "path": "schemas/com.stripe/customer/jsonschema/1-0-0.json",
+      "hash": "sha256:7d4e4aba1a20197989178651ab0a15939b5c2f26a74ca9307e83ef334909aaea"
+    },
+    "iglu:org.canonical/customer/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/customer/jsonschema/1-0-0.json",
+      "hash": "sha256:8f5c25590570f0f49d677ba5188f06abe93d55c5f449bd6e091fc56dc4d375f8"
+    },
+    "iglu:com.stripe/invoice/jsonschema/1-0-0": {
+      "path": "schemas/com.stripe/invoice/jsonschema/1-0-0.json",
+      "hash": "sha256:94e494fdd8872389593f1543663d923c55c060fd362152af22724842d1f116a3"
+    },
+    "iglu:org.canonical/invoice/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/invoice/jsonschema/1-0-0.json",
+      "hash": "sha256:703e740eaaad9659339cca36a22fbed2cbdf0b0d0364d792ee06c666440c4407"
+    },
+    "iglu:com.stripe/payment_intent/jsonschema/1-0-0": {
+      "path": "schemas/com.stripe/payment_intent/jsonschema/1-0-0.json",
+      "hash": "sha256:d4ded1791bd169139dd7722d3cc2f28e4234f363e16dec6a2682bd5539939772"
+    },
+    "iglu:com.stripe/refund/jsonschema/1-0-0": {
+      "path": "schemas/com.stripe/refund/jsonschema/1-0-0.json",
+      "hash": "sha256:1766e367f3ceccebaf690dafd9243fd5649dd1928e521afe03b99494562268bb"
+    },
+    "iglu:org.canonical/payment/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/payment/jsonschema/1-0-0.json",
+      "hash": "sha256:1bd5539ea4eab1bfc29e749fef07c95069d95c976e25460a4e9cf29a020f3bc0"
+    },
+    "iglu:org.canonical/refund/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/refund/jsonschema/1-0-0.json",
+      "hash": "sha256:85d4c8c942768f6f38106cb47996ad80f2aa4d714f3a26a8f1f083881bb536b6"
+    },
+    "iglu:org.canonical/contact/jsonschema/2-0-0": {
+      "path": "schemas/org.canonical/contact/jsonschema/2-0-0.json",
+      "hash": "sha256:a7ccba8205f90641ea553ccd3a587472b05b041efbf75a0f650585c4d2437e93"
+    },
+    "iglu:org.canonical/session_transcript/jsonschema/2-0-0": {
+      "path": "schemas/org.canonical/session_transcript/jsonschema/2-0-0.json",
+      "hash": "sha256:b100a56869122709914995d42927b2131cdceb6705401ae4321f669d92f0c337"
+    },
+    "iglu:org.canonical/session_transcript/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/session_transcript/jsonschema/1-0-0.json",
+      "hash": "sha256:4f84ec8c571c94d7533727ded42bb88877ebc8eda96634e5433810bf03d213b3"
+    },
+    "iglu:org.canonical/clinical_document/jsonschema/2-0-0": {
+      "path": "schemas/org.canonical/clinical_document/jsonschema/2-0-0.json",
+      "hash": "sha256:d9d020342897b00f3f0a98169ea0ece5103555a16ba903a838af4d5495f1b505"
+    },
+    "iglu:org.canonical/email_jmap_full/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/email_jmap_full/jsonschema/1-0-0.json",
+      "hash": "sha256:ad1b4e5b8e7715eb6a6a28b270104da6f56a220d21c8b0ef5b2525869aa562d9"
+    },
+    "iglu:org.canonical/email_jmap_minimal/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/email_jmap_minimal/jsonschema/1-0-0.json",
+      "hash": "sha256:66e72cd5d6979cca0e13cfc6a8f318178a83779873f77337a8dc0ba6befec66b"
+    },
+    "iglu:org.canonical/clinical_session/jsonschema/2-0-0": {
+      "path": "schemas/org.canonical/clinical_session/jsonschema/2-0-0.json",
+      "hash": "sha256:cbbe84e82b89185dd22cd0d4919b97653843b4b175545ee5feeedaf859483d58"
+    },
+    "iglu:org.canonical/canonical_object/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/canonical_object/jsonschema/1-0-0.json",
+      "hash": "sha256:1e5d1e1efe8a2da163f48521755702bdba9e0f8d7902e84b9971559dc5d9ee3e"
+    },
+    "iglu:org.canonical/measurement_event/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/measurement_event/jsonschema/1-0-0.json",
+      "hash": "sha256:73181dd001c10bb2b7835c7f7f6d04ea7dc35e1a9c8822c8a7830f2ac92188fd"
+    },
+    "iglu:org.canonical/finalform_input/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/finalform_input/jsonschema/1-0-0.json",
+      "hash": "sha256:ca889ad06fd87ec74e743815d26bbd168ceb72d78b810d56c829d68cd6f7c2f5"
+    },
+    "iglu:org.canonical/finalform_output/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/finalform_output/jsonschema/1-0-0.json",
+      "hash": "sha256:e3b0abb1137074638dfc51e211b4a1dc0e6f5fc867b38876fc4417b839dbf672"
+    },
+    "iglu:org.canonical/observation_rows/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/observation_rows/jsonschema/1-0-0.json",
+      "hash": "sha256:847ffe2791d69d7c4f7c391d994914aa0132bd0bca1ae9e39af5285431d78a77"
+    },
+    "iglu:org.canonical/bq_rows_with_config/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/bq_rows_with_config/jsonschema/1-0-0.json",
+      "hash": "sha256:a51afb8f1cd7af6908f2a3b0aab67dcc43ec3034f15fe150fbe5ba656859ec50"
+    },
+    "iglu:org.canonical/sqlite_sync_params/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/sqlite_sync_params/jsonschema/1-0-0.json",
+      "hash": "sha256:0d3c318a9e7bdf4ed3ea006129c689894cebba346948f93c4c701dbc48c97255"
+    },
+    "iglu:org.canonical/sheets_write_table_params/jsonschema/1-0-0": {
+      "path": "schemas/org.canonical/sheets_write_table_params/jsonschema/1-0-0.json",
+      "hash": "sha256:9e2ae1f439f64c9c5a7496d6e929d137a62f31350f87686dc79d50ee10bd21ef"
     }
   },
   "transforms": {
@@ -24,9 +144,105 @@
       "path": "transforms/email/gmail_to_jmap_lite/1.0.0/spec.meta.yaml",
       "hash": "sha256:0bbdd428799c75f7e7c56742052dc29c44ea5ddaeee5987b2c829ef5f989c56e"
     },
+    "email/exchange_to_jmap_lite@1.0.0": {
+      "path": "transforms/email/exchange_to_jmap_lite/1.0.0/spec.meta.yaml",
+      "hash": "sha256:2da6fc976a6850495ab964ac553bd6ff95545850da7bbcc2f9f047b83f19eddc"
+    },
     "forms/google_forms_to_canonical@1.0.0": {
       "path": "transforms/forms/google_forms_to_canonical/1.0.0/spec.meta.yaml",
       "hash": "sha256:265c20befcce7895e83b00c72faf78cb912c2b4a256b6993d722bc65d8278204"
+    },
+    "contact/dataverse_to_canonical@1-0-0": {
+      "path": "transforms/contact/dataverse_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:17b34c8e7feb97eb597f4ed77a8c33a25db256e154781c939449909ad0bb0568"
+    },
+    "clinical_session/dataverse_to_canonical@1-0-0": {
+      "path": "transforms/clinical_session/dataverse_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:e381e49a613fa54b0f00479e53fe8781cde2d71839e70e33e74f354f668be2a3"
+    },
+    "clinical_document/dataverse_to_canonical@1-0-0": {
+      "path": "transforms/clinical_document/dataverse_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:f73c7bcc0d198807d7a312233b3485dc8d5f08ab88cd3d9ec7e1bff270299b46"
+    },
+    "customer/stripe_to_canonical@1-0-0": {
+      "path": "transforms/customer/stripe_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:c6e19aff0f03e6011e5b1c9147276d5f612957a358930a93f18e1cd6680114a8"
+    },
+    "invoice/stripe_to_canonical@1-0-0": {
+      "path": "transforms/invoice/stripe_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:a968d68bce7017b32e082febfae19448a493e51802c22335a7dbcca07b4b5ebb"
+    },
+    "payment/stripe_to_canonical@1-0-0": {
+      "path": "transforms/payment/stripe_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:45587bb0bc12f6e239f899da8b8eebd6ec217de0bf3dcc12ff77ccd08e9e478e"
+    },
+    "refund/stripe_to_canonical@1-0-0": {
+      "path": "transforms/refund/stripe_to_canonical/1-0-0/spec.meta.yaml",
+      "hash": "sha256:31122a86193bb3a5e70f843bacbddfc9921ce218970b20d5c0eaea9ddffc5e77"
+    },
+    "contact/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/contact/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:ec55989eb8c12b349f805a3009155403ef6c6ffeed3e3c3ec1d10721772b7c50"
+    },
+    "session_transcript/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/session_transcript/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:52195223eca739260c9fc8e3c0d2f492a57b5e3c99386db7ac2371cab782a1ea"
+    },
+    "session_transcript/dataverse_to_canonical@1.0.0": {
+      "path": "transforms/session_transcript/dataverse_to_canonical/1.0.0/spec.meta.yaml",
+      "hash": "sha256:e34083f6e86306bc405d24ddf950ae4cca5ce4da6e6e3f919685217b5e6d36b7"
+    },
+    "clinical_document/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/clinical_document/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:ddbe164e5650e8d19901e282b9e6fff327492743fdc4b1901327efa037ab65fa"
+    },
+    "email/exchange_to_jmap_full@1.0.0": {
+      "path": "transforms/email/exchange_to_jmap_full/1.0.0/spec.meta.yaml",
+      "hash": "sha256:91377e10411fb05cbf0dd5258431d39823cf6e85f440fd1c0de0a4a3fe96ecde"
+    },
+    "email/exchange_to_jmap_minimal@1.0.0": {
+      "path": "transforms/email/exchange_to_jmap_minimal/1.0.0/spec.meta.yaml",
+      "hash": "sha256:15a9b9c1d02a51ea039e92b9b5a91a4e1548439709c4593b593aadb0d24b730f"
+    },
+    "email/gmail_to_jmap_minimal@1.0.0": {
+      "path": "transforms/email/gmail_to_jmap_minimal/1.0.0/spec.meta.yaml",
+      "hash": "sha256:27b82c5de8b608dfcb66cd0e809415b866cf3bd0b9f7154c41ec0dfa6bbbf4f2"
+    },
+    "email/gmail_to_jmap_full@1.0.0": {
+      "path": "transforms/email/gmail_to_jmap_full/1.0.0/spec.meta.yaml",
+      "hash": "sha256:61d687078e051907895849f8d8a91ba82b40fe632097fa863bfaf059d88193ad"
+    },
+    "clinical_session/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/clinical_session/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:7d324942a6ed4f1abd84170319a54ecc33bd504382a1a62c517bb0d75ff916a0"
+    },
+    "session_note/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/session_note/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:f1bc8da65ed7550a6d2111ea0c70f15f2d409907d609db317b1dd8782a5b7ca9"
+    },
+    "session_summary/dataverse_to_canonical@2-0-0": {
+      "path": "transforms/session_summary/dataverse_to_canonical/2-0-0/spec.meta.yaml",
+      "hash": "sha256:7fbf8905f82cad307601f68f279ee6bd2d692ea7fc066ffe11297362d9cd9249"
+    },
+    "formation/form_response_to_measurement_event@1.0.0": {
+      "path": "transforms/formation/form_response_to_measurement_event/1.0.0/spec.meta.yaml",
+      "hash": "sha256:0e337402c5f117ab412c5e8e2cbb72b1176804d025424862211f8d5bf32380db"
+    },
+    "formation/measurement_event_to_finalform_input@1.0.0": {
+      "path": "transforms/formation/measurement_event_to_finalform_input/1.0.0/spec.meta.yaml",
+      "hash": "sha256:bf2bf7634fee3e64280fba1f278b2b41bd02e714cc0410eca711971b456a6b48"
+    },
+    "formation/finalform_event_to_observation_row@1.0.0": {
+      "path": "transforms/formation/finalform_event_to_observation_row/1.0.0/spec.meta.yaml",
+      "hash": "sha256:2d52d3f8a73931ebfbdb18296d3f9c8325996516d85825908b02dbdc3321b901"
+    },
+    "projection/bq_rows_to_sqlite_sync@1.0.0": {
+      "path": "transforms/projection/bq_rows_to_sqlite_sync/1.0.0/spec.meta.yaml",
+      "hash": "sha256:38578352a5d4690b1135ab1a613c1b92f3c5e1f413631d22bfd4e4cba18253cd"
+    },
+    "projection/bq_rows_to_sheets_write_table@1.0.0": {
+      "path": "transforms/projection/bq_rows_to_sheets_write_table/1.0.0/spec.meta.yaml",
+      "hash": "sha256:9588d9b00dfb9a835cbf9cd60c5f2711a9b60076ced4e26bd9a704a734cd2acc"
     }
   }
 }

@@ -5,12 +5,12 @@ runtime: node
 extensions: []
 
 from_schema: iglu:org.canonical/finalform_output/jsonschema/1-0-0
-to_schema: iglu:org.canonical/observation/jsonschema/1-0-0
+to_schema: iglu:org.canonical/observation_rows/jsonschema/1-0-0
 
 spec_path: spec.jsonata
 
 checksum:
-  jsonata_sha256: "f9e9d8d1cdbff54e149b5feebbe189b8a8dae0c34133768a7f0c59a35254235f"
+  jsonata_sha256: "2d52d3f8a73931ebfbdb18296d3f9c8325996516d85825908b02dbdc3321b901"
 
 provenance:
   author: "Ben Machina <ben@therapyai.com>"
@@ -21,7 +21,7 @@ status: stable
 description: >
   Transform finalform scoring output into one or more observation rows.
   Output is 1:N per input - one observation row per measure in the finalform output.
-  Uses form_correlation_id to derive deterministic idem_key for idempotent upsert.
+  Uses form_correlation_id when present; falls back to measurement_event_id for deterministic keys.
   Used by formation pipeline Stage 3.
 
 tests:

@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from canonizer.core.runtime import TransformRuntime
+from canonizer.api import execute
 
 
 @pytest.fixture
@@ -501,3 +502,90 @@ class TestBqRowsToSheetsWriteTable:
         )
 
         assert result.data["strategy"] == "replace"
+
+
+# ============================================================================
+# Callable Protocol Tests (lorchestra integration)
+# ============================================================================
+
+
+class TestCallableExecuteDerivedTransforms:
+    """Smoke tests for canonizer.execute() with derived transforms.
+
+    These cover the wrapper/config behaviors that TransformRuntime tests don't:
+    - Preserving storacle.query-style wrapper objects for formation transforms
+    - Injecting per-call transform_config into derived inputs
+    """
+
+    def test_execute_preserves_wrapper_for_formation(self):
+        params = {
+            "source_type": "formation",
+            "items": [
+                {
+                    "idem_key": "k",
+                    "connection_name": "x",
+                    "canonical_schema": "iglu:org.canonical/form_response/jsonschema/1-0-0",
+                    "correlation_id": "c",
+                    "payload": {
+                        "form_id": "f",
+                        "submitted_at": "2026-01-01T00:00:00Z",
+                        "answers": [],
+                        "respondent": {"external_id": "s"},
+                    },
+                }
+            ],
+            "config": {
+                "transform_id": "formation/form_response_to_measurement_event@1.0.0",
+                "transform_config": {
+                    "binding_id": "b",
+                    "source_system": "google_forms",
+                    "source_entity": "form_response",
+                },
+                "validate_input": True,
+                "validate_output": True,
+            },
+        }
+
+        result = execute(params)
+        assert result["stats"]["output"] == 1
+
+        item = result["items"][0]
+        # Output is the derived row dict (not re-wrapped in payload)
+        assert item["idem_key"] == "k"
+        assert item["measurement_event_id"] == "me:k"
+        assert item["subject_id"] == "s"
+        assert item["binding_id"] == "b"
+        assert item["correlation_id"] == "c"
+
+    def test_execute_injects_config_for_projection(self):
+        params = {
+            "source_type": "projection",
+            "items": [
+                {
+                    "rows": [
+                        {"a": 1, "b": 2},
+                        {"a": 3, "b": 4},
+                    ]
+                    # Intentionally omit "config" and inject via transform_config
+                }
+            ],
+            "config": {
+                "transform_id": "projection/bq_rows_to_sqlite_sync@1.0.0",
+                "transform_config": {
+                    "sqlite_path": "/tmp/test.db",
+                    "table": "t",
+                    "auto_timestamp_columns": [],
+                },
+                "validate_input": True,
+                "validate_output": True,
+            },
+        }
+
+        result = execute(params)
+        assert result["stats"]["output"] == 1
+
+        item = result["items"][0]
+        assert item["sqlite_path"] == "/tmp/test.db"
+        assert item["table"] == "t"
+        assert item["columns"] == ["a", "b"]
+        assert len(item["rows"]) == 2

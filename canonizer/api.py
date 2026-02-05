@@ -330,6 +330,7 @@ def execute(params: dict) -> dict:
     validate_input = config.get("validate_input", True)
     validate_output = config.get("validate_output", True)
     schemas_dir = config.get("schemas_dir")
+    transform_config = config.get("transform_config")
 
     # Determine transform_id from source_type if not explicitly provided
     if transform_id is None:
@@ -350,15 +351,36 @@ def execute(params: dict) -> dict:
             # Detect BQ rows by the presence of idem_key — raw documents
             # never have this field. Some raw formats (e.g., Gmail API)
             # have their own "payload" key, so we can't use that alone.
+            preserve_wrapper = isinstance(transform_id, str) and (
+                transform_id.startswith("formation/") or transform_id.startswith("projection/")
+            )
+
             raw_doc = item
             passthrough = None
             is_bq_row = isinstance(item, dict) and "idem_key" in item and "payload" in item
             if is_bq_row:
-                raw_doc = item["payload"]
-                if isinstance(raw_doc, str):
+                payload_value = item["payload"]
+                if isinstance(payload_value, str):
                     import json as _json
-                    raw_doc = _json.loads(raw_doc)
-                passthrough = {k: v for k, v in item.items() if k != "payload"}
+
+                    payload_value = _json.loads(payload_value)
+
+                if preserve_wrapper:
+                    raw_doc = dict(item)
+                    raw_doc["payload"] = payload_value
+                else:
+                    raw_doc = payload_value
+                    passthrough = {k: v for k, v in item.items() if k != "payload"}
+
+            # For derived transforms, allow config injection once at call-time
+            if (
+                preserve_wrapper
+                and transform_config
+                and isinstance(raw_doc, dict)
+                and "config" not in raw_doc
+            ):
+                raw_doc = dict(raw_doc)
+                raw_doc["config"] = transform_config
 
             canonized = canonicalize(
                 raw_doc,
