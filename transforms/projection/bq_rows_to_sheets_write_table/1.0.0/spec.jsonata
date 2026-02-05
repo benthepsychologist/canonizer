@@ -1,0 +1,49 @@
+(
+  /* Transform BQ rows into sheets.write_table op params */
+  /* Input: object with "rows" array and "config" */
+  /* Output: single dict with 2D values matrix (header row + data rows) */
+
+  /* Get column order: use config.column_order if provided, else derive from rows */
+  $getColumnOrder := function($rows, $configOrder) {(
+    $configOrder ? $configOrder : (
+      /* Collect all unique keys across all rows */
+      $baseKeys := $distinct($reduce($rows, function($acc, $row) {
+        $append($acc, $keys($row))
+      }, []));
+      /* Sort for deterministic ordering */
+      $sort($baseKeys)
+    )
+  )};
+
+  /* Convert row object to array of values in column order, wrapped for append */
+  $rowToArray := function($row, $columns) {
+    [[$map($columns, function($col) {
+      $lookup($row, $col)
+    })]]
+  };
+
+  /* Get the input rows */
+  $inputRows := rows ? rows : [];
+
+  /* Get column order */
+  $columns := $getColumnOrder($inputRows, config.column_order);
+
+  /* Build header row wrapped in array to preserve structure */
+  $headerRow := [[$columns]];
+
+  /* Build data rows using reduce to ensure array structure is preserved */
+  $dataRows := $reduce($inputRows, function($acc, $row) {
+    $append($acc, $rowToArray($row, $columns))
+  }, []);
+
+  /* Combine header + data into 2D values matrix */
+  $values := $append($headerRow, $dataRows);
+
+  {
+    "spreadsheet_id": config.spreadsheet_id,
+    "sheet_name": config.sheet_name,
+    "strategy": config.strategy ? config.strategy : "replace",
+    "account": config.account,
+    "values": $values
+  }
+)

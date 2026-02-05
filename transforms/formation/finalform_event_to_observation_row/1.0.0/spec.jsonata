@@ -1,0 +1,32 @@
+(
+  /* Transform finalform output to one or more observation rows */
+  /* Output is 1:N - always returns array of observation rows */
+
+  /* Prefer explicit form correlation id; fall back to measurement_event_id */
+  $corr := source.form_correlation_id ? source.form_correlation_id : measurement_event_id;
+
+  /* Helper to derive deterministic observation ID */
+  $deriveObservationId := function($correlationId, $measureId) {
+    "obs:" & $correlationId & ":" & $measureId
+  };
+
+  /* Helper to derive idem_key for idempotent upsert */
+  $deriveIdemKey := function($correlationId, $measureId) {
+    $correlationId & ":" & $measureId
+  };
+
+  /* Map each observation from finalform output to an observation row */
+  /* Wrap in [] to ensure array output even for single observation */
+  [$map(observations, function($obs) {
+    {
+      "idem_key": $deriveIdemKey($corr, $obs.measure_id),
+      "observation_id": $deriveObservationId($corr, $obs.measure_id),
+      "measurement_event_id": measurement_event_id,
+      "subject_id": subject_id,
+      "measure_code": $obs.measure_id,
+      "occurred_at": timestamp,
+      "components": $obs.components,
+      "correlation_id": $corr
+    }
+  })]
+)

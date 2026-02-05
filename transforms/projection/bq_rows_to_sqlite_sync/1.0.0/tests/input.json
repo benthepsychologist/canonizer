@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {"client_id": "123", "name": "John Doe"},
+    {"client_id": "456", "name": "Jane Smith"}
+  ],
+  "config": {
+    "sqlite_path": "~/clinical-vault/local.db",
+    "table": "clients",
+    "auto_timestamp_columns": ["projected_at"],
+    "timestamp": "2026-02-04T12:00:00Z"
+  }
+}

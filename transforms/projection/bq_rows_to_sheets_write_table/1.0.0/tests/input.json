@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {"client_id": "123", "name": "John Doe"},
+    {"client_id": "456", "name": "Jane Smith"}
+  ],
+  "config": {
+    "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "sheet_name": "clients",
+    "strategy": "replace",
+    "account": "acct1"
+  }
+}

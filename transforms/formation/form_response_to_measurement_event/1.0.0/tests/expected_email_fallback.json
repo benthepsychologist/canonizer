@@ -1,0 +1,24 @@
+{
+  "idem_key": "gf:intake_01:resp_def456",
+  "measurement_event_id": "me:gf:intake_01:resp_def456",
+  "canonical_object_id": "co:gf:intake_01:resp_def456",
+  "subject_id": "anonymous@example.com",
+  "event_type": "form",
+  "event_subtype": "intake_01",
+  "binding_id": "intake_01",
+  "source_system": "google_forms",
+  "source_entity": "form_response",
+  "form_id": "1FAIpQLSe_intake01",
+  "occurred_at": "2026-01-16T14:00:00Z",
+  "correlation_id": "corr_abc456",
+  "metadata": {
+    "answers": [
+      {
+        "question_id": "q1",
+        "answer_value": 0,
+        "answer_type": "scale"
+      }
+    ],
+    "submitted_at": "2026-01-16T14:00:00Z"
+  }
+}

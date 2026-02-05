@@ -1,0 +1,22 @@
+{
+  "measurement_event_id": "me:gf:intake_01:resp_def789",
+  "subject_id": "client_456",
+  "timestamp": "2026-01-20T09:00:00Z",
+  "observations": [
+    {
+      "measure_id": "phq9",
+      "components": [
+        {"component_id": "total_score", "value": 5, "label": "Mild depression"}
+      ]
+    },
+    {
+      "measure_id": "gad7",
+      "components": [
+        {"component_id": "total_score", "value": 8, "label": "Mild anxiety"}
+      ]
+    }
+  ],
+  "source": {
+    "form_correlation_id": "corr_multi456"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for BigQuery rows with config for projection transforms. Contains rows array and transform config.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "bq_rows_with_config",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "rows": {
+      "type": "array",
+      "description": "Array of row objects from BQ query results",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "Transform configuration",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "rows",
+    "config"
+  ],
+  "additionalProperties": false
+}

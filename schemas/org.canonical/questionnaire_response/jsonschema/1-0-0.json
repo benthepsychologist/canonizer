@@ -1,5 +1,5 @@
 {
-  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Canonical schema for questionnaire responses. Represents one or more completed questionnaires from a respondent, including item responses and optional computed scores. Supports both single-questionnaire sessions and multi-questionnaire assessment batteries.",
   "self": {
     "vendor": "org.canonical",
@@ -12,13 +12,19 @@
     "response_id": {
       "type": "string",
       "description": "Unique identifier for this response session",
-      "examples": ["assess_14", "resp_abc123"]
+      "examples": [
+        "assess_14",
+        "resp_abc123"
+      ]
     },
     "authored": {
       "type": "string",
       "description": "ISO 8601 timestamp when the response was completed",
       "format": "date-time",
-      "examples": ["2024-03-31T17:52:00Z", "2024-11-12T19:14:45.909157+00:00"]
+      "examples": [
+        "2024-03-31T17:52:00Z",
+        "2024-11-12T19:14:45.909157+00:00"
+      ]
     },
     "source": {
       "type": "object",
@@ -27,7 +33,12 @@
         "system": {
           "type": "string",
           "description": "Source system that collected the response",
-          "examples": ["google_forms", "typeform", "qualtrics", "manual_entry"]
+          "examples": [
+            "google_forms",
+            "typeform",
+            "qualtrics",
+            "manual_entry"
+          ]
         },
         "form_id": {
           "type": "string",
@@ -36,7 +47,11 @@
         "form_name": {
           "type": "string",
           "description": "Name of the form or assessment battery",
-          "examples": ["mbc_initial", "mbc_followup", "intake_assessment"]
+          "examples": [
+            "mbc_initial",
+            "mbc_followup",
+            "intake_assessment"
+          ]
         }
       },
       "additionalProperties": true
@@ -48,7 +63,10 @@
         "id": {
           "type": "string",
           "description": "Unique identifier for the respondent",
-          "examples": ["bfa_29", "client_123"]
+          "examples": [
+            "bfa_29",
+            "client_123"
+          ]
         },
         "name": {
           "type": "string",
@@ -67,7 +85,12 @@
               "type": "string"
             }
           },
-          "examples": [{"contact_id": "14a028ba-17eb-ef11-be21-6045bd5b9d8b", "crm_id": "CONT-001"}]
+          "examples": [
+            {
+              "contact_id": "14a028ba-17eb-ef11-be21-6045bd5b9d8b",
+              "crm_id": "CONT-001"
+            }
+          ]
         }
       },
       "additionalProperties": true
@@ -81,24 +104,38 @@
           "questionnaire_id": {
             "type": "string",
             "description": "Identifier of the questionnaire instrument (matches Questionnaire.id)",
-            "examples": ["phq_9", "gad_7", "fscrs"]
+            "examples": [
+              "phq_9",
+              "gad_7",
+              "fscrs"
+            ]
           },
           "questionnaire_name": {
             "type": "string",
             "description": "Name of the questionnaire",
-            "examples": ["Patient Health Questionnaire-9"]
+            "examples": [
+              "Patient Health Questionnaire-9"
+            ]
           },
           "questionnaire_version": {
             "type": "string",
             "description": "Version of the questionnaire instrument used",
-            "examples": ["1.0", "2.1"]
+            "examples": [
+              "1.0",
+              "2.1"
+            ]
           },
           "item_responses": {
             "type": "object",
             "description": "Map of item responses, keyed by item identifier (e.g., 'phq_9_1', 'phq_9_2')",
             "patternProperties": {
               "^[a-z0-9_]+$": {
-                "type": ["number", "string", "boolean", "null"],
+                "type": [
+                  "number",
+                  "string",
+                  "boolean",
+                  "null"
+                ],
                 "description": "Response value (type depends on question type)"
               }
             },
@@ -128,12 +165,22 @@
                       "label": {
                         "type": "string",
                         "description": "Interpretation label",
-                        "examples": ["Minimal", "Mild", "Moderate", "Severe"]
+                        "examples": [
+                          "Minimal",
+                          "Mild",
+                          "Moderate",
+                          "Severe"
+                        ]
                       },
                       "severity": {
                         "type": "string",
                         "description": "Severity classification",
-                        "examples": ["minimal", "mild", "moderate", "severe"]
+                        "examples": [
+                          "minimal",
+                          "mild",
+                          "moderate",
+                          "severe"
+                        ]
                       },
                       "description": {
                         "type": "string",
@@ -143,7 +190,9 @@
                     "additionalProperties": false
                   }
                 },
-                "required": ["value"],
+                "required": [
+                  "value"
+                ],
                 "additionalProperties": false
               }
             },
@@ -171,7 +220,10 @@
             "additionalProperties": true
           }
         },
-        "required": ["questionnaire_id", "item_responses"],
+        "required": [
+          "questionnaire_id",
+          "item_responses"
+        ],
         "additionalProperties": false
       },
       "minItems": 1
@@ -179,7 +231,12 @@
     "status": {
       "type": "string",
       "description": "Overall status of the response",
-      "enum": ["completed", "in-progress", "partial", "entered-in-error"],
+      "enum": [
+        "completed",
+        "in-progress",
+        "partial",
+        "entered-in-error"
+      ],
       "default": "completed"
     },
     "metadata": {
@@ -206,6 +263,10 @@
       "additionalProperties": true
     }
   },
-  "required": ["response_id", "authored", "questionnaires"],
+  "required": [
+    "response_id",
+    "authored",
+    "questionnaires"
+  ],
   "additionalProperties": false
 }

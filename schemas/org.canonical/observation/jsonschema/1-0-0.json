@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for observations table rows. Represents a scored observation derived from a finalform output.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "observation",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "idem_key": {
+      "type": "string",
+      "description": "Idempotency key for upsert operations (form_correlation_id:measure_id)"
+    },
+    "observation_id": {
+      "type": "string",
+      "description": "Unique identifier for this observation"
+    },
+    "measurement_event_id": {
+      "type": "string",
+      "description": "Reference to the source measurement event"
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Identifier of the subject"
+    },
+    "measure_code": {
+      "type": "string",
+      "description": "Code for the measure (e.g., phq9, gad7)",
+      "examples": [
+        "phq9",
+        "gad7",
+        "pcl5"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the observation occurred"
+    },
+    "components": {
+      "type": "array",
+      "description": "Component scores and values",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string",
+            "description": "Component identifier"
+          },
+          "value": {
+            "description": "Component value",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Human-readable label"
+          }
+        },
+        "required": [
+          "component_id",
+          "value"
+        ]
+      }
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Correlation ID for tracing"
+    }
+  },
+  "required": [
+    "idem_key",
+    "observation_id",
+    "measurement_event_id",
+    "subject_id",
+    "measure_code",
+    "occurred_at",
+    "components"
+  ],
+  "additionalProperties": false
+}

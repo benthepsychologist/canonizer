@@ -1,0 +1,16 @@
+[
+  {
+    "idem_key": "corr_xyz123:phq9",
+    "observation_id": "obs:corr_xyz123:phq9",
+    "measurement_event_id": "me:gf:intake_01:resp_abc123",
+    "subject_id": "client_789",
+    "measure_code": "phq9",
+    "occurred_at": "2026-01-15T10:30:00Z",
+    "components": [
+      {"component_id": "total_score", "value": 12, "label": "Moderate depression"},
+      {"component_id": "q1", "value": 1, "label": null},
+      {"component_id": "q2", "value": 2, "label": null}
+    ],
+    "correlation_id": "corr_xyz123"
+  }
+]

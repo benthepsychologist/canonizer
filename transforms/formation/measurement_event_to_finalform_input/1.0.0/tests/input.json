@@ -1,0 +1,34 @@
+{
+  "idem_key": "gf:intake_01:resp_abc123",
+  "measurement_event_id": "me:gf:intake_01:resp_abc123",
+  "canonical_object_id": "co:gf:intake_01:resp_abc123",
+  "subject_id": "client_789",
+  "event_type": "form",
+  "event_subtype": "intake_01",
+  "binding_id": "intake_01",
+  "source_system": "google_forms",
+  "source_entity": "form_response",
+  "form_id": "1FAIpQLSe_intake01",
+  "occurred_at": "2026-01-15T10:30:00Z",
+  "correlation_id": "corr_xyz123",
+  "metadata": {
+    "answers": [
+      {
+        "question_id": "q1",
+        "question_text": "Little interest or pleasure in doing things",
+        "answer_value": 1,
+        "answer_type": "scale"
+      },
+      {
+        "question_id": "q2",
+        "question_text": "Feeling down, depressed, or hopeless",
+        "answer_value": 2,
+        "answer_type": "scale"
+      }
+    ],
+    "submitted_at": "2026-01-15T10:30:00Z"
+  },
+  "config": {
+    "instrument": "intake_01"
+  }
+}

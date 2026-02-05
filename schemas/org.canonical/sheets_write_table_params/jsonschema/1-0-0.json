@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for sheets.write_table operation parameters. Output of bq_rows_to_sheets_write_table transform.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "sheets_write_table_params",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "spreadsheet_id": {
+      "type": "string",
+      "description": "Google Sheets spreadsheet ID",
+      "examples": [
+        "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+      ]
+    },
+    "sheet_name": {
+      "type": "string",
+      "description": "Target sheet/tab name",
+      "examples": [
+        "clients",
+        "Sheet1"
+      ]
+    },
+    "strategy": {
+      "type": "string",
+      "description": "Write strategy",
+      "enum": [
+        "replace",
+        "append"
+      ],
+      "default": "replace"
+    },
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional account identifier for multi-account scenarios"
+    },
+    "values": {
+      "type": "array",
+      "description": "2D array of values (header row + data rows)",
+      "items": {
+        "type": "array",
+        "items": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "spreadsheet_id",
+    "sheet_name",
+    "values"
+  ],
+  "additionalProperties": false
+}

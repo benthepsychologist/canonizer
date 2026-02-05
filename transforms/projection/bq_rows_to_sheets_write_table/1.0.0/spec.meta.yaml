@@ -1,0 +1,55 @@
+id: projection/bq_rows_to_sheets_write_table
+version: 1.0.0
+engine: jsonata
+runtime: node
+extensions: []
+
+from_schema: iglu:org.canonical/bq_rows_with_config/jsonschema/1-0-0
+to_schema: iglu:org.canonical/sheets_write_table_params/jsonschema/1-0-0
+
+spec_path: spec.jsonata
+
+checksum:
+  jsonata_sha256: "9588d9b00dfb9a835cbf9cd60c5f2711a9b60076ced4e26bd9a704a734cd2acc"
+
+provenance:
+  author: "Ben Machina <ben@therapyai.com>"
+  created_utc: "2026-02-04T00:00:00+00:00"
+
+status: stable
+
+description: >
+  Package BQ rows into a single sheets.write_table op payload.
+  Builds a 2D values matrix: header row + data rows.
+  Column ordering is deterministic (sorted alphabetically or via config.column_order).
+  Output is a single dict representing op params (wrapped by plan.build later).
+  Used by projection pipeline.
+
+config_schema:
+  required:
+    - spreadsheet_id
+    - sheet_name
+  properties:
+    spreadsheet_id:
+      type: string
+      description: "Google Sheets spreadsheet ID"
+    sheet_name:
+      type: string
+      description: "Target sheet/tab name"
+    strategy:
+      type: string
+      enum: ["replace", "append"]
+      default: "replace"
+      description: "Write strategy"
+    account:
+      type: string
+      description: "Optional account identifier"
+    column_order:
+      type: array
+      items:
+        type: string
+      description: "Optional explicit column order (if absent, uses sorted keys)"
+
+tests:
+  - input: tests/input.json
+    expect: tests/expected.json

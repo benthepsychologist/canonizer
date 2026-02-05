@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for input to the finalform scoring callable. Contains the form submission data needed for instrument scoring.",
+  "self": {
+    "vendor": "org.canonical",
+    "name": "finalform_input",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "form_id": {
+      "type": "string",
+      "description": "Identifier for the form/instrument"
+    },
+    "form_submission_id": {
+      "type": "string",
+      "description": "Unique identifier for this form submission (measurement_event_id)"
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Identifier of the subject being measured"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the measurement occurred"
+    },
+    "form_correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Correlation ID for tracing back to source submission"
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of question-answer pairs for scoring",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "description": "Question identifier"
+          },
+          "answer_value": {
+            "description": "The answer value",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "question_id",
+          "answer_value"
+        ]
+      }
+    }
+  },
+  "required": [
+    "form_id",
+    "form_submission_id",
+    "subject_id",
+    "timestamp",
+    "items"
+  ],
+  "additionalProperties": false
+}
