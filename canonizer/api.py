@@ -331,6 +331,25 @@ def execute(params: dict) -> dict:
     validate_output = config.get("validate_output", True)
     schemas_dir = config.get("schemas_dir")
     transform_config = config.get("transform_config")
+    max_error_samples = int(config.get("max_error_samples", 20))
+
+    # For formation/projection transforms, if transform_config not explicitly provided,
+    # extract transform-specific fields from config itself. This allows job
+    # YAMLs to put binding_id, source_system, etc. directly in config without
+    # needing a nested transform_config dict.
+    if transform_config is None and transform_id and (
+        transform_id.startswith("formation/") or transform_id.startswith("projection/")
+    ):
+        # Fields that are transform-specific (not canonizer config)
+        transform_fields = {
+            # formation fields
+            "binding_id", "source_system", "source_entity", "instrument",
+            # projection/sqlite.sync fields
+            "sqlite_path", "table", "auto_timestamp_columns",
+            # projection/sheets.write_table fields
+            "spreadsheet_id", "sheet_name", "strategy", "account", "column_order",
+        }
+        transform_config = {k: v for k, v in config.items() if k in transform_fields}
 
     # Determine transform_id from source_type if not explicitly provided
     if transform_id is None:
@@ -341,8 +360,57 @@ def execute(params: dict) -> dict:
     output_items: list[dict] = []
     error_count = 0
     skipped_count = 0
+    error_samples: list[dict] = []
+    errors_by_type: dict[str, int] = {}
 
-    # Process each item
+    # Aggregation mode for projection transforms (sqlite.sync, sheets.write_table)
+    # These transforms take ALL rows as input and produce a single packaged output
+    is_aggregation = isinstance(transform_id, str) and transform_id.startswith("projection/")
+    if is_aggregation:
+        try:
+            # Build aggregation input: all rows + config
+            agg_input = {
+                "rows": items,
+                "config": transform_config or {},
+            }
+            canonized = canonicalize(
+                agg_input,
+                transform_id=transform_id,
+                schemas_dir=schemas_dir,
+                validate_input=validate_input,
+                validate_output=validate_output,
+            )
+            # Empty results return null - skip the item (no sync op emitted)
+            if canonized is not None:
+                output_items.append(canonized)
+            else:
+                skipped_count = input_count
+        except (ValidationError, KeyError, TypeError, ValueError) as e:
+            error_count = input_count
+            error_type = type(e).__name__
+            errors_by_type[error_type] = input_count
+            error_samples.append({
+                "error_type": error_type,
+                "message": str(e)[:500],
+            })
+        except Exception:
+            # System errors - re-raise
+            raise
+
+        result = CallableResult(
+            items=output_items,
+            stats={
+                "input": input_count,
+                "output": len(output_items),
+                "skipped": skipped_count,
+                "errors": error_count,
+                "errors_by_type": errors_by_type,
+                "error_samples": error_samples,
+            },
+        )
+        return result.to_dict()
+
+    # Process each item (non-aggregation mode for formation and other transforms)
     for item in items:
         try:
             # V2 pipeline: storacle.query returns full BQ rows (idem_key,
@@ -400,10 +468,32 @@ def execute(params: dict) -> dict:
                 output_items.append(output_item)
             else:
                 output_items.append(canonized)
-        except Exception:
-            # Re-raise on error - lorchestra classifies at the boundary
-            # For v0, we fail fast on any error rather than collecting partial results
-            raise
+        except (ValidationError, KeyError, TypeError, ValueError) as e:
+            # Skip bad data errors - record is malformed but system is healthy
+            error_count += 1
+            error_type = type(e).__name__
+            errors_by_type[error_type] = errors_by_type.get(error_type, 0) + 1
+            if len(error_samples) < max_error_samples:
+                sample: dict[str, Any] = {
+                    "error_type": error_type,
+                    "message": str(e)[:500],
+                }
+                # Include identifiers from BQ row wrapper if available
+                if isinstance(item, dict):
+                    for key in ("idem_key", "source_system", "connection_name", "object_type"):
+                        if key in item:
+                            sample[key] = item[key]
+                error_samples.append(sample)
+            continue
+        except Exception as e:
+            # System errors (FileNotFoundError, missing transform/schema, etc.)
+            # Re-raise with record context to help debugging
+            record_id = None
+            if isinstance(item, dict):
+                record_id = item.get("idem_key") or item.get("id")
+            raise RuntimeError(
+                f"Transform failed on record {record_id}: {e}"
+            ) from e
 
     # Build result
     result = CallableResult(
@@ -413,6 +503,8 @@ def execute(params: dict) -> dict:
             "output": len(output_items),
             "skipped": skipped_count,
             "errors": error_count,
+            "errors_by_type": errors_by_type,
+            "error_samples": error_samples,
         },
     )
 
